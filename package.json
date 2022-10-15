@@ -1,0 +1,58 @@
+{
+  "name": "barcode-scanner",
+  "version": "1.0.0",
+  "description": "Barcode scanner PWA",
+  "source": "src/index.html",
+  "scripts": {
+    "lint": "eslint src/js/**/*.js",
+    "clean": "rimraf docs",
+    "generateSW": "workbox generateSW",
+    "start": "parcel",
+    "build:parcel": "parcel build --dist-dir=docs --public-url=./",
+    "build": "npm-run-all clean build:parcel",
+    "postbuild": "npm run generateSW",
+    "webhint": "hint src/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/georapbox/barcode-scanner.git"
+  },
+  "keywords": [
+    "aztec",
+    "code_128",
+    "code_39",
+    "code_93",
+    "codabar",
+    "data_matrix",
+    "ean_13",
+    "ean_8",
+    "itf",
+    "pdf417",
+    "qr_code",
+    "upc_a",
+    "upc_e",
+    "scanner"
+  ],
+  "author": {
+    "name": "George Raptis",
+    "email": "georapbox@gmail.com"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/georapbox/barcode-scanner/issues"
+  },
+  "homepage": "https://github.com/georapbox/barcode-scanner#readme",
+  "devDependencies": {
+    "@parcel/packager-raw-url": "~2.7.0",
+    "@parcel/transformer-webmanifest": "~2.7.0",
+    "eslint": "~8.25.0",
+    "hint": "~7.1.3",
+    "npm-run-all": "~4.1.5",
+    "parcel": "~2.7.0",
+    "workbox-cli": "~6.5.3"
+  },
+  "dependencies": {
+    "@georapbox/capture-photo-element": "~1.2.4"
+  },
+  "browserslist": "> 0.5%, last 2 versions, not dead"
+}

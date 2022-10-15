@@ -1,0 +1,28 @@
+{
+  "short_name": "Barcode Scanner",
+  "name": "Barcode Scanner",
+  "description": "Barcode Scanner PWA",
+  "categories": [],
+  "screenshots": [],
+  "icons": [
+    {
+      "src": "assets/app-icons/android/192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/app-icons/android/384.png",
+      "sizes": "384x384",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/app-icons/android/512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "start_url": ".",
+  "theme_color": "#ffffff",
+  "background_color": "#000000",
+  "display": "standalone"
+}

@@ -1,0 +1,30 @@
+{
+  "extends": [
+    "development"
+  ],
+  "hints": {
+    "compat-api/html": [
+      "default",
+      {
+        "ignore": [
+          "meta[name=color-scheme]",
+          "script[type=module]",
+          "meta[name=theme-color]",
+          "script[nomodule]"
+        ]
+      }
+    ],
+    "manifest-app-name": "off",
+    "compat-api/css": [
+      "default",
+      {
+        "ignore": [
+          "backdrop-filter",
+          "overflow-wrap: anywhere",
+          "scrollbar-color",
+          "scrollbar-width"
+        ]
+      }
+    ]
+  }
+}
