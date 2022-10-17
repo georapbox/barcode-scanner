@@ -1,18 +1,38 @@
-import { CapturePhoto } from '@georapbox/capture-photo-element/dist/capture-photo-defined.min.js';
+import { CapturePhoto } from '@georapbox/capture-photo-element/dist/capture-photo.min.js';
 
 (async function () {
+  const capturePhotoEl = document.querySelector('capture-photo');
+  const resultsEl = document.getElementById('results');
+  const scanningEl = document.querySelector('.scanning');
+  const scanBtn = document.getElementById('scanBtn');
+  const errorEl = document.getElementById('error');
+  let videoLoadedFirstTime = false;
+  let rafId;
+
   if (!('BarcodeDetector' in window)) {
-    return alert('BarcodeDetector is not supported.');
+    capturePhotoEl.hidden = true;
+    errorEl.textContent = 'BarcodeDetector is not supported.';
+    return;
   }
+
+  document.addEventListener('capture-photo:error', evt => {
+    console.error(evt.detail.error);
+    capturePhotoEl.hidden = true;
+    errorEl.textContent = evt.detail.error.message;
+  });
+
+  capturePhotoEl.addEventListener('capture-photo:video-play', () => {
+    if (!videoLoadedFirstTime) {
+      scanningEl.hidden = false;
+      scan();
+    }
+
+    videoLoadedFirstTime = true;
+  });
 
   CapturePhoto.defineCustomElement();
 
-  const capturePhotoEl = document.querySelector('capture-photo');
   const capturePhotoVideoEl = capturePhotoEl.shadowRoot.querySelector('video');
-  const resultsEl = document.getElementById('results');
-  const scanningEl = resultsEl.querySelector('.results__scanning');
-  const scanBtn = document.getElementById('scanBtn');
-  let rafId;
 
   const barcodeDetector = new window.BarcodeDetector({
     formats: await window.BarcodeDetector.getSupportedFormats()
@@ -43,17 +63,19 @@ import { CapturePhoto } from '@georapbox/capture-photo-element/dist/capture-phot
 
   async function scan() {
     console.log('scanning...');
+
     try {
       const barcodes = barcodeDetector.detect(capturePhotoVideoEl);
       const results = await barcodes;
 
       if (Array.isArray(results) && results.length > 0) {
-        cancelAnimationFrame(rafId);
+        window.cancelAnimationFrame(rafId);
 
         createResult(results[0].rawValue);
 
         scanningEl.hidden = true;
         scanBtn.hidden = false;
+        resultsEl.hidden = false;
 
         console.log(results);
 
@@ -63,18 +85,16 @@ import { CapturePhoto } from '@georapbox/capture-photo-element/dist/capture-phot
       // Fail silently...
     }
 
-    rafId = requestAnimationFrame(scan);
+    rafId = window.requestAnimationFrame(scan);
   }
 
   scanBtn.addEventListener('click', () => {
     scanningEl.hidden = false;
     scanBtn.hidden = true;
+    resultsEl.hidden = true;
 
     resultsEl.querySelectorAll('.results__item').forEach(el => el.remove());
 
     scan();
   });
-
-  // TODO Check for camera permissions before scanning.
-  scan();
 }());

@@ -52,7 +52,7 @@
     "workbox-cli": "~6.5.3"
   },
   "dependencies": {
-    "@georapbox/capture-photo-element": "~1.2.4"
+    "@georapbox/capture-photo-element": "~1.3.0"
   },
   "browserslist": "> 0.5%, last 2 versions, not dead"
 }

@@ -4,7 +4,6 @@
  */
 :root {
   --body-max-width: 768px;
-
   --background-body: #fff;
   --background: #efefef;
   --background-alt: #f7f7f7;
@@ -13,13 +12,13 @@
   --text-main: #363636;
   --text-bright: #000;
   --text-muted: #70777f;
-  --links: #0076d1;
+  --links: #3585fa;
   --focus: #0096bfab;
   --border: #dbdbdb;
   --code: #000;
   --animation-duration: 0.1s;
-  --button-base: #d0cfcf;
-  --button-hover: #9b9b9b;
+  --button-base: var(--links);
+  --button-hover: #0d6efd;
   --form-placeholder: #949494;
   --form-text: #1d1d1d;
   --variable: #39a33c;
@@ -29,9 +28,9 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background-body: #202b38;
+    --background-body: #212529;
     --background: #161f27;
-    --background-alt: #1a242f;
+    --background-alt: #343a40;
     --background-input: var(--background);
     --selection: #1c76c5;
     --text-main: #dbdbdb;
@@ -39,11 +38,11 @@
     --text-muted: #a9b1ba;
     --links: #41adff;
     --focus: #0096bfab;
-    --border: #526980;
+    --border: #495057;
     --code: #ffbe85;
     --animation-duration: 0.1s;
-    --button-base: #0c151c;
-    --button-hover: #040a0f;
+    --button-base: var(--links);
+    --button-hover: #309bec;
     --scrollbar-thumb: var(--button-hover);
     --scrollbar-thumb-hover: color-mod(var(--scrollbar-thumb) lightness(-30%));
     --form-placeholder: #a9a9a9;
@@ -106,7 +105,7 @@ h5,
 h6 {
   margin-bottom: 12px;
   margin-top: 24px;
-  color: var(--text-bright);
+  color: var(--text-main);
 }
 
 strong {
@@ -255,34 +254,17 @@ select {
   outline: none;
 }
 
-button {
-  background-color: var(--button-base);
-  padding-right: 30px;
-  padding-left: 30px;
-}
-
-input[type='submit'] {
-  background-color: var(--button-base);
-  padding-right: 30px;
-  padding-left: 30px;
-}
-
-input[type='reset'] {
-  background-color: var(--button-base);
-  padding-right: 30px;
-  padding-left: 30px;
-}
-
+button,
+input[type='submit'],
+input[type='reset'],
 input[type='button'] {
   background-color: var(--button-base);
   padding-right: 30px;
   padding-left: 30px;
+  color: var(--background-body);
 }
 
-button:hover {
-  background: var(--button-hover);
-}
-
+button:hover,
 input[type='submit']:hover,
 input[type='reset']:hover,
 input[type='button']:hover {

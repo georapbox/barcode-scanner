@@ -13,13 +13,27 @@ header {
 
 h1 {
   margin: 0.75rem 0;
-  font-size: calc(1.375rem + 1.5vw);
+  font-size: 1.7rem;
   font-weight: 300;
 }
 
+.error {
+  margin-bottom: 1rem;
+  padding: 1rem;
+  color: #842029;
+  background-color: #f8d7da;
+  text-align: center;
+  border: 1px solid #f5c2c7;
+  border-radius: 0.25rem;
+}
+
+.error:empty {
+  display: none;
+}
+
 .logo {
-  width: 80px;
-  height: 80px;
+  width: 70px;
+  height: 70px;
   overflow: hidden;
   border-radius: 50%;
   background-color: var(--background-alt);
@@ -36,15 +50,21 @@ h1 {
   justify-content: center;
 }
 
+.scan-cta-container button {
+  margin: 0;
+}
+
 .results:empty {
   display: none;
 }
 
 .results {
+  display: flex;
+  justify-content: center;
   margin-bottom: 1.5rem;
-  padding: 1.5rem 1rem;
+  padding: 1rem;
   text-align: center;
-  border: 1px solid var(--focus);
+  border: 1px solid var(--border);
   border-radius: 0.25rem;
   background-color: var(--background-alt);
 }
@@ -53,6 +73,40 @@ h1 {
   display: flex;
   flex-direction: column;
   justify-content: center;
+  text-align: center;
+  word-wrap: break-word;
+  word-break: break-word;
+}
+
+.scanning {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: var(--text-main);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.scanning span {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 0.25rem;
+  background-color: #e76f6f;
+  animation-name: blinker;
+  animation-duration: 1.7s;
+  animation-iteration-count: infinite;
+  animation-timing-function: linear;
+}
+
+@keyframes blinker {
+  50% {
+    opacity: 0;
+  }
+}
+
+footer {
   text-align: center;
 }
 
@@ -86,8 +140,13 @@ capture-photo[loading]::part(video) {
   }
 }
 
-@media (min-width: 1200px) {
+@media (min-width: 768px) {
   h1 {
     font-size: 2.2rem;
+  }
+
+  capture-photo {
+    max-width: 450px;
+    height: auto;
   }
 }
