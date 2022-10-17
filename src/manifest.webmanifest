@@ -19,6 +19,11 @@
       "src": "assets/app-icons/android/512.png",
       "sizes": "512x512",
       "type": "image/png"
+    },
+    {
+      "src": "assets/app-icons/android/1024.png",
+      "sizes": "1024x1024",
+      "type": "image/png"
     }
   ],
   "start_url": ".",

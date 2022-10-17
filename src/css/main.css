@@ -31,14 +31,6 @@ h1 {
   display: none;
 }
 
-.logo {
-  width: 70px;
-  height: 70px;
-  overflow: hidden;
-  border-radius: 50%;
-  background-color: var(--background-alt);
-}
-
 .fork {
   display: flex;
   align-items: center;
@@ -142,7 +134,7 @@ capture-photo[loading]::part(video) {
 
 @media (min-width: 768px) {
   h1 {
-    font-size: 2.2rem;
+    font-size: 2rem;
   }
 
   capture-photo {
