@@ -11,7 +11,7 @@ import { CapturePhoto } from '@georapbox/capture-photo-element/dist/capture-phot
 
   if (!('BarcodeDetector' in window)) {
     capturePhotoEl.hidden = true;
-    errorEl.textContent = 'BarcodeDetector is not supported.';
+    errorEl.textContent = 'BarcodeDetector API is not supported by your browser.';
     return;
   }
 
