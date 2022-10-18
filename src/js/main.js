@@ -16,7 +16,6 @@ import { CapturePhoto } from '@georapbox/capture-photo-element/dist/capture-phot
   }
 
   document.addEventListener('capture-photo:error', evt => {
-    console.error(evt.detail.error);
     capturePhotoEl.hidden = true;
     errorEl.textContent = evt.detail.error.message;
   });
@@ -51,7 +50,7 @@ import { CapturePhoto } from '@georapbox/capture-photo-element/dist/capture-phot
       linkEl.textContent = value;
       divEl.appendChild(linkEl);
     } catch (err) {
-      console.error(err);
+      // Fail silently...
     }
 
     const spanEl = document.createElement('span');
@@ -62,8 +61,6 @@ import { CapturePhoto } from '@georapbox/capture-photo-element/dist/capture-phot
   }
 
   async function scan() {
-    console.log('scanning...');
-
     try {
       const barcodes = barcodeDetector.detect(capturePhotoVideoEl);
       const results = await barcodes;
@@ -76,8 +73,6 @@ import { CapturePhoto } from '@georapbox/capture-photo-element/dist/capture-phot
         scanningEl.hidden = true;
         scanBtn.hidden = false;
         resultsEl.hidden = false;
-
-        console.log(results);
 
         return;
       }

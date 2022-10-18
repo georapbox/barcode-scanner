@@ -7,7 +7,7 @@ header {
   justify-content: center;
   align-items: center;
   flex-direction: column;
-  margin: 2rem 1rem;
+  margin: 2rem 0;
   text-align: center;
 }
 
@@ -140,5 +140,11 @@ capture-photo[loading]::part(video) {
   capture-photo {
     max-width: 450px;
     height: auto;
+  }
+}
+
+@media (min-height: 700px) {
+  header {
+    margin: 3rem 0;
   }
 }
