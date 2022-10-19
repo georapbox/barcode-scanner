@@ -21,6 +21,10 @@
     </div>
   </noscript>
 
+  <div class="toastContainer">
+    <div id="toastContainer"></div>
+  </div>
+
   <header>
     <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 512 512" width="80" height="80" xml:space="preserve">
       <path fill="var(--links)" d="M93.867,51.2H8.533C3.814,51.2,0,55.014,0,59.733v85.333c0,4.719,3.814,8.533,8.533,8.533s8.533-3.814,8.533-8.533v-76.8 h76.8c4.719,0,8.533-3.814,8.533-8.533S98.586,51.2,93.867,51.2z" />
@@ -61,31 +65,47 @@
     </div>
   </header>
 
-  <div id="error" class="error"></div>
+  <div class="container">
+    <select name="scanMethod" id="scanMethod" title="Select method">
+      <option value="" disabled>-- Select scan method --</option>
+      <option value="cameraView">Scan using web camera</option>
+      <option value="fileView">Scan by uploadng image</option>
+    </select>
+  </div>
 
-  <capture-photo facing-mode="environment" output-disabled>
-    <span slot="capture-button" hidden></span>
-    <span slot="facing-mode-button" hidden></span>
-  </capture-photo>
+  <div class="container" id="cameraView">
+    <capture-photo facing-mode="environment" output-disabled>
+      <span slot="capture-button" hidden></span>
+      <span slot="facing-mode-button" hidden></span>
+    </capture-photo>
 
-  <div class="scanning" hidden>
-    <span></span>
-    Scanning...
+    <div class="scanning" hidden>
+      <span></span>
+      Scanning...
+    </div>
+
+    <div class="scan-cta-container">
+      <button type="button" id="scanBtn" hidden>Start scanning</button>
+    </div>
+  </div>
+
+  <div class="container" id="fileView" hidden>
+    <div id="dropzone" class="dropzone">
+      <span>Drag & drop a barcode image to scan</span>
+    </div>
+
+    <input type="file" name="file[]" id="fileInput" autocomplete="off" />
   </div>
 
   <div id="results" class="results" hidden></div>
 
-  <div class="scan-cta-container">
-    <button type="button" id="scanBtn" hidden>Start scanning</button>
-  </div>
-
   <footer>
     <p>
-      Licensed under <a class="text-underline" href="https://georapbox.mit-license.org/@2022" target="_blank" rel="noopener">The MIT License (MIT)</a>
+      Licensed under <a href="https://georapbox.mit-license.org/@2022" target="_blank" rel="noopener">The MIT License (MIT)</a>
     </p>
   </footer>
 
   <script src="./js/register-service-worker.js" type="module"></script>
-  <script src="./js/main.js" type="module"></script>
+  <script src="./js/index.js" type="module"></script>
 </body>
 </html>
