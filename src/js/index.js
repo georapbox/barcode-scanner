@@ -51,6 +51,10 @@ import { toastAlert } from './toast-alert.js';
   function createResult(value) {
     emptyResults();
 
+    if (!value) {
+      return;
+    }
+
     const divEl = document.createElement('div');
     divEl.className = 'results__item';
 
@@ -73,21 +77,30 @@ import { toastAlert } from './toast-alert.js';
     resultsEl.appendChild(divEl);
   }
 
+  function detectBarcode(source) {
+    return new Promise((resolve, reject) => {
+      barcodeDetector.detect(source).then(results => {
+        if (Array.isArray(results) && results.length > 0) {
+          resolve(results[0]);
+        } else {
+          reject({
+            message: 'Could not detect barcode from provided source.'
+          });
+        }
+      }).catch(err => {
+        reject(err);
+      });
+    });
+  }
+
   async function scan() {
     try {
-      const barcodes = barcodeDetector.detect(capturePhotoVideoEl);
-      const results = await barcodes;
-
-      if (Array.isArray(results) && results.length > 0) {
-        window.cancelAnimationFrame(rafId);
-
-        createResult(results[0].rawValue);
-
-        scanningEl.hidden = true;
-        scanBtn.hidden = false;
-
-        return;
-      }
+      const barcode = await detectBarcode(capturePhotoVideoEl);
+      window.cancelAnimationFrame(rafId);
+      createResult(barcode.rawValue);
+      scanningEl.hidden = true;
+      scanBtn.hidden = false;
+      return;
     } catch (err) {
       // Fail silently...
     }
@@ -106,15 +119,10 @@ import { toastAlert } from './toast-alert.js';
 
       image.addEventListener('load', async () => {
         try {
-          const barcodes = barcodeDetector.detect(image);
-          const results = await barcodes;
-
-          if (Array.isArray(results) && results.length > 0) {
-            createResult(results[0].rawValue);
-          } else {
-            emptyResults();
-          }
+          const barcode = await detectBarcode(image);
+          createResult(barcode.rawValue);
         } catch (err) {
+          emptyResults();
           toastAlert(err.message, 'danger');
         }
       });
