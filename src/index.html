@@ -65,11 +65,11 @@
     </div>
   </header>
 
-  <div class="container">
+  <div class="container" style="max-width: 250px;">
     <select name="scanMethod" id="scanMethod" title="Select method">
       <option value="" disabled>-- Select scan method --</option>
       <option value="cameraView">Scan using web camera</option>
-      <option value="fileView">Scan by uploadng image</option>
+      <option value="fileView">Scan by uploading image</option>
     </select>
   </div>
 
@@ -97,7 +97,9 @@
     <input type="file" name="file[]" id="fileInput" autocomplete="off" />
   </div>
 
-  <div id="results" class="results" hidden></div>
+  <fieldset id="results" class="results">
+    <legend>Scan results</legend>
+  </fieldset>
 
   <footer>
     <p>

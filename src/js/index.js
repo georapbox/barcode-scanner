@@ -44,8 +44,12 @@ import { toastAlert } from './toast-alert.js';
     formats: await window.BarcodeDetector.getSupportedFormats()
   });
 
-  function createResult(value) {
+  function emptyResults() {
     resultsEl.querySelectorAll('.results__item').forEach(el => el.remove());
+  }
+
+  function createResult(value) {
+    emptyResults();
 
     const divEl = document.createElement('div');
     divEl.className = 'results__item';
@@ -81,7 +85,6 @@ import { toastAlert } from './toast-alert.js';
 
         scanningEl.hidden = true;
         scanBtn.hidden = false;
-        resultsEl.hidden = false;
 
         return;
       }
@@ -108,9 +111,8 @@ import { toastAlert } from './toast-alert.js';
 
           if (Array.isArray(results) && results.length > 0) {
             createResult(results[0].rawValue);
-            resultsEl.hidden = false;
           } else {
-            resultsEl.hidden = true;
+            emptyResults();
           }
         } catch (err) {
           toastAlert(err.message, 'danger');
@@ -130,7 +132,7 @@ import { toastAlert } from './toast-alert.js';
   scanBtn.addEventListener('click', () => {
     scanningEl.hidden = false;
     scanBtn.hidden = true;
-    resultsEl.hidden = true;
+    emptyResults();
     scan();
   });
 
@@ -141,7 +143,7 @@ import { toastAlert } from './toast-alert.js';
       el.hidden = el.id !== value;
     });
 
-    resultsEl.hidden = true;
+    emptyResults();
 
     if (value === 'cameraView') {
       shouldRepeatScan = true;
@@ -176,7 +178,7 @@ import { toastAlert } from './toast-alert.js';
     const fileList = evt.dataTransfer.files;
     const [file] = fileList;
 
-    if (!ACCEPTED_MIME_TYPES.includes(file.type)) {
+    if (!file || !ACCEPTED_MIME_TYPES.includes(file.type)) {
       return;
     }
 
