@@ -10,12 +10,17 @@ import { toastAlert } from './toast-alert.js';
   const scanMethodSelect = document.getElementById('scanMethod');
   const fileInput = document.getElementById('fileInput');
   const dropzoneEl = document.getElementById('dropzone');
+  const cameraViewEl = document.getElementById('cameraView');
+  const fileViewEl = document.getElementById('fileView');
   let videoLoadedFirstTime = false;
   let shouldRepeatScan = true;
   let rafId;
 
   if (!('BarcodeDetector' in window)) {
-    capturePhotoEl.hidden = true;
+    cameraViewEl.hidden = true;
+    fileViewEl.hidden = true;
+    scanMethodSelect.hidden = true;
+    resultsEl.hidden = true;
     toastAlert('BarcodeDetector API is not supported by your browser.', 'danger');
     return;
   }
@@ -24,12 +29,16 @@ import { toastAlert } from './toast-alert.js';
 
   document.addEventListener('capture-photo:error', evt => {
     capturePhotoEl.hidden = true;
+    scanMethodSelect.querySelector('option[value="cameraView"]').remove();
+    scanMethodSelect.querySelector('option[value="fileView"]').selected = true;
+    scanMethodSelect.dispatchEvent(new Event('change'));
     toastAlert(evt.detail.error.message, 'danger');
   });
 
   capturePhotoEl.addEventListener('capture-photo:video-play', () => {
-    if (!videoLoadedFirstTime) {
+    if (!videoLoadedFirstTime && !cameraViewEl.hidden) {
       scanningEl.hidden = false;
+      shouldRepeatScan = true;
       scan();
     }
 
@@ -147,13 +156,17 @@ import { toastAlert } from './toast-alert.js';
   scanMethodSelect.addEventListener('change', evt => {
     const value = evt.target.value;
 
-    document.querySelectorAll('#cameraView, #fileView').forEach(el => {
+    [cameraViewEl, fileViewEl].forEach(el => {
       el.hidden = el.id !== value;
     });
 
     emptyResults();
 
-    if (value === 'cameraView') {
+    if (
+      value === 'cameraView'
+      && !capturePhotoEl.hidden // Assumes that element is hidden because of error.
+      && !capturePhotoEl.loading
+    ) {
       shouldRepeatScan = true;
       scanningEl.hidden = false;
       fileInput.value = fileInput.defaultValue;

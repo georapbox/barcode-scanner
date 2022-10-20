@@ -1,3 +1,16 @@
+.noscript {
+  position: fixed;
+  top: 0;
+  left: 0;
+  display: block;
+  width: 100%;
+  padding: 0.5rem 1rem;
+  text-align: center;
+  font-size: 0.9rem;
+  color: #842029;
+  background-color: #f8d7da;
+}
+
 [hidden] {
   display: none !important;
 }
@@ -76,13 +89,11 @@ h1 {
 }
 
 .scan-cta-container {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 1.5rem;
+  text-align: center;
 }
 
 .scan-cta-container button {
-  margin: 0;
+  margin: 0 0 1.5rem 0;
 }
 
 .results:empty {
