@@ -1,33 +1,50 @@
 {
   "short_name": "Barcode Scanner",
   "name": "Barcode Scanner",
-  "description": "Barcode Scanner PWA",
-  "categories": [],
-  "screenshots": [],
+  "description": "A Progressive Web Application (PWA) that scans barcodes of various formats, using the Barcode Detection API.",
+  "categories": [
+    "barcode",
+    "scanner",
+    "utilities"
+  ],
+  "screenshots": [
+    {
+      "src": "assets/app-icons/screenshots/screenshot-light.png",
+      "sizes": "2048x1690",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/app-icons/screenshots/screenshot-dark.png",
+      "sizes": "2048x1690",
+      "type": "image/png"
+    }
+  ],
   "icons": [
     {
-      "src": "assets/app-icons/android/192.png",
+      "src": "assets/app-icons/icon-small.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "assets/app-icons/android/384.png",
-      "sizes": "384x384",
-      "type": "image/png"
-    },
-    {
-      "src": "assets/app-icons/android/512.png",
+      "src": "assets/app-icons/icon-medium.png",
       "sizes": "512x512",
       "type": "image/png"
     },
     {
-      "src": "assets/app-icons/android/1024.png",
+      "src": "assets/app-icons/icon-large.png",
       "sizes": "1024x1024",
       "type": "image/png"
+    },
+    {
+      "src": "assets/app-icons/icon-large-maskable.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ],
   "start_url": ".",
   "theme_color": "#212529",
   "background_color": "#ffffff",
-  "display": "standalone"
+  "display": "standalone",
+  "orientation": "any"
 }
