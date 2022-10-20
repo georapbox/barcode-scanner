@@ -32,7 +32,16 @@ import { toastAlert } from './toast-alert.js';
     scanMethodSelect.querySelector('option[value="cameraView"]').remove();
     scanMethodSelect.querySelector('option[value="fileView"]').selected = true;
     scanMethodSelect.dispatchEvent(new Event('change'));
-    toastAlert(evt.detail.error.message, 'danger');
+
+    const error = evt.detail.error;
+
+    if (error.name === 'NotFoundError') {
+      return;
+    }
+
+    const errorMessage = error.name === 'NotAllowedError' ? 'Permission to use webcam was denied. Reload the page to give appropriate permissions to webcam.' : error.message;
+
+    toastAlert(errorMessage, 'danger');
   });
 
   capturePhotoEl.addEventListener('capture-photo:video-play', () => {
