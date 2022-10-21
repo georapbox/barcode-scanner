@@ -46,7 +46,6 @@ import { toastAlert } from './toast-alert.js';
 
   capturePhotoEl.addEventListener('capture-photo:video-play', () => {
     if (!videoLoadedFirstTime && !cameraViewEl.hidden) {
-      scanningEl.hidden = false;
       shouldRepeatScan = true;
       scan();
     }
@@ -106,6 +105,8 @@ import { toastAlert } from './toast-alert.js';
   }
 
   async function scan() {
+    scanningEl.hidden = false;
+
     try {
       const barcode = await detectBarcode(capturePhotoVideoEl);
       window.cancelAnimationFrame(rafId);
@@ -152,7 +153,6 @@ import { toastAlert } from './toast-alert.js';
   }
 
   scanBtn.addEventListener('click', () => {
-    scanningEl.hidden = false;
     scanBtn.hidden = true;
     emptyResults(cameraResultsEl);
     scan();
@@ -164,6 +164,20 @@ import { toastAlert } from './toast-alert.js';
     [cameraViewEl, fileViewEl].forEach(el => {
       el.hidden = el.id !== value;
     });
+
+    if (
+      value === 'cameraView'
+      && !capturePhotoEl.hidden // Assumes that element is hidden because of error.
+      && !capturePhotoEl.loading
+      && !cameraResultsEl.querySelector('.results__item')
+    ) {
+      shouldRepeatScan = true;
+      scan();
+    }
+
+    if (value === 'fileView') {
+      shouldRepeatScan = false;
+    }
   });
 
   fileInput.addEventListener('change', evt => {
