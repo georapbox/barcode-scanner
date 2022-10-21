@@ -46,7 +46,6 @@ import { toastAlert } from './toast-alert.js';
 
   capturePhotoEl.addEventListener('capture-photo:video-play', () => {
     if (!videoLoadedFirstTime && !cameraViewEl.hidden) {
-      shouldRepeatScan = true;
       scan();
     }
 
@@ -165,14 +164,16 @@ import { toastAlert } from './toast-alert.js';
       el.hidden = el.id !== value;
     });
 
-    if (
-      value === 'cameraView'
-      && !capturePhotoEl.hidden // Assumes that element is hidden because of error.
-      && !capturePhotoEl.loading
-      && !cameraResultsEl.querySelector('.results__item')
-    ) {
+    if (value === 'cameraView') {
       shouldRepeatScan = true;
-      scan();
+
+      if (
+        !capturePhotoEl.hidden // Assumes that element is hidden because of error.
+        && !capturePhotoEl.loading
+        && !cameraResultsEl.querySelector('.results__item')
+      ) {
+        scan();
+      }
     }
 
     if (value === 'fileView') {
