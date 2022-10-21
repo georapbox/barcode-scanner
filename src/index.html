@@ -5,9 +5,9 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Barcode/QR code Scanner</title>
-  <meta name="description" content="Barcode Scanner PWA">
-  <link rel="shortcut icon" href="assets/app-icons/favicon-192.png">
-  <link rel="apple-touch-icon" href="assets/app-icons/ios/180.png">
+  <meta name="description" content="A Progressive Web Application (PWA) that scans barcodes of various formats, using the Barcode Detection API.">
+  <link rel="shortcut icon" href="assets/app-icons/favicon.ico">
+  <link rel="apple-touch-icon" href="assets/app-icons/apple-touch-icon.png">
   <link rel="manifest" href="manifest.webmanifest">
   <meta name="theme-color" content="#212529">
   <meta name="color-scheme" content="light dark">
@@ -16,10 +16,14 @@
 </head>
 <body>
   <noscript>
-    <div style="visibility: visible !important;">
+    <div class="noscript">
       JavaScript is required to properly view this site.
     </div>
   </noscript>
+
+  <div class="toastContainer">
+    <div id="toastContainer"></div>
+  </div>
 
   <header>
     <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 512 512" width="80" height="80" xml:space="preserve">
@@ -61,31 +65,53 @@
     </div>
   </header>
 
-  <div id="error" class="error"></div>
-
-  <capture-photo facing-mode="environment" output-disabled>
-    <span slot="capture-button" hidden></span>
-    <span slot="facing-mode-button" hidden></span>
-  </capture-photo>
-
-  <div class="scanning" hidden>
-    <span></span>
-    Scanning...
+  <div class="container" style="max-width: 250px;">
+    <select name="scanMethod" id="scanMethod" title="Select method">
+      <option value="" disabled>-- Select scan method --</option>
+      <option value="cameraView">Scan from webcam</option>
+      <option value="fileView">Scan from image</option>
+    </select>
   </div>
 
-  <div id="results" class="results" hidden></div>
+  <div class="container" id="cameraView">
+    <capture-photo facing-mode="environment" output-disabled>
+      <span slot="capture-button" hidden></span>
+      <span slot="facing-mode-button" hidden></span>
+    </capture-photo>
 
-  <div class="scan-cta-container">
-    <button type="button" id="scanBtn" hidden>Start scanning</button>
+    <div class="scanning" hidden>
+      <span></span>
+      Scanning...
+    </div>
+
+    <div class="scan-cta-container">
+      <button type="button" id="scanBtn" hidden>Start scanning</button>
+    </div>
+
+    <fieldset id="cameraResults" class="results">
+      <legend class="results__legend">Scan results</legend>
+    </fieldset>
+  </div>
+
+  <div class="container" id="fileView" hidden>
+    <div id="dropzone" class="dropzone">
+      <span>Drag & drop an image to scan</span>
+    </div>
+
+    <input type="file" name="file[]" id="fileInput" autocomplete="off" />
+
+    <fieldset id="fileResults" class="results">
+      <legend class="results__legend">Scan results</legend>
+    </fieldset>
   </div>
 
   <footer>
     <p>
-      Licensed under <a class="text-underline" href="https://georapbox.mit-license.org/@2022" target="_blank" rel="noopener">The MIT License (MIT)</a>
+      Licensed under <a href="https://georapbox.mit-license.org/@2022" target="_blank" rel="noopener">The MIT License (MIT)</a>
     </p>
   </footer>
 
   <script src="./js/register-service-worker.js" type="module"></script>
-  <script src="./js/main.js" type="module"></script>
+  <script src="./js/index.js" type="module"></script>
 </body>
 </html>

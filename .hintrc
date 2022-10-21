@@ -22,9 +22,11 @@
           "backdrop-filter",
           "overflow-wrap: anywhere",
           "scrollbar-color",
-          "scrollbar-width"
+          "scrollbar-width",
+          "accent-color"
         ]
       }
-    ]
+    ],
+    "no-inline-styles": "off"
   }
 }

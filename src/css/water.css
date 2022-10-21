@@ -8,7 +8,7 @@
   --accent-l: 59%;
   --accent: hsl(var(--accent-h), var(--accent-s), var(--accent-l));
 
-  --body-max-width: 768px;
+  --body-max-width: 1200px;
   --background-body: #fff;
   --background-alt: #f7f7f7;
   --background: #efefef;
