@@ -4,7 +4,8 @@ import { toastAlert } from './toast-alert.js';
 (async function () {
   const ACCEPTED_MIME_TYPES = ['image/jpg', 'image/jpeg', 'image/png', 'image/apng', 'image/gif', 'image/webp', 'image/avif'];
   const capturePhotoEl = document.querySelector('capture-photo');
-  const resultsEl = document.getElementById('results');
+  const cameraResultsEl = document.getElementById('cameraResults');
+  const fileResultsEl = document.getElementById('fileResults');
   const scanningEl = document.querySelector('.scanning');
   const scanBtn = document.getElementById('scanBtn');
   const scanMethodSelect = document.getElementById('scanMethod');
@@ -20,7 +21,6 @@ import { toastAlert } from './toast-alert.js';
     cameraViewEl.hidden = true;
     fileViewEl.hidden = true;
     scanMethodSelect.hidden = true;
-    resultsEl.hidden = true;
     toastAlert('BarcodeDetector API is not supported by your browser.', 'danger');
     return;
   }
@@ -62,37 +62,31 @@ import { toastAlert } from './toast-alert.js';
     formats: await window.BarcodeDetector.getSupportedFormats()
   });
 
-  function emptyResults() {
-    resultsEl.querySelectorAll('.results__item').forEach(el => el.remove());
+  function emptyResults(el) {
+    el.querySelectorAll('.results__item').forEach(el => el.remove());
   }
 
-  function createResult(value) {
-    emptyResults();
-
+  function createResult(value, resultEl) {
     if (!value) {
       return;
     }
 
-    const divEl = document.createElement('div');
-    divEl.className = 'results__item';
+    let el;
 
     try {
       new URL(value);
-      const linkEl = document.createElement('a');
-      linkEl.href = value;
-      linkEl.setAttribute('target', '_blank');
-      linkEl.setAttribute('rel', 'noreferrer noopener');
-      linkEl.textContent = value;
-      divEl.appendChild(linkEl);
+      el = document.createElement('a');
+      el.href = value;
+      el.setAttribute('target', '_blank');
+      el.setAttribute('rel', 'noreferrer noopener');
     } catch (err) {
-      // Fail silently...
+      el = document.createElement('span');
     }
 
-    const spanEl = document.createElement('span');
-    spanEl.textContent = value;
-    divEl.appendChild(spanEl);
+    el.className = 'results__item';
+    el.textContent = value;
 
-    resultsEl.appendChild(divEl);
+    resultEl.appendChild(el);
   }
 
   function detectBarcode(source) {
@@ -115,7 +109,8 @@ import { toastAlert } from './toast-alert.js';
     try {
       const barcode = await detectBarcode(capturePhotoVideoEl);
       window.cancelAnimationFrame(rafId);
-      createResult(barcode.rawValue);
+      emptyResults(cameraResultsEl);
+      createResult(barcode.rawValue, cameraResultsEl);
       scanningEl.hidden = true;
       scanBtn.hidden = false;
       return;
@@ -138,10 +133,11 @@ import { toastAlert } from './toast-alert.js';
       image.addEventListener('load', async () => {
         try {
           const barcode = await detectBarcode(image);
-          createResult(barcode.rawValue);
+          emptyResults(fileResultsEl);
+          createResult(barcode.rawValue, fileResultsEl);
         } catch (err) {
-          emptyResults();
-          toastAlert(err.message, 'danger');
+          emptyResults(fileResultsEl);
+          createResult('-', fileResultsEl);
         }
       });
 
@@ -158,7 +154,7 @@ import { toastAlert } from './toast-alert.js';
   scanBtn.addEventListener('click', () => {
     scanningEl.hidden = false;
     scanBtn.hidden = true;
-    emptyResults();
+    emptyResults(cameraResultsEl);
     scan();
   });
 
@@ -168,26 +164,6 @@ import { toastAlert } from './toast-alert.js';
     [cameraViewEl, fileViewEl].forEach(el => {
       el.hidden = el.id !== value;
     });
-
-    emptyResults();
-
-    if (
-      value === 'cameraView'
-      && !capturePhotoEl.hidden // Assumes that element is hidden because of error.
-      && !capturePhotoEl.loading
-    ) {
-      shouldRepeatScan = true;
-      scanningEl.hidden = false;
-      fileInput.value = fileInput.defaultValue;
-      dropzoneEl.querySelectorAll('img').forEach(el => el.remove());
-      scan();
-    }
-
-    if (value === 'fileView') {
-      shouldRepeatScan = false;
-      scanningEl.hidden = true;
-      scanBtn.hidden = true;
-    }
   });
 
   fileInput.addEventListener('change', evt => {

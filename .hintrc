@@ -22,7 +22,8 @@
           "backdrop-filter",
           "overflow-wrap: anywhere",
           "scrollbar-color",
-          "scrollbar-width"
+          "scrollbar-width",
+          "accent-color"
         ]
       }
     ],

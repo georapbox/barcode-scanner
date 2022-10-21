@@ -1,3 +1,16 @@
+:root {
+  --container-max-width: 600px;
+  --el-max-width: 450px;
+
+  accent-color: var(--accent);
+}
+
+*,
+*:before,
+*:after {
+  box-sizing: border-box;
+}
+
 .noscript {
   position: fixed;
   top: 0;
@@ -31,7 +44,7 @@ h1 {
 }
 
 .container {
-  max-width: 450px;
+  max-width: var(--container-max-width);
   margin: 0 auto;
 }
 
@@ -93,22 +106,23 @@ h1 {
 }
 
 .scan-cta-container button {
-  margin: 0 0 1.5rem 0;
-}
-
-.results:empty {
-  display: none;
+  margin: 0;
 }
 
 .results {
   display: flex;
   justify-content: center;
-  text-align: center;
+  margin: 1.5rem 0 0 0;
+  padding-bottom: 1rem;
   background-color: var(--background-alt);
 }
 
 .results:not(:has(.results__item)) {
-  display: none;
+  display: none !important;
+}
+
+.results__legend {
+  text-align: center;
 }
 
 .results__item {
@@ -135,7 +149,7 @@ h1 {
   height: 10px;
   border-radius: 50%;
   margin-right: 0.25rem;
-  background-color: #e76f6f;
+  background-color: var(--accent);
   animation-name: blinker;
   animation-duration: 1.7s;
   animation-iteration-count: infinite;
@@ -172,10 +186,11 @@ input[type="file"]:disabled::-webkit-file-upload-button {
 
 #fileInput {
   width: 100%;
-  margin: 0 0 1.5rem 0;
   box-sizing: border-box;
   border-top-left-radius: 0;
   border-top-right-radius: 0;
+  max-width: var(--el-max-width);
+  margin: 0 auto;
 }
 
 .dropzone {
@@ -186,6 +201,8 @@ input[type="file"]:disabled::-webkit-file-upload-button {
   border-top-left-radius: 6px;
   border-top-right-radius: 6px;
   border-bottom: 0;
+  max-width: var(--el-max-width);
+  margin: 0 auto;
   padding: 1rem;
   min-height: 150px;
   text-align: center;
@@ -216,14 +233,15 @@ capture-photo {
   height: 240px;
   margin: 0 auto 1.5rem auto;
   overflow: hidden;
-  border: 4px solid var(--border);
+  border: 3px solid var(--border);
+  border-radius: 6px;
   background-color: var(--background-alt);
-  border-radius: 0.25rem;
 }
 
 capture-photo::part(video) {
   width: 100%;
   height: 100%;
+  border-radius: 3px;
 }
 
 capture-photo[loading]::part(video) {
@@ -249,7 +267,7 @@ capture-photo[loading]::part(video) {
   }
 
   capture-photo {
-    max-width: 450px;
+    max-width: var(--el-max-width);
     height: auto;
   }
 }

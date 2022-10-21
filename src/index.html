@@ -87,19 +87,23 @@
     <div class="scan-cta-container">
       <button type="button" id="scanBtn" hidden>Start scanning</button>
     </div>
+
+    <fieldset id="cameraResults" class="results">
+      <legend class="results__legend">Scan results</legend>
+    </fieldset>
   </div>
 
   <div class="container" id="fileView" hidden>
     <div id="dropzone" class="dropzone">
-      <span>Drag & drop a barcode image to scan</span>
+      <span>Drag & drop an image to scan</span>
     </div>
 
     <input type="file" name="file[]" id="fileInput" autocomplete="off" />
-  </div>
 
-  <fieldset id="results" class="results">
-    <legend>Scan results</legend>
-  </fieldset>
+    <fieldset id="fileResults" class="results">
+      <legend class="results__legend">Scan results</legend>
+    </fieldset>
+  </div>
 
   <footer>
     <p>
