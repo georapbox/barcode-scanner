@@ -62,13 +62,14 @@ h1 {
   align-items: center;
   justify-content: space-between;
   padding: 1rem;
-  padding: 0.5rem;
+  padding: 0.5rem 1rem;
   margin-bottom: 1rem;
   font-size: 0.95rem;
 }
 
 .alert button {
   width: 35px;
+  min-width: 35px;
   margin: 0;
   padding: 0.15rem;
   background-color: transparent;

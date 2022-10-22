@@ -1,6 +1,7 @@
 import '@georapbox/clipboard-copy-element/dist/clipboard-copy-defined.min.js';
 import { CapturePhoto } from '@georapbox/capture-photo-element/dist/capture-photo.min.js';
 import { toastAlert } from './toast-alert.js';
+import { ary } from './utils/ary.js';
 
 (async function () {
   const ACCEPTED_MIME_TYPES = ['image/jpg', 'image/jpeg', 'image/png', 'image/apng', 'image/gif', 'image/webp', 'image/avif'];
@@ -14,7 +15,6 @@ import { toastAlert } from './toast-alert.js';
   const dropzoneEl = document.getElementById('dropzone');
   const cameraViewEl = document.getElementById('cameraView');
   const fileViewEl = document.getElementById('fileView');
-  let videoLoadedFirstTime = false;
   let shouldRepeatScan = true;
   let rafId;
 
@@ -30,9 +30,9 @@ import { toastAlert } from './toast-alert.js';
 
   document.addEventListener('capture-photo:error', evt => {
     capturePhotoEl.hidden = true;
-    scanMethodSelect.querySelector('option[value="cameraView"]').remove();
-    scanMethodSelect.querySelector('option[value="fileView"]').selected = true;
-    scanMethodSelect.dispatchEvent(new Event('change'));
+    cameraViewEl.hidden = true;
+    fileViewEl.hidden = false;
+    scanMethodSelect.hidden = true;
 
     const error = evt.detail.error;
 
@@ -43,14 +43,12 @@ import { toastAlert } from './toast-alert.js';
     const errorMessage = error.name === 'NotAllowedError' ? 'Permission to use webcam was denied. Reload the page to give appropriate permissions to webcam.' : error.message;
 
     toastAlert(errorMessage, 'danger');
+  }, {
+    once: true
   });
 
-  capturePhotoEl.addEventListener('capture-photo:video-play', () => {
-    if (!videoLoadedFirstTime && !cameraViewEl.hidden) {
-      scan();
-    }
-
-    videoLoadedFirstTime = true;
+  capturePhotoEl.addEventListener('capture-photo:video-play', ary(scan, 0), {
+    once: true
   });
 
   CapturePhoto.defineCustomElement();
@@ -120,7 +118,7 @@ import { toastAlert } from './toast-alert.js';
     }
 
     if (shouldRepeatScan) {
-      rafId = window.requestAnimationFrame(scan);
+      rafId = window.requestAnimationFrame(ary(scan, 0));
     }
   }
 
