@@ -110,10 +110,9 @@ h1 {
 }
 
 .results {
-  display: flex;
-  justify-content: center;
+  position: relative;
   margin: 1.5rem 0 0 0;
-  padding-bottom: 1rem;
+  padding: 1rem 1rem 1.5rem 1rem;
   background-color: var(--background-alt);
 }
 
@@ -134,11 +133,23 @@ h1 {
   word-break: break-word;
 }
 
+.results clipboard-copy button {
+  position: absolute;
+  top: -0.5rem;
+  right: 0;
+  margin: 0;
+  padding: 0.25rem;
+  background-color: transparent;
+  color: inherit;
+  line-height: 1;
+}
+
 .scanning {
   display: flex;
   justify-content: center;
   align-items: center;
   color: var(--text-main);
+  font-size: 0.9rem;
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 1px;

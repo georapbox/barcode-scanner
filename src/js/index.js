@@ -1,3 +1,4 @@
+import '@georapbox/clipboard-copy-element/dist/clipboard-copy-defined.min.js';
 import { CapturePhoto } from '@georapbox/capture-photo-element/dist/capture-photo.min.js';
 import { toastAlert } from './toast-alert.js';
 
