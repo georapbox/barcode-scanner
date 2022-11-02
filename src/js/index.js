@@ -8,7 +8,7 @@ import { ary } from './utils/ary.js';
   const capturePhotoEl = document.querySelector('capture-photo');
   const cameraResultsEl = document.getElementById('cameraResults');
   const fileResultsEl = document.getElementById('fileResults');
-  const scanningEl = document.querySelector('.scanning');
+  const scanningEl = document.querySelector('.scan-instructions');
   const scanBtn = document.getElementById('scanBtn');
   const scanMethodSelect = document.getElementById('scanMethod');
   const fileInput = document.getElementById('fileInput');

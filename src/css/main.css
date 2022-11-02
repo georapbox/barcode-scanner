@@ -145,7 +145,11 @@ h1 {
   line-height: 1;
 }
 
-.scanning {
+.scan-instructions {
+  text-align: center;
+}
+
+.scan-instructions__spinner {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -156,7 +160,8 @@ h1 {
   letter-spacing: 1px;
 }
 
-.scanning span {
+.scan-instructions__spinner::before {
+  content: '';
   width: 10px;
   height: 10px;
   border-radius: 50%;
