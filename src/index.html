@@ -74,15 +74,28 @@
   </div>
 
   <div class="container" id="cameraView">
-    <capture-photo facing-mode="environment" output-disabled>
-      <span slot="capture-button" hidden></span>
-      <span slot="facing-mode-button" hidden></span>
-    </capture-photo>
+    <div class="scan-frame-container">
+      <resize-observer>
+        <capture-photo facing-mode="environment" output-disabled camera-resolution="1024x768">
+          <span slot="capture-button" hidden></span>
+          <span slot="facing-mode-button" hidden></span>
+        </capture-photo>
+      </resize-observer>
 
-    <div class="scan-instructions" hidden>
-      <p>Align the barcode to scan in the center of the video frame.</p>
+      <div id="scanFrame" class="scan-frame" hidden>
+        <svg viewBox="0 0 100 100">
+          <path d="M15,2 L2,2 L2,15" fill="none" stroke="rgba(255, 255, 255, 0.45)" stroke-width="2" stroke-linejoin="round" />
+          <path d="M2,85 L2,98 L15,98" fill="none" stroke="rgba(255, 255, 255, 0.45)" stroke-width="2" stroke-linejoin="round" />
+          <path d="M85,98 L98,98 L98,85" fill="none" stroke="rgba(255, 255, 255, 0.45)" stroke-width="2" stroke-linejoin="round" />
+          <path d="M98,15 L98,2 L85,2" fill="none" stroke="rgba(255, 255, 255, 0.45)" stroke-width="2" stroke-linejoin="round" />
+        </svg>
+      </div>
 
-      <div class="scan-instructions__spinner">Scanning...</div>
+      <div id="scanning" class="scanning" hidden>Scanning...</div>
+    </div>
+
+    <div id="scanInstructions" class="scan-instructions" hidden>
+      <p>Align Barcode/QR Code in the center of the frame.</p>
     </div>
 
     <div class="scan-cta-container">

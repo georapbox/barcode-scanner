@@ -1,6 +1,9 @@
 :root {
   --container-max-width: 600px;
   --el-max-width: 450px;
+  --video-border-width: 3px;
+  --capture-border-radius: 6px;
+  --video-border-radius: calc(var(--capture-border-radius) / 2);
 
   accent-color: var(--accent);
 }
@@ -156,18 +159,27 @@ h1 {
   font-size: 0.95rem;
 }
 
-.scan-instructions__spinner {
+.scanning {
   display: flex;
   justify-content: center;
   align-items: center;
-  color: var(--text-main);
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 1px;
+  color: white;
+  position: absolute;
+  top: var(--video-border-width);
+  left: var(--video-border-width);
+  width: calc(100% - calc(var(--video-border-width) * 2));
+  padding: 1px 4px;
+  background: rgba(0, 0, 0, 0.6);
+  border-top-left-radius: var(--video-border-radius);
+  border-top-right-radius: var(--video-border-radius);
+  backdrop-filter: blur(4px);
 }
 
-.scan-instructions__spinner::before {
+.scanning::before {
   content: '';
   width: 10px;
   height: 10px;
@@ -178,6 +190,28 @@ h1 {
   animation-duration: 1.7s;
   animation-iteration-count: infinite;
   animation-timing-function: linear;
+}
+
+.scan-frame-container {
+  position: relative;
+  max-width: var(--el-max-width);
+  margin: 0 auto;
+}
+
+.scan-frame {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.75);
+  pointer-events: none;
+}
+
+.scan-frame svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
 }
 
 @keyframes blinker {
@@ -253,19 +287,18 @@ footer {
 capture-photo {
   display: flex;
   justify-content: center;
-  max-width: 320px;
-  height: 240px;
+  max-width: var(--el-max-width);
   margin: 0 auto 1.5rem auto;
   overflow: hidden;
-  border: 3px solid var(--border);
-  border-radius: 6px;
+  border: var(--video-border-width) solid var(--border);
+  border-radius: var(--capture-border-radius);
   background-color: var(--background-alt);
 }
 
 capture-photo::part(video) {
   width: 100%;
-  height: 100%;
-  border-radius: 3px;
+  height: calc(100% - 10px);
+  border-radius: var(--video-border-radius);
 }
 
 capture-photo[loading]::part(video) {
@@ -288,11 +321,6 @@ capture-photo[loading]::part(video) {
 @media (min-width: 600px) {
   h1 {
     font-size: 2rem;
-  }
-
-  capture-photo {
-    max-width: var(--el-max-width);
-    height: auto;
   }
 
   .scan-instructions p {
