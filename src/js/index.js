@@ -22,9 +22,13 @@ import { ary } from './utils/ary.js';
   let shouldRepeatScan = true;
   let rafId;
 
-  function drawRect(video) {
-    const w = video.getBoundingClientRect().width;
-    const h = video.getBoundingClientRect().height;
+  function resizeScanFrame(videoEl) {
+    if (!videoEl) {
+      return;
+    }
+
+    const w = videoEl.getBoundingClientRect().width;
+    const h = videoEl.getBoundingClientRect().height;
 
     scanFrameEl.style.cssText = `width: ${w}px; height: ${h}px`;
   }
@@ -60,7 +64,7 @@ import { ary } from './utils/ary.js';
 
   capturePhotoEl.addEventListener('capture-photo:video-play', evt => {
     scanFrameEl.hidden = false;
-    drawRect(evt.detail.video);
+    resizeScanFrame(evt.detail.video);
     scan();
   }, {
     once: true
@@ -225,6 +229,6 @@ import { ary } from './utils/ary.js';
   });
 
   resizeObserverEl.addEventListener('resize-observer:resize', () => {
-    drawRect(capturePhotoEl.shadowRoot.querySelector('video'));
+    resizeScanFrame(capturePhotoEl.shadowRoot.querySelector('video'));
   });
 }());
