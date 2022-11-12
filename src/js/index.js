@@ -22,15 +22,45 @@ import { ary } from './utils/ary.js';
   let shouldRepeatScan = true;
   let rafId;
 
+  const beep = (() => {
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext || window.audioContext);
+
+    return (duration, frequency, volume, type, callback) => {
+      const oscillator = audioCtx.createOscillator();
+      const gainNode = audioCtx.createGain();
+
+      oscillator.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+
+      if (volume) {
+        gainNode.gain.value = volume;
+      }
+
+      if (frequency) {
+        oscillator.frequency.value = frequency;
+      }
+
+      if (type) {
+        oscillator.type = type;
+      }
+
+      if (typeof callback === 'function') {
+        oscillator.onended = callback;
+      }
+
+      oscillator.start(audioCtx.currentTime);
+      oscillator.stop(audioCtx.currentTime + ((duration || 500) / 1000));
+    };
+  })();
+
   function resizeScanFrame(videoEl) {
     if (!videoEl) {
       return;
     }
 
-    const w = videoEl.getBoundingClientRect().width;
-    const h = videoEl.getBoundingClientRect().height;
+    const rect = videoEl.getBoundingClientRect();
 
-    scanFrameEl.style.cssText = `width: ${w}px; height: ${h}px`;
+    scanFrameEl.style.cssText = `width: ${rect.width}px; height: ${rect.height}px`;
   }
 
   if (!('BarcodeDetector' in window)) {
@@ -133,6 +163,7 @@ import { ary } from './utils/ary.js';
       scanningEl.hidden = true;
       scanInstructionsEl.hidden = true;
       scanBtn.hidden = false;
+      beep(200, 860, 0.03, 'square');
       return;
     } catch (err) {
       // Fail silently...
