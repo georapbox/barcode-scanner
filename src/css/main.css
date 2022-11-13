@@ -1,9 +1,10 @@
 :root {
   --container-max-width: 600px;
   --el-max-width: 450px;
-  --video-border-width: 3px;
+  --capture-border-width: 3px;
   --capture-border-radius: 6px;
   --video-border-radius: calc(var(--capture-border-radius) / 2);
+  --scan-frame-color: rgba(255, 255, 255, 0.8);
 
   accent-color: var(--accent);
 }
@@ -159,39 +160,6 @@ h1 {
   font-size: 0.95rem;
 }
 
-.scanning {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 0.85rem;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  color: white;
-  position: absolute;
-  top: var(--video-border-width);
-  left: var(--video-border-width);
-  width: calc(100% - calc(var(--video-border-width) * 2));
-  padding: 1px 4px;
-  background: rgba(0, 0, 0, 0.6);
-  border-top-left-radius: var(--video-border-radius);
-  border-top-right-radius: var(--video-border-radius);
-  backdrop-filter: blur(4px);
-}
-
-.scanning::before {
-  content: '';
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  margin-right: 0.25rem;
-  background-color: var(--accent);
-  animation-name: blinker;
-  animation-duration: 1.7s;
-  animation-iteration-count: infinite;
-  animation-timing-function: linear;
-}
-
 .scan-frame-container {
   position: relative;
   max-width: var(--el-max-width);
@@ -290,7 +258,7 @@ capture-photo {
   max-width: var(--el-max-width);
   margin: 0 auto 1.5rem auto;
   overflow: hidden;
-  border: var(--video-border-width) solid var(--border);
+  border: var(--capture-border-width) solid var(--border);
   border-radius: var(--capture-border-radius);
   background-color: var(--background-alt);
 }

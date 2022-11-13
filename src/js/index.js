@@ -9,7 +9,6 @@ import { ary } from './utils/ary.js';
   const capturePhotoEl = document.querySelector('capture-photo');
   const cameraResultsEl = document.getElementById('cameraResults');
   const fileResultsEl = document.getElementById('fileResults');
-  const scanningEl = document.getElementById('scanning');
   const scanInstructionsEl = document.getElementById('scanInstructions');
   const scanBtn = document.getElementById('scanBtn');
   const scanMethodSelect = document.getElementById('scanMethod');
@@ -152,7 +151,6 @@ import { ary } from './utils/ary.js';
   }
 
   async function scan() {
-    scanningEl.hidden = false;
     scanInstructionsEl.hidden = false;
 
     try {
@@ -160,9 +158,9 @@ import { ary } from './utils/ary.js';
       window.cancelAnimationFrame(rafId);
       emptyResults(cameraResultsEl);
       createResult(barcode.rawValue, cameraResultsEl);
-      scanningEl.hidden = true;
       scanInstructionsEl.hidden = true;
       scanBtn.hidden = false;
+      scanFrameEl.hidden = true;
       beep(200, 860, 0.03, 'square');
       return;
     } catch (err) {
@@ -204,6 +202,7 @@ import { ary } from './utils/ary.js';
 
   scanBtn.addEventListener('click', () => {
     scanBtn.hidden = true;
+    scanFrameEl.hidden = false;
     emptyResults(cameraResultsEl);
     scan();
   });
