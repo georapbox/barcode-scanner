@@ -65,6 +65,18 @@ import { toastAlert } from './toast-alert.js';
     };
   })();
 
+  function vibrate(duration = 200) {
+    if (typeof window.navigator.vibrate !== 'function' || !storage.getItem('settings')?.vibrate) {
+      return;
+    }
+
+    try {
+      window.navigator.vibrate(duration);
+    } catch {
+      // Fail silently...
+    }
+  }
+
   function resizeScanFrame(videoEl) {
     if (!videoEl) {
       return;
@@ -139,6 +151,12 @@ import { toastAlert } from './toast-alert.js';
     el.textContent = value;
 
     resultEl.appendChild(el);
+
+    const clipboarCopyEl = resultEl.querySelector('clipboard-copy');
+
+    if (clipboarCopyEl) {
+      clipboarCopyEl.hidden = value === '-';
+    }
   }
 
   function detectBarcode(source) {
@@ -169,6 +187,7 @@ import { toastAlert } from './toast-alert.js';
       scanBtn.hidden = false;
       scanFrameEl.hidden = true;
       beep(200, 860, 0.03, 'square');
+      vibrate();
       return;
     } catch (err) {
       // Fail silently...
@@ -192,6 +211,7 @@ import { toastAlert } from './toast-alert.js';
           emptyResults(fileResultsEl);
           createResult(barcode.rawValue, fileResultsEl);
           beep(200, 860, 0.03, 'square');
+          vibrate();
         } catch (err) {
           emptyResults(fileResultsEl);
           createResult('-', fileResultsEl);

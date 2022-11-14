@@ -293,11 +293,11 @@ capture-photo[loading]::part(video) {
 }
 
 .settings-dialog > header:first-child {
-  margin: 0;
-  text-align: left;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin: 0;
+  padding: 0.5rem 0.75rem;
   font-weight: 500;
 }
 
@@ -318,7 +318,8 @@ capture-photo[loading]::part(video) {
 .settings-dialog ul li {
   position: relative;
   display: flex;
-  padding: 0.5rem;
+  align-items: center;
+  padding: 0.75rem;
   color: var(--text-main);
   text-decoration: none;
   border-bottom: 1px solid var(--border);
@@ -330,16 +331,20 @@ capture-photo[loading]::part(video) {
 
 .settings-dialog ul li input[type="checkbox"] {
   min-width: 16px;
+  margin-block: 0;
 }
 
 .settings-dialog ul li label {
   margin: 0;
   flex: 1;
   cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .settings-dialog h4 {
-  padding: 0 0.5rem;
+  padding: 0 0.75rem;
   margin: 0.5rem 0 0 0;
   font-weight: 500;
 }
