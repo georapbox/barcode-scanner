@@ -155,7 +155,7 @@ import { toastAlert } from './toast-alert.js';
     const clipboarCopyEl = resultEl.querySelector('clipboard-copy');
 
     if (clipboarCopyEl) {
-      clipboarCopyEl.hidden = value === '-';
+      clipboarCopyEl.disabled = value === '-';
     }
   }
 
