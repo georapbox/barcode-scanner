@@ -43,7 +43,7 @@ header {
 
 h1 {
   margin: 0.75rem 0;
-  font-size: 1.7rem;
+  font-size: 1.6rem;
   font-weight: 300;
 }
 
@@ -182,12 +182,6 @@ h1 {
   height: 100%;
 }
 
-@keyframes blinker {
-  50% {
-    opacity: 0;
-  }
-}
-
 select[name="scanMethod"] {
   width: 100%;
   margin: 0 0 1.5rem 0;
@@ -255,7 +249,7 @@ footer {
 capture-photo {
   display: flex;
   justify-content: center;
-  max-width: var(--el-max-width);
+  max-width: 250px;
   margin: 0 auto 1.5rem auto;
   overflow: hidden;
   border: var(--capture-border-width) solid var(--border);
@@ -293,6 +287,10 @@ capture-photo[loading]::part(video) {
 
   .scan-instructions p {
     max-width: none;
+  }
+
+  capture-photo {
+    max-width: var(--el-max-width);
   }
 }
 

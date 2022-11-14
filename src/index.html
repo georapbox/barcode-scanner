@@ -26,7 +26,7 @@
   </div>
 
   <header>
-    <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 512 512" width="80" height="80" xml:space="preserve">
+    <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 512 512" width="80" height="80" xml:space="preserve" class="logo">
       <path fill="var(--links)" d="M93.867,51.2H8.533C3.814,51.2,0,55.014,0,59.733v85.333c0,4.719,3.814,8.533,8.533,8.533s8.533-3.814,8.533-8.533v-76.8 h76.8c4.719,0,8.533-3.814,8.533-8.533S98.586,51.2,93.867,51.2z" />
       <path fill="var(--links)" d="M503.467,51.2h-85.333c-4.719,0-8.533,3.814-8.533,8.533s3.814,8.533,8.533,8.533h76.8v76.8c0,4.719,3.814,8.533,8.533,8.533c4.719,0,8.533-3.814,8.533-8.533V59.733C512,55.014,508.186,51.2,503.467,51.2z" />
       <path fill="var(--links)" d="M503.467,358.4c-4.719,0-8.533,3.814-8.533,8.533v76.8h-76.8c-4.719,0-8.533,3.814-8.533,8.533s3.814,8.533,8.533,8.533h85.333c4.719,0,8.533-3.814,8.533-8.533v-85.333C512,362.214,508.186,358.4,503.467,358.4z" />
@@ -76,7 +76,7 @@
   <div class="container" id="cameraView">
     <div class="scan-frame-container">
       <resize-observer>
-        <capture-photo facing-mode="environment" output-disabled camera-resolution="1024x768">
+        <capture-photo facing-mode="environment" output-disabled>
           <span slot="capture-button" hidden></span>
           <span slot="facing-mode-button" hidden></span>
         </capture-photo>
