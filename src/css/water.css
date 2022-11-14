@@ -370,7 +370,7 @@ textarea:focus {
   box-shadow: 0 0 0 2px var(--focus);
 }
 
-input[type='checkbox']:active,
+/* input[type='checkbox']:active,
 input[type='radio']:active,
 input[type='submit']:active,
 input[type='reset']:active,
@@ -378,7 +378,7 @@ input[type='button']:active,
 input[type='range']:active,
 button:active {
   transform: translateY(2px);
-}
+} */
 
 input:disabled,
 select:disabled,

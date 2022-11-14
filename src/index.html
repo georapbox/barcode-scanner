@@ -25,7 +25,43 @@
     <div id="toastContainer"></div>
   </div>
 
-  <header>
+  <button id="settingsBtn" class="settings-button">
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-gear-fill" viewBox="0 0 16 16">
+      <path d="M9.405 1.05c-.413-1.4-2.397-1.4-2.81 0l-.1.34a1.464 1.464 0 0 1-2.105.872l-.31-.17c-1.283-.698-2.686.705-1.987 1.987l.169.311c.446.82.023 1.841-.872 2.105l-.34.1c-1.4.413-1.4 2.397 0 2.81l.34.1a1.464 1.464 0 0 1 .872 2.105l-.17.31c-.698 1.283.705 2.686 1.987 1.987l.311-.169a1.464 1.464 0 0 1 2.105.872l.1.34c.413 1.4 2.397 1.4 2.81 0l.1-.34a1.464 1.464 0 0 1 2.105-.872l.31.17c1.283.698 2.686-.705 1.987-1.987l-.169-.311a1.464 1.464 0 0 1 .872-2.105l.34-.1c1.4-.413 1.4-2.397 0-2.81l-.34-.1a1.464 1.464 0 0 1-.872-2.105l.17-.31c.698-1.283-.705-2.686-1.987-1.987l-.311.169a1.464 1.464 0 0 1-2.105-.872l-.1-.34zM8 10.93a2.929 2.929 0 1 1 0-5.86 2.929 2.929 0 0 1 0 5.858z"/>
+    </svg>
+    <span class="visually-hidden">Settings</span>
+  </button>
+
+  <dialog id="settingsDialog" class="settings-dialog">
+    <header>
+      Settings
+      <form method="dialog">
+        <button type="submit">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16">
+            <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854Z" />
+          </svg>
+          <span class="visually-hidden">Close</span>
+        </button>
+      </form>
+    </header>
+
+    <form name="settings-form" autocomplete="false">
+      <h4>When barcode is found...</h4>
+
+      <ul>
+        <li>
+          <input type="checkbox" id="beep" name="beep">
+          <label for="beep">Beep</label>
+        </li>
+        <li>
+          <input type="checkbox" id="openWebPage" name="openWebPage">
+          <label for="openWebPage">Open web pages automatically</label>
+        </li>
+      </ul>
+    </form>
+  </dialog>
+
+  <header class="site-header">
     <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 512 512" width="80" height="80" xml:space="preserve" class="logo">
       <path fill="var(--links)" d="M93.867,51.2H8.533C3.814,51.2,0,55.014,0,59.733v85.333c0,4.719,3.814,8.533,8.533,8.533s8.533-3.814,8.533-8.533v-76.8 h76.8c4.719,0,8.533-3.814,8.533-8.533S98.586,51.2,93.867,51.2z" />
       <path fill="var(--links)" d="M503.467,51.2h-85.333c-4.719,0-8.533,3.814-8.533,8.533s3.814,8.533,8.533,8.533h76.8v76.8c0,4.719,3.814,8.533,8.533,8.533c4.719,0,8.533-3.814,8.533-8.533V59.733C512,55.014,508.186,51.2,503.467,51.2z" />
