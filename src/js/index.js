@@ -1,4 +1,5 @@
 import '@georapbox/clipboard-copy-element/dist/clipboard-copy-defined.min.js';
+import '@georapbox/resize-observer-element/dist/resize-observer-defined.min.js';
 import { CapturePhoto } from '@georapbox/capture-photo-element/dist/capture-photo.min.js';
 import { toastAlert } from './toast-alert.js';
 import { ary } from './utils/ary.js';
@@ -8,15 +9,58 @@ import { ary } from './utils/ary.js';
   const capturePhotoEl = document.querySelector('capture-photo');
   const cameraResultsEl = document.getElementById('cameraResults');
   const fileResultsEl = document.getElementById('fileResults');
-  const scanningEl = document.querySelector('.scan-instructions');
+  const scanInstructionsEl = document.getElementById('scanInstructions');
   const scanBtn = document.getElementById('scanBtn');
   const scanMethodSelect = document.getElementById('scanMethod');
   const fileInput = document.getElementById('fileInput');
   const dropzoneEl = document.getElementById('dropzone');
   const cameraViewEl = document.getElementById('cameraView');
   const fileViewEl = document.getElementById('fileView');
+  const resizeObserverEl = document.querySelector('resize-observer');
+  const scanFrameEl = document.getElementById('scanFrame');
   let shouldRepeatScan = true;
   let rafId;
+
+  const beep = (() => {
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext || window.audioContext);
+
+    return (duration, frequency, volume, type, callback) => {
+      const oscillator = audioCtx.createOscillator();
+      const gainNode = audioCtx.createGain();
+
+      oscillator.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+
+      if (volume) {
+        gainNode.gain.value = volume;
+      }
+
+      if (frequency) {
+        oscillator.frequency.value = frequency;
+      }
+
+      if (type) {
+        oscillator.type = type;
+      }
+
+      if (typeof callback === 'function') {
+        oscillator.onended = callback;
+      }
+
+      oscillator.start(audioCtx.currentTime);
+      oscillator.stop(audioCtx.currentTime + ((duration || 500) / 1000));
+    };
+  })();
+
+  function resizeScanFrame(videoEl) {
+    if (!videoEl) {
+      return;
+    }
+
+    const rect = videoEl.getBoundingClientRect();
+
+    scanFrameEl.style.cssText = `width: ${rect.width}px; height: ${rect.height}px`;
+  }
 
   if (!('BarcodeDetector' in window)) {
     cameraViewEl.hidden = true;
@@ -47,7 +91,11 @@ import { ary } from './utils/ary.js';
     once: true
   });
 
-  capturePhotoEl.addEventListener('capture-photo:video-play', ary(scan, 0), {
+  capturePhotoEl.addEventListener('capture-photo:video-play', evt => {
+    scanFrameEl.hidden = false;
+    resizeScanFrame(evt.detail.video);
+    scan();
+  }, {
     once: true
   });
 
@@ -103,15 +151,17 @@ import { ary } from './utils/ary.js';
   }
 
   async function scan() {
-    scanningEl.hidden = false;
+    scanInstructionsEl.hidden = false;
 
     try {
       const barcode = await detectBarcode(capturePhotoVideoEl);
       window.cancelAnimationFrame(rafId);
       emptyResults(cameraResultsEl);
       createResult(barcode.rawValue, cameraResultsEl);
-      scanningEl.hidden = true;
+      scanInstructionsEl.hidden = true;
       scanBtn.hidden = false;
+      scanFrameEl.hidden = true;
+      beep(200, 860, 0.03, 'square');
       return;
     } catch (err) {
       // Fail silently...
@@ -152,6 +202,7 @@ import { ary } from './utils/ary.js';
 
   scanBtn.addEventListener('click', () => {
     scanBtn.hidden = true;
+    scanFrameEl.hidden = false;
     emptyResults(cameraResultsEl);
     scan();
   });
@@ -205,5 +256,9 @@ import { ary } from './utils/ary.js';
     fileInput.value = fileInput.defaultValue;
 
     handleFileSelect(file);
+  });
+
+  resizeObserverEl.addEventListener('resize-observer:resize', () => {
+    resizeScanFrame(capturePhotoEl.shadowRoot.querySelector('video'));
   });
 }());

@@ -1,6 +1,10 @@
 :root {
   --container-max-width: 600px;
   --el-max-width: 450px;
+  --capture-border-width: 3px;
+  --capture-border-radius: 6px;
+  --video-border-radius: calc(var(--capture-border-radius) / 2);
+  --scan-frame-color: rgba(255, 255, 255, 0.8);
 
   accent-color: var(--accent);
 }
@@ -39,7 +43,7 @@ header {
 
 h1 {
   margin: 0.75rem 0;
-  font-size: 1.7rem;
+  font-size: 1.6rem;
   font-weight: 300;
 }
 
@@ -156,34 +160,26 @@ h1 {
   font-size: 0.95rem;
 }
 
-.scan-instructions__spinner {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  color: var(--text-main);
-  font-size: 0.9rem;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 1px;
+.scan-frame-container {
+  position: relative;
+  max-width: var(--el-max-width);
+  margin: 0 auto;
 }
 
-.scan-instructions__spinner::before {
-  content: '';
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  margin-right: 0.25rem;
-  background-color: var(--accent);
-  animation-name: blinker;
-  animation-duration: 1.7s;
-  animation-iteration-count: infinite;
-  animation-timing-function: linear;
+.scan-frame {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.75);
+  pointer-events: none;
 }
 
-@keyframes blinker {
-  50% {
-    opacity: 0;
-  }
+.scan-frame svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
 }
 
 select[name="scanMethod"] {
@@ -253,19 +249,18 @@ footer {
 capture-photo {
   display: flex;
   justify-content: center;
-  max-width: 320px;
-  height: 240px;
+  max-width: 250px;
   margin: 0 auto 1.5rem auto;
   overflow: hidden;
-  border: 3px solid var(--border);
-  border-radius: 6px;
+  border: var(--capture-border-width) solid var(--border);
+  border-radius: var(--capture-border-radius);
   background-color: var(--background-alt);
 }
 
 capture-photo::part(video) {
   width: 100%;
-  height: 100%;
-  border-radius: 3px;
+  height: calc(100% - 10px);
+  border-radius: var(--video-border-radius);
 }
 
 capture-photo[loading]::part(video) {
@@ -290,13 +285,12 @@ capture-photo[loading]::part(video) {
     font-size: 2rem;
   }
 
-  capture-photo {
-    max-width: var(--el-max-width);
-    height: auto;
-  }
-
   .scan-instructions p {
     max-width: none;
+  }
+
+  capture-photo {
+    max-width: var(--el-max-width);
   }
 }
 
