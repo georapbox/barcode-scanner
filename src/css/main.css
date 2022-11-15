@@ -53,10 +53,8 @@ h1 {
 }
 
 .toastContainer {
-  position: fixed;
-  top: 0;
-  left: 0;
   width: 100%;
+  padding: 0 0.5rem;
   z-index: 1051;
   pointer-events: none;
 }
@@ -67,7 +65,7 @@ h1 {
   justify-content: space-between;
   padding: 1rem;
   padding: 0.5rem 1rem;
-  margin-bottom: 1rem;
+  margin-block: 0.5rem;
   font-size: 0.95rem;
 }
 
@@ -90,14 +88,11 @@ h1 {
   border-radius: 0.25rem;
 }
 
-.toastContainer > div {
-  max-width: 500px;
-  padding: 1rem;
-}
-
 .toastContainer .alert {
-  pointer-events: all;
+  max-width: 500px;
+  margin-inline: auto;
   padding-right: 0;
+  pointer-events: all;
 }
 
 .fork {
