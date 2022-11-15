@@ -1,8 +1,9 @@
 import '@georapbox/clipboard-copy-element/dist/clipboard-copy-defined.min.js';
 import '@georapbox/resize-observer-element/dist/resize-observer-defined.min.js';
 import { CapturePhoto } from '@georapbox/capture-photo-element/dist/capture-photo.min.js';
-import { toastAlert } from './toast-alert.js';
+import { storage } from './services/storage.js';
 import { ary } from './utils/ary.js';
+import { toastAlert } from './toast-alert.js';
 
 (async function () {
   const ACCEPTED_MIME_TYPES = ['image/jpg', 'image/jpeg', 'image/png', 'image/apng', 'image/gif', 'image/webp', 'image/avif'];
@@ -18,13 +19,25 @@ import { ary } from './utils/ary.js';
   const fileViewEl = document.getElementById('fileView');
   const resizeObserverEl = document.querySelector('resize-observer');
   const scanFrameEl = document.getElementById('scanFrame');
+  const settingsBtn = document.getElementById('settingsBtn');
+  const settingsDialog = document.getElementById('settingsDialog');
+  const settingsForm = document.forms['settings-form'];
+  const storageSettings = storage.getItem('settings');
   let shouldRepeatScan = true;
   let rafId;
 
   const beep = (() => {
     const audioCtx = new (window.AudioContext || window.webkitAudioContext || window.audioContext);
 
+    if (!audioCtx) {
+      return;
+    }
+
     return (duration, frequency, volume, type, callback) => {
+      if (!storage.getItem('settings')?.beep) {
+        return;
+      }
+
       const oscillator = audioCtx.createOscillator();
       const gainNode = audioCtx.createGain();
 
@@ -52,6 +65,18 @@ import { ary } from './utils/ary.js';
     };
   })();
 
+  function vibrate(duration = 200) {
+    if (typeof window.navigator.vibrate !== 'function' || !storage.getItem('settings')?.vibrate) {
+      return;
+    }
+
+    try {
+      window.navigator.vibrate(duration);
+    } catch {
+      // Fail silently...
+    }
+  }
+
   function resizeScanFrame(videoEl) {
     if (!videoEl) {
       return;
@@ -61,35 +86,6 @@ import { ary } from './utils/ary.js';
 
     scanFrameEl.style.cssText = `width: ${rect.width}px; height: ${rect.height}px`;
   }
-
-  if (!('BarcodeDetector' in window)) {
-    cameraViewEl.hidden = true;
-    fileViewEl.hidden = true;
-    scanMethodSelect.hidden = true;
-    toastAlert('BarcodeDetector API is not supported by your browser.', 'danger');
-    return;
-  }
-
-  fileInput.accept = ACCEPTED_MIME_TYPES.join(',');
-
-  document.addEventListener('capture-photo:error', evt => {
-    capturePhotoEl.hidden = true;
-    cameraViewEl.hidden = true;
-    fileViewEl.hidden = false;
-    scanMethodSelect.hidden = true;
-
-    const error = evt.detail.error;
-
-    if (error.name === 'NotFoundError') {
-      return;
-    }
-
-    const errorMessage = error.name === 'NotAllowedError' ? 'Permission to use webcam was denied. Reload the page to give appropriate permissions to webcam.' : error.message;
-
-    toastAlert(errorMessage, 'danger');
-  }, {
-    once: true
-  });
 
   capturePhotoEl.addEventListener('capture-photo:video-play', evt => {
     scanFrameEl.hidden = false;
@@ -101,11 +97,30 @@ import { ary } from './utils/ary.js';
 
   CapturePhoto.defineCustomElement();
 
+  if (!('BarcodeDetector' in window)) {
+    cameraViewEl.hidden = true;
+    fileViewEl.hidden = true;
+    scanMethodSelect.hidden = true;
+    toastAlert('BarcodeDetector API is not supported by your browser.', 'danger');
+    return;
+  }
+
+  fileInput.accept = ACCEPTED_MIME_TYPES.join(',');
+
   const capturePhotoVideoEl = capturePhotoEl.shadowRoot.querySelector('video');
 
   const barcodeDetector = new window.BarcodeDetector({
     formats: await window.BarcodeDetector.getSupportedFormats()
   });
+
+  if (storageSettings) {
+    Object.entries(storageSettings).forEach(([key, value]) => {
+      const settingInput = settingsForm.querySelector(`[name="${key}"]`);
+      if (settingInput) {
+        settingInput.checked = value;
+      }
+    });
+  }
 
   function emptyResults(el) {
     el.querySelectorAll('.results__item').forEach(el => el.remove());
@@ -124,6 +139,10 @@ import { ary } from './utils/ary.js';
       el.href = value;
       el.setAttribute('target', '_blank');
       el.setAttribute('rel', 'noreferrer noopener');
+
+      if (storage.getItem('settings')?.openWebPage) {
+        el.click();
+      }
     } catch (err) {
       el = document.createElement('span');
     }
@@ -132,6 +151,12 @@ import { ary } from './utils/ary.js';
     el.textContent = value;
 
     resultEl.appendChild(el);
+
+    const clipboarCopyEl = resultEl.querySelector('clipboard-copy');
+
+    if (clipboarCopyEl) {
+      clipboarCopyEl.disabled = value === '-';
+    }
   }
 
   function detectBarcode(source) {
@@ -162,6 +187,7 @@ import { ary } from './utils/ary.js';
       scanBtn.hidden = false;
       scanFrameEl.hidden = true;
       beep(200, 860, 0.03, 'square');
+      vibrate();
       return;
     } catch (err) {
       // Fail silently...
@@ -184,6 +210,8 @@ import { ary } from './utils/ary.js';
           const barcode = await detectBarcode(image);
           emptyResults(fileResultsEl);
           createResult(barcode.rawValue, fileResultsEl);
+          beep(200, 860, 0.03, 'square');
+          vibrate();
         } catch (err) {
           emptyResults(fileResultsEl);
           createResult('-', fileResultsEl);
@@ -199,6 +227,25 @@ import { ary } from './utils/ary.js';
       reader.readAsDataURL(file);
     }
   }
+
+  document.addEventListener('capture-photo:error', evt => {
+    capturePhotoEl.hidden = true;
+    cameraViewEl.hidden = true;
+    fileViewEl.hidden = false;
+    scanMethodSelect.hidden = true;
+
+    const error = evt.detail.error;
+
+    if (error.name === 'NotFoundError') {
+      return;
+    }
+
+    const errorMessage = error.name === 'NotAllowedError' ? 'Permission to use webcam was denied. Reload the page to give appropriate permissions to webcam.' : error.message;
+
+    toastAlert(errorMessage, 'danger');
+  }, {
+    once: true
+  });
 
   scanBtn.addEventListener('click', () => {
     scanBtn.hidden = true;
@@ -260,5 +307,23 @@ import { ary } from './utils/ary.js';
 
   resizeObserverEl.addEventListener('resize-observer:resize', () => {
     resizeScanFrame(capturePhotoEl.shadowRoot.querySelector('video'));
+  });
+
+  settingsBtn.addEventListener('click', () => {
+    settingsDialog.showModal();
+  });
+
+  settingsDialog.addEventListener('click', evt => {
+    if (evt.target === evt.currentTarget) {
+      settingsDialog.close();
+    }
+  });
+
+  settingsForm.addEventListener('change', evt => {
+    const settings = {};
+    const checkboxes = evt.currentTarget.querySelectorAll('input[type="checkbox"]');
+
+    checkboxes.forEach(item => settings[item.name] = item.checked);
+    storage.setItem('settings', settings);
   });
 }());

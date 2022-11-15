@@ -32,7 +32,7 @@
   display: none !important;
 }
 
-header {
+.site-header {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -268,6 +268,97 @@ capture-photo[loading]::part(video) {
   background-size: 60px;
   background-position: center center;
   background-repeat: no-repeat;
+}
+
+.settings-button {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 0;
+  background-color: transparent !important;
+  color: var(--text-main);
+  line-height: 1;
+  padding: 8px;
+  margin: 0;
+}
+
+.settings-dialog {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  left: auto;
+  padding: 0;
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.settings-dialog > header:first-child {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  font-weight: 500;
+}
+
+.settings-dialog > header:first-child button {
+  padding: 0.25rem;
+  margin: 0;
+  background-color: transparent !important;
+  line-height: 1;
+  color: var(--text-main);
+}
+
+.settings-dialog ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.settings-dialog ul li {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 0.75rem;
+  color: var(--text-main);
+  text-decoration: none;
+  border-bottom: 1px solid var(--border);
+}
+
+.settings-dialog ul li:last-child {
+  border: 0;
+}
+
+.settings-dialog ul li input[type="checkbox"] {
+  min-width: 16px;
+  margin-block: 0;
+}
+
+.settings-dialog ul li label {
+  margin: 0;
+  flex: 1;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.settings-dialog h4 {
+  padding: 0 0.75rem;
+  margin: 0.5rem 0 0 0;
+  font-weight: 500;
+}
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
 }
 
 @media (prefers-color-scheme: dark) {
