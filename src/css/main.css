@@ -116,8 +116,14 @@ h1 {
   background-color: var(--background-alt);
 }
 
-.results:not(:has(.results__item)) {
-  display: none !important;
+@supports selector(:has(a, b)) {
+  .results {
+    display: none;
+  }
+}
+
+.results:has(.results__item) {
+  display: block;
 }
 
 .results__legend {
