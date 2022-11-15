@@ -26,6 +26,18 @@ import { toastAlert } from './toast-alert.js';
   let shouldRepeatScan = true;
   let rafId;
 
+  if (!('BarcodeDetector' in window)) {
+    try {
+      window.BarcodeDetector = (await import('barcode-detector')).default;
+    } catch (err) {
+      cameraViewEl.hidden = true;
+      fileViewEl.hidden = true;
+      scanMethodSelect.hidden = true;
+      settingsBtn.hidden = true;
+      return toastAlert('BarcodeDetector API is not supported by your browser.', 'danger');
+    }
+  }
+
   const beep = (() => {
     const audioCtx = new (window.AudioContext || window.webkitAudioContext || window.audioContext);
 
@@ -96,14 +108,6 @@ import { toastAlert } from './toast-alert.js';
   });
 
   CapturePhoto.defineCustomElement();
-
-  if (!('BarcodeDetector' in window)) {
-    cameraViewEl.hidden = true;
-    fileViewEl.hidden = true;
-    scanMethodSelect.hidden = true;
-    toastAlert('BarcodeDetector API is not supported by your browser.', 'danger');
-    return;
-  }
 
   fileInput.accept = ACCEPTED_MIME_TYPES.join(',');
 
