@@ -141,7 +141,7 @@ import { toastAlert } from './toast-alert.js';
       el.setAttribute('rel', 'noreferrer noopener');
 
       if (storage.getItem('settings')?.openWebPage) {
-        window.open(value, '_blank', 'noopener,noreferrer');
+        el.click();
       }
     } catch (err) {
       el = document.createElement('span');
