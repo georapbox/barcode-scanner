@@ -1,7 +1,7 @@
 import '@georapbox/clipboard-copy-element/dist/clipboard-copy-defined.min.js';
 import '@georapbox/resize-observer-element/dist/resize-observer-defined.min.js';
 import { CapturePhoto } from '@georapbox/capture-photo-element/dist/capture-photo.min.js';
-import { storage } from './services/storage.js';
+import { storage, SETTINGS_STORAGE_KEY } from './services/storage.js';
 import { ary } from './utils/ary.js';
 import { toastAlert } from './toast-alert.js';
 
@@ -22,9 +22,20 @@ import { toastAlert } from './toast-alert.js';
   const settingsBtn = document.getElementById('settingsBtn');
   const settingsDialog = document.getElementById('settingsDialog');
   const settingsForm = document.forms['settings-form'];
-  const storageSettings = storage.getItem('settings');
   let shouldRepeatScan = true;
   let rafId;
+
+  if (!('BarcodeDetector' in window)) {
+    try {
+      window.BarcodeDetector = (await import('barcode-detector')).default;
+    } catch (err) {
+      cameraViewEl.hidden = true;
+      fileViewEl.hidden = true;
+      scanMethodSelect.hidden = true;
+      settingsBtn.hidden = true;
+      return toastAlert('BarcodeDetector API is not supported by your browser.', 'danger');
+    }
+  }
 
   const beep = (() => {
     const audioCtx = new (window.AudioContext || window.webkitAudioContext || window.audioContext);
@@ -34,7 +45,7 @@ import { toastAlert } from './toast-alert.js';
     }
 
     return (duration, frequency, volume, type, callback) => {
-      if (!storage.getItem('settings')?.beep) {
+      if (!storage.getItem(SETTINGS_STORAGE_KEY)?.beep) {
         return;
       }
 
@@ -66,7 +77,7 @@ import { toastAlert } from './toast-alert.js';
   })();
 
   function vibrate(duration = 200) {
-    if (typeof window.navigator.vibrate !== 'function' || !storage.getItem('settings')?.vibrate) {
+    if (typeof window.navigator.vibrate !== 'function' || !storage.getItem(SETTINGS_STORAGE_KEY)?.vibrate) {
       return;
     }
 
@@ -97,14 +108,6 @@ import { toastAlert } from './toast-alert.js';
 
   CapturePhoto.defineCustomElement();
 
-  if (!('BarcodeDetector' in window)) {
-    cameraViewEl.hidden = true;
-    fileViewEl.hidden = true;
-    scanMethodSelect.hidden = true;
-    toastAlert('BarcodeDetector API is not supported by your browser.', 'danger');
-    return;
-  }
-
   fileInput.accept = ACCEPTED_MIME_TYPES.join(',');
 
   const capturePhotoVideoEl = capturePhotoEl.shadowRoot.querySelector('video');
@@ -113,14 +116,12 @@ import { toastAlert } from './toast-alert.js';
     formats: await window.BarcodeDetector.getSupportedFormats()
   });
 
-  if (storageSettings) {
-    Object.entries(storageSettings).forEach(([key, value]) => {
-      const settingInput = settingsForm.querySelector(`[name="${key}"]`);
-      if (settingInput) {
-        settingInput.checked = value;
-      }
-    });
-  }
+  Object.entries(storage.getItem(SETTINGS_STORAGE_KEY) || {}).forEach(([key, value]) => {
+    const settingInput = settingsForm.querySelector(`[name="${key}"]`);
+    if (settingInput) {
+      settingInput.checked = value;
+    }
+  });
 
   function emptyResults(el) {
     el.querySelectorAll('.results__item').forEach(el => el.remove());
@@ -140,7 +141,7 @@ import { toastAlert } from './toast-alert.js';
       el.setAttribute('target', '_blank');
       el.setAttribute('rel', 'noreferrer noopener');
 
-      if (storage.getItem('settings')?.openWebPage) {
+      if (storage.getItem(SETTINGS_STORAGE_KEY)?.openWebPage) {
         el.click();
       }
     } catch (err) {
@@ -324,6 +325,6 @@ import { toastAlert } from './toast-alert.js';
     const checkboxes = evt.currentTarget.querySelectorAll('input[type="checkbox"]');
 
     checkboxes.forEach(item => settings[item.name] = item.checked);
-    storage.setItem('settings', settings);
+    storage.setItem(SETTINGS_STORAGE_KEY, settings);
   });
 }());

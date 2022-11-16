@@ -21,7 +21,7 @@ export const toastAlert = (message = '', type = 'info') => {
   `;
 
   const div = document.createElement('div');
-  div.className = `alert alert-${type} alert-dismissible text-break mb-2 fade`;
+  div.className = `alert alert-${type} alert-dismissible text-break`;
   div.innerHTML = template;
   div.querySelector('button').addEventListener('click', hideAlert);
   toastContainer.appendChild(div);
