@@ -42,22 +42,15 @@
     </header>
 
     <form name="settings-form" autocomplete="false">
-      <h4>When barcode is found...</h4>
+      <fieldset name="barcode-found-settings">
+        <legend>When barcode is found...</legend>
 
-      <ul>
-        <li>
-          <input type="checkbox" id="beep" name="beep">
-          <label for="beep">Beep</label>
-        </li>
-        <li>
-          <input type="checkbox" id="vibrate" name="vibrate">
-          <label for="vibrate">Vibrate (mobile)</label>
-        </li>
-        <li>
-          <input type="checkbox" id="openWebPage" name="openWebPage">
-          <label for="openWebPage">Open web pages automatically</label>
-        </li>
-      </ul>
+        <ul>
+          <li><label><input type="checkbox" name="beep"> Beep</label></li>
+          <li><label><input type="checkbox" name="vibrate"> Vibrate (mobile)</label></li>
+          <li><label><input type="checkbox" name="openWebPage"> Open web pages automatically</label></li>
+        </ul>
+      </fieldset>
     </form>
   </dialog>
 

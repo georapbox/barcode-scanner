@@ -4,3 +4,5 @@ export const storage = WebStorage.createInstance({
   driver: 'localStorage',
   keyPrefix: 'barcode-scanner/'
 });
+
+export const SETTINGS_STORAGE_KEY = 'settings';
