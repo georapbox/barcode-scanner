@@ -247,7 +247,8 @@ input[type="file"]:disabled::-webkit-file-upload-button {
   display: none;
 }
 
-footer {
+body > footer {
+  margin-top: 1.5rem;
   text-align: center;
 }
 
