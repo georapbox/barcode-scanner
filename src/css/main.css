@@ -167,6 +167,10 @@ h1 {
   margin: 0 auto;
 }
 
+.scan-frame-container:has(capture-photo[loading]) .scan-frame {
+  display: none;
+}
+
 .scan-frame {
   position: absolute;
   top: 50%;
@@ -248,6 +252,7 @@ footer {
 }
 
 capture-photo {
+  position: relative;
   display: flex;
   justify-content: center;
   max-width: 250px;
@@ -269,6 +274,20 @@ capture-photo[loading]::part(video) {
   background-size: 60px;
   background-position: center center;
   background-repeat: no-repeat;
+}
+
+capture-photo::part(facing-mode-button) {
+  position: absolute;
+  top: 0.25rem;
+  right: 0.25rem;
+  border: 0;
+  border-radius: var(--video-border-radius);
+  background-color: var(--background);
+  color: var(--text-main);
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+  transition: background-color 0.15s ease-in-out;
 }
 
 .settings-button {

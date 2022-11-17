@@ -76,7 +76,7 @@ import { toastAlert } from './toast-alert.js';
     };
   })();
 
-  function vibrate(duration = 200) {
+  function vibrate(duration = 100) {
     if (typeof window.navigator.vibrate !== 'function' || !storage.getItem(SETTINGS_STORAGE_KEY)?.vibrate) {
       return;
     }
