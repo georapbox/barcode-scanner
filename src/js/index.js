@@ -1,6 +1,6 @@
-import '@georapbox/clipboard-copy-element/dist/clipboard-copy-defined.min.js';
-import '@georapbox/resize-observer-element/dist/resize-observer-defined.min.js';
-import { CapturePhoto } from '@georapbox/capture-photo-element/dist/capture-photo.min.js';
+import '@georapbox/clipboard-copy-element/dist/clipboard-copy-defined.js';
+import '@georapbox/resize-observer-element/dist/resize-observer-defined.js';
+import { CapturePhoto } from '@georapbox/capture-photo-element/dist/capture-photo.js';
 import { storage, SETTINGS_STORAGE_KEY } from './services/storage.js';
 import { ary } from './utils/ary.js';
 import { toastAlert } from './toast-alert.js';
