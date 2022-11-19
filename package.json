@@ -5,7 +5,7 @@
   "source": "src/index.html",
   "scripts": {
     "lint": "eslint src/js/**/*.js",
-    "clean": "rimraf docs",
+    "clean": "rimraf docs .parcel-cache",
     "generateSW": "workbox generateSW",
     "start": "parcel",
     "build:parcel": "parcel build --dist-dir=docs --public-url=./",
