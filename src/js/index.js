@@ -102,6 +102,20 @@ import { toastAlert } from './toast-alert.js';
     scanFrameEl.hidden = false;
     resizeScanFrame(evt.detail.video);
     scan();
+
+    const trackSettings = capturePhotoEl.getTrackSettings();
+    const trackCapabilities = capturePhotoEl.getTrackCapabilities();
+
+    if (trackSettings?.zoom && trackCapabilities?.zoom) {
+      const zoomControl = document.getElementById('zoomControl');
+
+      zoomControl.parentElement.hidden = false;
+      zoomControl.min = trackCapabilities?.zoom?.min;
+      zoomControl.max = trackCapabilities?.zoom?.max;
+      zoomControl.step = trackCapabilities?.zoom?.step;
+      zoomControl.value = trackSettings?.zoom;
+      zoomControl.addEventListener('input', evt => capturePhotoEl.zoom = evt.target.value);
+    }
   }, {
     once: true
   });
