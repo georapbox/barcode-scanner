@@ -125,7 +125,7 @@ import { toastAlert } from './toast-alert.js';
   fileInput.accept = ACCEPTED_MIME_TYPES.join(',');
 
   const capturePhotoVideoEl = capturePhotoEl.shadowRoot.querySelector('video');
-  const formats = await window.BarcodeDetector.getSupportedFormats() || [];
+  const formats = await window.BarcodeDetector.getSupportedFormats();
   const barcodeDetector = new window.BarcodeDetector({ formats });
 
   Object.entries(storage.getItem(SETTINGS_STORAGE_KEY) || {}).forEach(([key, value]) => {
@@ -138,7 +138,7 @@ import { toastAlert } from './toast-alert.js';
   displaySupportedFormats(formats, settingsDialog);
 
   function displaySupportedFormats(supportedFormats, element) {
-    if (supportedFormats.length === 0) {
+    if (!Array.isArray(supportedFormats) || supportedFormats.length === 0) {
       return;
     }
 
