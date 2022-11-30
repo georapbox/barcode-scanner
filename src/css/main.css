@@ -156,8 +156,7 @@ h1 {
 
 .scan-instructions p {
   max-width: 320px;
-  margin: 0 auto 1rem auto;
-  padding: 0 1rem;
+  margin: 0 auto;
   font-size: 0.95rem;
 }
 
@@ -250,6 +249,17 @@ input[type="file"]:disabled::-webkit-file-upload-button {
 body > footer {
   margin-top: 1.5rem;
   text-align: center;
+}
+
+.supported-formats:empty {
+  display: none;
+}
+
+.supported-formats {
+  max-width: 400px;
+  padding: 0 0.75rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
 }
 
 capture-photo {
@@ -357,10 +367,6 @@ capture-photo::part(facing-mode-button) {
   color: var(--text-main);
   text-decoration: none;
   border-bottom: 1px solid var(--border);
-}
-
-.settings-dialog ul li:last-child {
-  border: 0;
 }
 
 .settings-dialog ul li input[type="checkbox"] {

@@ -125,10 +125,8 @@ import { toastAlert } from './toast-alert.js';
   fileInput.accept = ACCEPTED_MIME_TYPES.join(',');
 
   const capturePhotoVideoEl = capturePhotoEl.shadowRoot.querySelector('video');
-
-  const barcodeDetector = new window.BarcodeDetector({
-    formats: await window.BarcodeDetector.getSupportedFormats()
-  });
+  const formats = await window.BarcodeDetector.getSupportedFormats() || [];
+  const barcodeDetector = new window.BarcodeDetector({ formats });
 
   Object.entries(storage.getItem(SETTINGS_STORAGE_KEY) || {}).forEach(([key, value]) => {
     const settingInput = settingsForm.querySelector(`[name="${key}"]`);
@@ -136,6 +134,21 @@ import { toastAlert } from './toast-alert.js';
       settingInput.checked = value;
     }
   });
+
+  displaySupportedFormats(formats, settingsDialog);
+
+  function displaySupportedFormats(supportedFormats, element) {
+    if (supportedFormats.length === 0) {
+      return;
+    }
+
+    const p = document.createElement('p');
+
+    p.className = 'supported-formats';
+    p.textContent = `Supported formats: ${supportedFormats.join(', ')}`;
+
+    element.appendChild(p);
+  }
 
   function emptyResults(el) {
     el.querySelectorAll('.results__item').forEach(el => el.remove());
