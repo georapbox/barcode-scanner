@@ -174,7 +174,7 @@ h1 {
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%) scale(0.75);
+  transform: translate(-50%, -50%) scale(0.65);
   pointer-events: none;
 }
 
@@ -288,9 +288,15 @@ capture-photo[loading]::part(video) {
 }
 
 capture-photo::part(facing-mode-button) {
+  display: flex;
+  justify-content: center;
+  align-items: center;
   position: absolute;
-  top: 0.25rem;
-  right: 0.25rem;
+  bottom: 0.25rem;
+  left: 0.25rem;
+  width: 30px;
+  height: 30px;
+  padding: 0;
   border: 0;
   border-radius: var(--video-border-radius);
   background-color: var(--background);
@@ -301,18 +307,42 @@ capture-photo::part(facing-mode-button) {
   transition: background-color 0.15s ease-in-out;
 }
 
-.zoom-container {
+.zoom-controls {
+  position: absolute;
+  bottom: 0.25rem;
+  right: 0.25rem;
   display: flex;
-  align-items: center;
-  max-width: 250px;
-  margin: -1rem auto 1.5rem auto;
-  gap: 0.5rem;
-  font-size: 0.9rem;
 }
 
-.zoom-container input[type="range"] {
-  flex: 1;
+.zoom-controls button,
+.zoom-controls label {
+  display: flex;
+  justify-content: center;
+  align-items: center;
   margin: 0;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border-radius: 0;
+  background-color: var(--background);
+  color: var(--text-main);
+}
+
+.zoom-controls button[data-action="zoom-in"] {
+  border-top-right-radius: var(--video-border-radius);
+  border-bottom-right-radius: var(--video-border-radius);
+}
+
+.zoom-controls button[data-action="zoom-out"] {
+  border-top-left-radius: var(--video-border-radius);
+  border-bottom-left-radius: var(--video-border-radius);
+}
+
+.zoom-controls label {
+  width: 20px;
+  font-size: 0.7rem;
+  overflow: hidden;
+  font-family: Arial, Helvetica, sans-serif;
 }
 
 .settings-button {
@@ -425,8 +455,7 @@ capture-photo::part(facing-mode-button) {
     max-width: none;
   }
 
-  capture-photo,
-  .zoom-container {
+  capture-photo {
     max-width: var(--el-max-width);
   }
 }

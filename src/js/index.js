@@ -105,16 +105,33 @@ import { toastAlert } from './toast-alert.js';
 
     const trackSettings = capturePhotoEl.getTrackSettings();
     const trackCapabilities = capturePhotoEl.getTrackCapabilities();
+    const zoomLevelEl = document.getElementById('zoomLevel');
 
     if (trackSettings?.zoom && trackCapabilities?.zoom) {
-      const zoomControl = document.getElementById('zoomControl');
+      const zoomControls = document.getElementById('zoomControls');
+      const minZoom = trackCapabilities?.zoom?.min || 0;
+      const maxZoom = trackCapabilities?.zoom?.max || 10;
+      let currentZoom = trackSettings?.zoom || 1;
 
-      zoomControl.parentElement.hidden = false;
-      zoomControl.min = trackCapabilities?.zoom?.min;
-      zoomControl.max = trackCapabilities?.zoom?.max;
-      zoomControl.step = trackCapabilities?.zoom?.step;
-      zoomControl.value = trackSettings?.zoom;
-      zoomControl.addEventListener('input', evt => capturePhotoEl.zoom = evt.target.value);
+      zoomControls.hidden = false;
+      zoomLevelEl.textContent = currentZoom;
+
+      zoomControls.addEventListener('click', evt => {
+        const zoomInBtn = evt.target.closest('[data-action="zoom-in"]');
+        const zoomOutBtn = evt.target.closest('[data-action="zoom-out"]');
+
+        if (zoomInBtn && currentZoom < maxZoom) {
+          currentZoom += 0.5;
+        }
+
+        if (zoomOutBtn && currentZoom > minZoom) {
+          currentZoom -= 0.5;
+        }
+
+        zoomLevelEl.textContent = currentZoom;
+
+        capturePhotoEl.zoom = currentZoom;
+      });
     }
   }, {
     once: true
