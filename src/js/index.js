@@ -22,8 +22,15 @@ import { toastAlert } from './toast-alert.js';
   const settingsBtn = document.getElementById('settingsBtn');
   const settingsDialog = document.getElementById('settingsDialog');
   const settingsForm = document.forms['settings-form'];
+  const copyIconTemplate = document.getElementById('copyIconTemplate');
+  const copiedIconTemplate = document.getElementById('copiedIconTemplate');
   let shouldRepeatScan = true;
   let rafId;
+  let copyTimeoutId;
+
+  document.querySelectorAll('clipboard-copy').forEach(el => {
+    el.querySelector('button').appendChild(copyIconTemplate.content.cloneNode(true));
+  });
 
   if (!('BarcodeDetector' in window)) {
     try {
@@ -221,6 +228,8 @@ import { toastAlert } from './toast-alert.js';
   }
 
   async function scan() {
+    process.env.NODE_ENV === 'development' && console.log('Scanning...');
+
     scanInstructionsEl.hidden = false;
 
     try {
@@ -274,7 +283,6 @@ import { toastAlert } from './toast-alert.js';
   }
 
   document.addEventListener('capture-photo:error', evt => {
-    capturePhotoEl.hidden = true;
     cameraViewEl.hidden = true;
     fileViewEl.hidden = false;
     scanMethodSelect.hidden = true;
@@ -310,7 +318,7 @@ import { toastAlert } from './toast-alert.js';
       shouldRepeatScan = true;
 
       if (
-        !capturePhotoEl.hidden // Assumes that element is hidden because of error.
+        !cameraViewEl.hidden // Assumes that element is hidden because of error.
         && !capturePhotoEl.loading
         && !cameraResultsEl.querySelector('.results__item')
       ) {
@@ -370,5 +378,21 @@ import { toastAlert } from './toast-alert.js';
 
     checkboxes.forEach(item => settings[item.name] = item.checked);
     storage.setItem(SETTINGS_STORAGE_KEY, settings);
+  });
+
+  document.addEventListener('clipboard-copy:success', evt => {
+    const copyBtn = evt.target.querySelector('button[slot="button"]');
+
+    if (copyBtn) {
+      copyBtn.replaceChildren();
+      copyBtn.appendChild(copiedIconTemplate.content.cloneNode(true));
+
+      clearTimeout(copyTimeoutId);
+
+      copyTimeoutId = setTimeout(() => {
+        copyBtn.replaceChildren();
+        copyBtn.appendChild(copyIconTemplate.content.cloneNode(true));
+      }, 1500);
+    }
   });
 }());

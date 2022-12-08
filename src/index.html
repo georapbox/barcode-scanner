@@ -99,7 +99,7 @@
   </div>
 
   <div class="container" style="max-width: 250px;">
-    <select name="scanMethod" id="scanMethod" title="Select method">
+    <select name="scanMethod" id="scanMethod" title="Select method" autocomplete="off">
       <optgroup label="-- Select scan method --">
         <option value="cameraView">Scan from webcam</option>
         <option value="fileView">Scan from image</option>
@@ -111,6 +111,13 @@
     <div class="scan-frame-container">
       <resize-observer>
         <capture-photo facing-mode="environment" no-image>
+          <button type="button" id="scanBtn" class="scan-button" hidden>
+            <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M1.5 1a.5.5 0 0 0-.5.5v3a.5.5 0 0 1-1 0v-3A1.5 1.5 0 0 1 1.5 0h3a.5.5 0 0 1 0 1h-3zM11 .5a.5.5 0 0 1 .5-.5h3A1.5 1.5 0 0 1 16 1.5v3a.5.5 0 0 1-1 0v-3a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 1-.5-.5zM.5 11a.5.5 0 0 1 .5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 1 0 1h-3A1.5 1.5 0 0 1 0 14.5v-3a.5.5 0 0 1 .5-.5zm15 0a.5.5 0 0 1 .5.5v3a1.5 1.5 0 0 1-1.5 1.5h-3a.5.5 0 0 1 0-1h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 1 .5-.5zM3 4.5a.5.5 0 0 1 1 0v7a.5.5 0 0 1-1 0v-7zm2 0a.5.5 0 0 1 1 0v7a.5.5 0 0 1-1 0v-7zm2 0a.5.5 0 0 1 1 0v7a.5.5 0 0 1-1 0v-7zm2 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-7zm3 0a.5.5 0 0 1 1 0v7a.5.5 0 0 1-1 0v-7z"/>
+            </svg>
+            Click to scan another barcode.
+          </button>
+
           <span slot="capture-button" hidden></span>
 
           <span slot="facing-mode-button-content" title="Switch camera">
@@ -147,11 +154,14 @@
       </resize-observer>
 
       <div id="scanFrame" class="scan-frame" hidden>
-        <svg viewBox="0 0 100 100">
+        <!-- <svg viewBox="0 0 100 100">
           <path d="M15,2 L2,2 L2,15" fill="none" stroke="var(--scan-frame-color)" stroke-width="2" stroke-linejoin="round" />
           <path d="M2,85 L2,98 L15,98" fill="none" stroke="var(--scan-frame-color)" stroke-width="2" stroke-linejoin="round" />
           <path d="M85,98 L98,98 L98,85" fill="none" stroke="var(--scan-frame-color)" stroke-width="2" stroke-linejoin="round" />
           <path d="M98,15 L98,2 L85,2" fill="none" stroke="var(--scan-frame-color)" stroke-width="2" stroke-linejoin="round" />
+        </svg> -->
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+          <path d="M336 448h56a56 56 0 0056-56v-56M448 176v-56a56 56 0 00-56-56h-56M176 448h-56a56 56 0 01-56-56v-56M64 176v-56a56 56 0 0156-56h56" fill="none" stroke="var(--scan-frame-color)" stroke-linecap="round" stroke-linejoin="round" stroke-width="10"/>
         </svg>
       </div>
     </div>
@@ -160,19 +170,11 @@
       <p>Align Barcode/QR Code in the center of the frame.</p>
     </div>
 
-    <div class="scan-cta-container">
-      <button type="button" id="scanBtn" hidden>Start scanning</button>
-    </div>
-
     <fieldset id="cameraResults" class="results">
       <legend class="results__legend">Scan results</legend>
 
       <clipboard-copy from="#cameraResults .results__item">
-        <button slot="button" type="button" aria-label="Copy to clipboard">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M8 5H6C4.89543 5 4 5.89543 4 7V19C4 20.1046 4.89543 21 6 21H16C17.1046 21 18 20.1046 18 19V18M8 5C8 6.10457 8.89543 7 10 7H12C13.1046 7 14 6.10457 14 5M8 5C8 3.89543 8.89543 3 10 3H12C13.1046 3 14 3.89543 14 5M14 5H16C17.1046 5 18 5.89543 18 7V10M20 14H10M10 14L13 11M10 14L13 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </button>
+        <button slot="button" type="button" title="Copy to clipboard"></button>
       </clipboard-copy>
     </fieldset>
   </div>
@@ -188,11 +190,7 @@
       <legend class="results__legend">Scan results</legend>
 
       <clipboard-copy from="#fileResults .results__item">
-        <button slot="button" type="button" aria-label="Copy to clipboard">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M8 5H6C4.89543 5 4 5.89543 4 7V19C4 20.1046 4.89543 21 6 21H16C17.1046 21 18 20.1046 18 19V18M8 5C8 6.10457 8.89543 7 10 7H12C13.1046 7 14 6.10457 14 5M8 5C8 3.89543 8.89543 3 10 3H12C13.1046 3 14 3.89543 14 5M14 5H16C17.1046 5 18 5.89543 18 7V10M20 14H10M10 14L13 11M10 14L13 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </button>
+        <button slot="button" type="button" title="Copy to clipboard"></button>
       </clipboard-copy>
     </fieldset>
   </div>
@@ -202,6 +200,21 @@
       Licensed under <a href="https://georapbox.mit-license.org/@2022" target="_blank" rel="noopener">The MIT License (MIT)</a>
     </p>
   </footer>
+
+  <template id="copyIconTemplate">
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-clipboard" viewBox="0 0 16 16">
+      <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/>
+      <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/>
+    </svg>
+  </template>
+
+  <template id="copiedIconTemplate">
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-clipboard-check" viewBox="0 0 16 16">
+      <path fill-rule="evenodd" d="M10.854 7.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 9.793l2.646-2.647a.5.5 0 0 1 .708 0z"/>
+      <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/>
+      <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/>
+    </svg>
+  </template>
 
   <script src="./js/register-service-worker.js" type="module"></script>
   <script src="./js/index.js" type="module"></script>
