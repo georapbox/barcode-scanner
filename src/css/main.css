@@ -239,21 +239,22 @@ input[type="file"]:disabled::-webkit-file-upload-button {
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid var(--border);
-  border-top-left-radius: 6px;
-  border-top-right-radius: 6px;
-  border-bottom: 0;
+  border: 2px dashed var(--border);
+  border-radius: 6px;
   max-width: var(--el-max-width);
   margin: 0 auto;
   padding: 1rem;
-  min-height: 150px;
+  min-height: 250px;
   text-align: center;
   overflow: hidden;
   background-color: var(--background-alt);
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: border 0.2s ease-in-out;
 }
 
-.dropzone:has(img) {
-  min-height: 0;
+.dropzone--dragover {
+  border-color: var(--accent);
 }
 
 .dropzone img {
@@ -262,6 +263,18 @@ input[type="file"]:disabled::-webkit-file-upload-button {
 
 .dropzone img~span {
   display: none;
+}
+
+.dropzone > * {
+  pointer-events: none !important;
+}
+
+.dropzone span {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 0.75rem;
 }
 
 body > footer {

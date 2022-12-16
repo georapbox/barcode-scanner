@@ -340,11 +340,18 @@ import { toastAlert } from './toast-alert.js';
     evt.stopPropagation();
     evt.preventDefault();
     evt.dataTransfer.dropEffect = 'copy';
+    evt.target.classList.add('dropzone--dragover');
+  });
+
+  dropzoneEl.addEventListener('dragleave', evt => {
+    evt.target.classList.remove('dropzone--dragover');
   });
 
   dropzoneEl.addEventListener('drop', evt => {
     evt.stopPropagation();
     evt.preventDefault();
+
+    evt.target.classList.remove('dropzone--dragover');
 
     const fileList = evt.dataTransfer.files;
     const [file] = fileList;
@@ -356,6 +363,16 @@ import { toastAlert } from './toast-alert.js';
     fileInput.value = fileInput.defaultValue;
 
     handleFileSelect(file);
+  });
+
+  dropzoneEl.addEventListener('click', () => {
+    fileInput.click();
+  });
+
+  dropzoneEl.addEventListener('keyup', evt => {
+    if (evt.key === ' ' || evt.key === 'Enter') {
+      fileInput.click();
+    }
   });
 
   resizeObserverEl.addEventListener('resize-observer:resize', () => {
