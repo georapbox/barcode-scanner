@@ -125,7 +125,6 @@ h1 {
 .results {
   position: relative;
   margin: 1.5rem 0 0 0;
-  padding: 1rem 1rem 1.5rem 1rem;
   background-color: var(--background-alt);
 }
 
@@ -152,15 +151,21 @@ h1 {
   word-break: break-word;
 }
 
+.results__actions {
+  display: flex;
+  align-items: center;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.results web-share button,
 .results clipboard-copy button {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 0.15rem;
-  position: absolute;
-  top: -0.5rem;
-  right: 0;
-  margin: 0;
+  gap: 0.25rem;
+  margin: 0.75rem 0 0 0;
   padding: 0.25rem;
   background-color: transparent;
   color: inherit;

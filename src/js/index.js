@@ -1,4 +1,6 @@
 import '@georapbox/clipboard-copy-element/dist/clipboard-copy-defined.js';
+import '@georapbox/web-share-element/dist/web-share-defined.js';
+import { isWebShareSupported } from '@georapbox/web-share-element/dist/is-web-share-supported.js';
 import '@georapbox/resize-observer-element/dist/resize-observer-defined.js';
 import { CapturePhoto } from '@georapbox/capture-photo-element/dist/capture-photo.js';
 import { storage, SETTINGS_STORAGE_KEY } from './services/storage.js';
@@ -31,6 +33,13 @@ import { toastAlert } from './toast-alert.js';
   document.querySelectorAll('clipboard-copy').forEach(el => {
     el.querySelector('button').appendChild(copyIconTemplate.content.cloneNode(true));
   });
+
+  if (!isWebShareSupported()) {
+    document.querySelectorAll('web-share').forEach(el => {
+      el.hidden = true;
+      el.disabled = true;
+    });
+  }
 
   if (!('BarcodeDetector' in window)) {
     try {
@@ -202,12 +211,26 @@ import { toastAlert } from './toast-alert.js';
     el.className = 'results__item';
     el.textContent = value;
 
-    resultEl.appendChild(el);
+    resultEl.insertBefore(el, resultEl.querySelector('.results__actions'));
 
     const clipboarCopyEl = resultEl.querySelector('clipboard-copy');
+    const webShareEl = resultEl.querySelector('web-share');
+    const isValidValue = value !== '-';
 
     if (clipboarCopyEl) {
-      clipboarCopyEl.disabled = value === '-';
+      clipboarCopyEl.disabled = !isValidValue;
+      clipboarCopyEl.hidden = !isValidValue;
+    }
+
+    if (webShareEl && isWebShareSupported()) {
+      webShareEl.disabled = !isValidValue;
+      webShareEl.hidden = !isValidValue;
+
+      if (isValidValue) {
+        webShareEl.setAttribute('share-text', value);
+      } else {
+        webShareEl.removeAttribute('share-text');
+      }
     }
   }
 
