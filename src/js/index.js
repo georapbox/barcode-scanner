@@ -2,6 +2,7 @@ import '@georapbox/clipboard-copy-element/dist/clipboard-copy-defined.js';
 import '@georapbox/web-share-element/dist/web-share-defined.js';
 import { isWebShareSupported } from '@georapbox/web-share-element/dist/is-web-share-supported.js';
 import '@georapbox/resize-observer-element/dist/resize-observer-defined.js';
+import { set, get } from 'idb-keyval';
 import { CapturePhoto } from '@georapbox/capture-photo-element/dist/capture-photo.js';
 import { storage, SETTINGS_STORAGE_KEY } from './services/storage.js';
 import { ary } from './utils/ary.js';
@@ -21,6 +22,11 @@ import { toastAlert } from './toast-alert.js';
   const fileViewEl = document.getElementById('fileView');
   const resizeObserverEl = document.querySelector('resize-observer');
   const scanFrameEl = document.getElementById('scanFrame');
+  const globalActionsEl = document.getElementById('globalActions');
+  const historyBtn = document.getElementById('historyBtn');
+  const historyDialog = document.getElementById('historyDialog');
+  const historyList = document.getElementById('historyList');
+  const deleteHistoryBtn = document.getElementById('deleteHistoryBtn');
   const settingsBtn = document.getElementById('settingsBtn');
   const settingsDialog = document.getElementById('settingsDialog');
   const settingsForm = document.forms['settings-form'];
@@ -48,10 +54,12 @@ import { toastAlert } from './toast-alert.js';
       cameraViewEl.hidden = true;
       fileViewEl.hidden = true;
       scanMethodSelect.hidden = true;
-      settingsBtn.hidden = true;
+      globalActionsEl.hidden = true;
       return toastAlert('BarcodeDetector API is not supported by your browser.', 'danger');
     }
   }
+
+  createHistoryList(await get('history') || []);
 
   const beep = (() => {
     const audioCtx = new (window.AudioContext || window.webkitAudioContext || window.audioContext);
@@ -91,6 +99,96 @@ import { toastAlert } from './toast-alert.js';
       oscillator.stop(audioCtx.currentTime + ((duration || 500) / 1000));
     };
   })();
+
+  function createHistoryList(data) {
+    historyList.innerHTML = '';
+
+    if (!data.length) {
+      historyList.innerHTML = '<li class=>There are no saved items in history.</li>';
+      deleteHistoryBtn.style.display = 'none';
+    } else {
+      deleteHistoryBtn.style.display = 'block';
+
+      data.forEach(item => {
+        const li = document.createElement('li');
+        li.setAttribute('data-value', item);
+
+        let el;
+
+        try {
+          new URL(item);
+          el = document.createElement('a');
+          el.href = item;
+          el.setAttribute('target', '_blank');
+          el.setAttribute('rel', 'noreferrer noopener');
+        } catch (err) {
+          el = document.createElement('span');
+        }
+
+        el.textContent = item;
+        el.className = 'text-tuncate';
+        el.setAttribute('title', item);
+
+        const removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.className = 'button-delete';
+        removeBtn.title = 'Remove from history';
+        removeBtn.innerHTML = /* html */`
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash3-fill" viewBox="0 0 16 16">
+            <path d="M11 1.5v1h3.5a.5.5 0 0 1 0 1h-.538l-.853 10.66A2 2 0 0 1 11.115 16h-6.23a2 2 0 0 1-1.994-1.84L2.038 3.5H1.5a.5.5 0 0 1 0-1H5v-1A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5Zm-5 0v1h4v-1a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5ZM4.5 5.029l.5 8.5a.5.5 0 1 0 .998-.06l-.5-8.5a.5.5 0 1 0-.998.06Zm6.53-.528a.5.5 0 0 0-.528.47l-.5 8.5a.5.5 0 0 0 .998.058l.5-8.5a.5.5 0 0 0-.47-.528ZM8 4.5a.5.5 0 0 0-.5.5v8.5a.5.5 0 0 0 1 0V5a.5.5 0 0 0-.5-.5Z"/>
+          </svg>
+        `;
+
+        li.appendChild(el);
+        li.appendChild(removeBtn);
+        historyList.appendChild(li);
+      });
+    }
+  }
+
+  async function addToHistory(value) {
+    if (!value || !storage.getItem(SETTINGS_STORAGE_KEY)?.addToHistory) {
+      return;
+    }
+
+    try {
+      const history = await get('history') || [];
+
+      if (!history.find(item => item === value)) {
+        const data = [...history, value];
+
+        set('history', data);
+        createHistoryList(data);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async function removeFromHistory(value) {
+    if (!value) {
+      return;
+    }
+
+    try {
+      const history = await get('history') || [];
+      const data = history.filter(item => item !== value);
+
+      set('history', data);
+      createHistoryList(data);
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async function emptyHistory() {
+    try {
+      set('history', []);
+      createHistoryList([]);
+    } catch (err) {
+      console.error(err);
+    }
+  }
 
   function vibrate(duration = 100) {
     if (typeof window.navigator.vibrate !== 'function' || !storage.getItem(SETTINGS_STORAGE_KEY)?.vibrate) {
@@ -260,6 +358,7 @@ import { toastAlert } from './toast-alert.js';
       window.cancelAnimationFrame(rafId);
       emptyResults(cameraResultsEl);
       createResult(barcode.rawValue, cameraResultsEl);
+      addToHistory(barcode.rawValue);
       scanInstructionsEl.hidden = true;
       scanBtn.hidden = false;
       scanFrameEl.hidden = true;
@@ -287,6 +386,7 @@ import { toastAlert } from './toast-alert.js';
           const barcode = await detectBarcode(image);
           emptyResults(fileResultsEl);
           createResult(barcode.rawValue, fileResultsEl);
+          addToHistory(barcode.rawValue);
           beep(200, 860, 0.03, 'square');
           vibrate();
         } catch (err) {
@@ -406,6 +506,16 @@ import { toastAlert } from './toast-alert.js';
     settingsDialog.showModal();
   });
 
+  historyBtn.addEventListener('click', () => {
+    historyDialog.showModal();
+  });
+
+  historyDialog.addEventListener('click', evt => {
+    if (evt.target === evt.currentTarget) {
+      historyDialog.close();
+    }
+  });
+
   settingsDialog.addEventListener('click', evt => {
     if (evt.target === evt.currentTarget) {
       settingsDialog.close();
@@ -418,6 +528,18 @@ import { toastAlert } from './toast-alert.js';
 
     checkboxes.forEach(item => settings[item.name] = item.checked);
     storage.setItem(SETTINGS_STORAGE_KEY, settings);
+  });
+
+  historyList.addEventListener('click', evt => {
+    const target = evt.target;
+
+    if (target.closest('button')) {
+      removeFromHistory(target.closest('li').dataset.value);
+    }
+  });
+
+  deleteHistoryBtn.addEventListener('click', () => {
+    emptyHistory();
   });
 
   document.addEventListener('clipboard-copy:success', evt => {
