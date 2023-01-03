@@ -2,10 +2,8 @@ import '@georapbox/clipboard-copy-element/dist/clipboard-copy-defined.js';
 import '@georapbox/web-share-element/dist/web-share-defined.js';
 import { isWebShareSupported } from '@georapbox/web-share-element/dist/is-web-share-supported.js';
 import '@georapbox/resize-observer-element/dist/resize-observer-defined.js';
-import { set, get } from 'idb-keyval';
 import { CapturePhoto } from '@georapbox/capture-photo-element/dist/capture-photo.js';
-import { storage, SETTINGS_STORAGE_KEY } from './services/storage.js';
-import { ary } from './utils/ary.js';
+import { getHistory, setHistory, getSettings, setSettings } from './services/storage.js';
 import { toastAlert } from './toast-alert.js';
 
 (async function () {
@@ -34,7 +32,6 @@ import { toastAlert } from './toast-alert.js';
   const copiedIconTemplate = document.getElementById('copiedIconTemplate');
   let shouldRepeatScan = true;
   let rafId;
-  let copyTimeoutId;
 
   document.querySelectorAll('clipboard-copy').forEach(el => {
     el.querySelector('button').appendChild(copyIconTemplate.content.cloneNode(true));
@@ -59,7 +56,9 @@ import { toastAlert } from './toast-alert.js';
     }
   }
 
-  createHistoryList(await get('history') || []);
+  const { value: history = [] } = await getHistory();
+
+  renderHistoryList(history);
 
   const beep = (() => {
     const audioCtx = new (window.AudioContext || window.webkitAudioContext || window.audioContext);
@@ -68,8 +67,10 @@ import { toastAlert } from './toast-alert.js';
       return;
     }
 
-    return (duration, frequency, volume, type, callback) => {
-      if (!storage.getItem(SETTINGS_STORAGE_KEY)?.beep) {
+    return async (duration, frequency, volume, type, callback) => {
+      const { value: settings } = await getSettings();
+
+      if (!settings?.beep) {
         return;
       }
 
@@ -100,10 +101,10 @@ import { toastAlert } from './toast-alert.js';
     };
   })();
 
-  function createHistoryList(data) {
+  function renderHistoryList(data) {
     historyList.innerHTML = '';
 
-    if (!data.length) {
+    if (!Array.isArray(data) || !data.length) {
       historyList.innerHTML = '<li class=>There are no saved items in history.</li>';
       deleteHistoryBtn.style.display = 'none';
     } else {
@@ -113,55 +114,72 @@ import { toastAlert } from './toast-alert.js';
         const li = document.createElement('li');
         li.setAttribute('data-value', item);
 
-        let el;
+        let historyItem;
 
         try {
           new URL(item);
-          el = document.createElement('a');
-          el.href = item;
-          el.setAttribute('target', '_blank');
-          el.setAttribute('rel', 'noreferrer noopener');
+          historyItem = document.createElement('a');
+          historyItem.href = item;
+          historyItem.setAttribute('target', '_blank');
+          historyItem.setAttribute('rel', 'noreferrer noopener');
         } catch (err) {
-          el = document.createElement('span');
+          historyItem = document.createElement('span');
         }
 
-        el.textContent = item;
-        el.className = 'text-tuncate';
-        el.setAttribute('title', item);
+        historyItem.textContent = item;
+        historyItem.setAttribute('title', item);
+
+        const actionsEl = document.createElement('div');
+        actionsEl.className = 'history-dialog__actions';
+
+        const copyBtn = document.createElement('clipboard-copy');
+        copyBtn.innerHTML = /* html */`
+          <button slot="button" type="button" title="Copy to clipboard">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clipboard" viewBox="0 0 16 16">
+              <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/>
+              <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/>
+            </svg>
+          </button>
+        `;
+        copyBtn.setAttribute('value', item);
+        actionsEl.appendChild(copyBtn);
 
         const removeBtn = document.createElement('button');
         removeBtn.type = 'button';
-        removeBtn.className = 'button-delete';
+        removeBtn.className = 'history-dialog__delete-action';
         removeBtn.title = 'Remove from history';
+        removeBtn.setAttribute('data-action', 'delete');
         removeBtn.innerHTML = /* html */`
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash3-fill" viewBox="0 0 16 16">
             <path d="M11 1.5v1h3.5a.5.5 0 0 1 0 1h-.538l-.853 10.66A2 2 0 0 1 11.115 16h-6.23a2 2 0 0 1-1.994-1.84L2.038 3.5H1.5a.5.5 0 0 1 0-1H5v-1A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5Zm-5 0v1h4v-1a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5ZM4.5 5.029l.5 8.5a.5.5 0 1 0 .998-.06l-.5-8.5a.5.5 0 1 0-.998.06Zm6.53-.528a.5.5 0 0 0-.528.47l-.5 8.5a.5.5 0 0 0 .998.058l.5-8.5a.5.5 0 0 0-.47-.528ZM8 4.5a.5.5 0 0 0-.5.5v8.5a.5.5 0 0 0 1 0V5a.5.5 0 0 0-.5-.5Z"/>
           </svg>
         `;
+        actionsEl.appendChild(removeBtn);
 
-        li.appendChild(el);
-        li.appendChild(removeBtn);
+        li.appendChild(historyItem);
+        li.appendChild(actionsEl);
         historyList.appendChild(li);
       });
     }
   }
 
-  async function addToHistory(value) {
-    if (!value || !storage.getItem(SETTINGS_STORAGE_KEY)?.addToHistory) {
+  async function addToHistory(item) {
+    const { value: settings } = await getSettings();
+
+    if (!item || !settings?.addToHistory) {
       return;
     }
 
-    try {
-      const history = await get('history') || [];
+    const { value: history = [], error: getHistoryError } = await getHistory();
 
-      if (!history.find(item => item === value)) {
-        const data = [...history, value];
+    if (!getHistoryError && !history.find(h => h === item)) {
+      const data = [...history, item];
 
-        set('history', data);
-        createHistoryList(data);
+      const { error: setHistoryError } = await setHistory(data);
+
+      if (!setHistoryError) {
+        renderHistoryList(data);
       }
-    } catch (err) {
-      console.error(err);
     }
   }
 
@@ -170,28 +188,31 @@ import { toastAlert } from './toast-alert.js';
       return;
     }
 
-    try {
-      const history = await get('history') || [];
+    const { value: history = [], error: getHistoryError } = await getHistory();
+
+    if (!getHistoryError) {
       const data = history.filter(item => item !== value);
 
-      set('history', data);
-      createHistoryList(data);
-    } catch (err) {
-      console.error(err);
+      const { error: setHistoryError } = await setHistory(data);
+
+      if (!setHistoryError) {
+        renderHistoryList(data);
+      }
     }
   }
 
   async function emptyHistory() {
-    try {
-      set('history', []);
-      createHistoryList([]);
-    } catch (err) {
-      console.error(err);
+    const { error: setHistoryError } = await setHistory([]);
+
+    if (!setHistoryError) {
+      renderHistoryList([]);
     }
   }
 
-  function vibrate(duration = 100) {
-    if (typeof window.navigator.vibrate !== 'function' || !storage.getItem(SETTINGS_STORAGE_KEY)?.vibrate) {
+  async function vibrate(duration = 100) {
+    const { value: settings } = await getSettings();
+
+    if (typeof window.navigator.vibrate !== 'function' || !settings?.vibrate) {
       return;
     }
 
@@ -258,8 +279,9 @@ import { toastAlert } from './toast-alert.js';
   const capturePhotoVideoEl = capturePhotoEl.shadowRoot.querySelector('video');
   const formats = await window.BarcodeDetector.getSupportedFormats();
   const barcodeDetector = new window.BarcodeDetector({ formats });
+  const { value: settings = {} } = await getSettings();
 
-  Object.entries(storage.getItem(SETTINGS_STORAGE_KEY) || {}).forEach(([key, value]) => {
+  Object.entries(settings).forEach(([key, value]) => {
     const settingInput = settingsForm.querySelector(`[name="${key}"]`);
     if (settingInput) {
       settingInput.checked = value;
@@ -285,7 +307,7 @@ import { toastAlert } from './toast-alert.js';
     el.querySelectorAll('.results__item').forEach(el => el.remove());
   }
 
-  function createResult(value, resultEl) {
+  async function createResult(value, resultEl) {
     if (!value) {
       return;
     }
@@ -299,7 +321,9 @@ import { toastAlert } from './toast-alert.js';
       el.setAttribute('target', '_blank');
       el.setAttribute('rel', 'noreferrer noopener');
 
-      if (storage.getItem(SETTINGS_STORAGE_KEY)?.openWebPage) {
+      const { value: settings } = await getSettings();
+
+      if (settings?.openWebPage) {
         el.click();
       }
     } catch (err) {
@@ -370,7 +394,7 @@ import { toastAlert } from './toast-alert.js';
     }
 
     if (shouldRepeatScan) {
-      rafId = window.requestAnimationFrame(ary(scan, 0));
+      rafId = window.requestAnimationFrame(() => scan());
     }
   }
 
@@ -527,33 +551,48 @@ import { toastAlert } from './toast-alert.js';
     const checkboxes = evt.currentTarget.querySelectorAll('input[type="checkbox"]');
 
     checkboxes.forEach(item => settings[item.name] = item.checked);
-    storage.setItem(SETTINGS_STORAGE_KEY, settings);
+    setSettings(settings);
   });
 
   historyList.addEventListener('click', evt => {
     const target = evt.target;
 
-    if (target.closest('button')) {
-      removeFromHistory(target.closest('li').dataset.value);
+    if (target.closest('[data-action="delete"]')) {
+      if (window.confirm('Delete item from history?')) {
+        removeFromHistory(target.closest('li').dataset.value);
+      }
     }
   });
 
   deleteHistoryBtn.addEventListener('click', () => {
-    emptyHistory();
+    if (window.confirm('Are you sure you want to empty history?')) {
+      emptyHistory();
+    }
   });
 
   document.addEventListener('clipboard-copy:success', evt => {
     const copyBtn = evt.target.querySelector('button[slot="button"]');
+    const historyDialog = evt.target.closest('#historyDialog');
+    const copiedTemplate = copiedIconTemplate.content.cloneNode(true);
+    const copyTemplate = copyIconTemplate.content.cloneNode(true);
+    const copiedTextEl = copiedTemplate.querySelector('span');
+    const copyTextEl = copyTemplate.querySelector('span');
+
+    if (historyDialog) {
+      copiedTextEl.hidden = true;
+      copyTextEl.hidden = true;
+    } else {
+      copiedTextEl.hidden = false;
+      copyTextEl.hidden = false;
+    }
 
     if (copyBtn) {
       copyBtn.replaceChildren();
-      copyBtn.appendChild(copiedIconTemplate.content.cloneNode(true));
+      copyBtn.appendChild(copiedTemplate);
 
-      clearTimeout(copyTimeoutId);
-
-      copyTimeoutId = setTimeout(() => {
+      setTimeout(() => {
         copyBtn.replaceChildren();
-        copyBtn.appendChild(copyIconTemplate.content.cloneNode(true));
+        copyBtn.appendChild(copyTemplate);
       }, 1500);
     }
   });
