@@ -5,6 +5,7 @@
   --capture-border-radius: 6px;
   --video-border-radius: calc(var(--capture-border-radius) / 2);
   --scan-frame-color: rgba(255, 255, 255, 0.9);
+  --error-color: #dc3545;
 
   accent-color: var(--accent);
 }
@@ -13,6 +14,10 @@
 *:before,
 *:after {
   box-sizing: border-box;
+}
+
+body:has(dialog[open]) {
+  overflow-y: hidden;
 }
 
 .noscript {
@@ -381,19 +386,61 @@ capture-photo::part(facing-mode-button) {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-.settings-button {
+.global-actions {
   position: absolute;
   top: 8px;
   right: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.global-actions button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
   padding: 0;
   background-color: transparent !important;
   color: var(--text-main);
   line-height: 1;
   padding: 8px;
   margin: 0;
+  font-size: 0.9rem;
 }
 
-.settings-dialog {
+.global-actions button svg {
+  width: 22px;
+  height: 22px;
+}
+
+.global-actions button span {
+  display: none;
+}
+
+dialog {
+  padding: 0;
+}
+
+dialog>header:first-child {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  font-weight: 500;
+}
+
+dialog>header:first-child button {
+  padding: 0.25rem;
+  margin: 0;
+  background-color: transparent !important;
+  line-height: 1;
+  color: var(--text-main);
+}
+
+dialog {
   position: absolute;
   top: 16px;
   right: 16px;
@@ -403,29 +450,14 @@ capture-photo::part(facing-mode-button) {
   font-size: 0.9rem;
 }
 
-.settings-dialog > header:first-child {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin: 0;
-  padding: 0.5rem 0.75rem;
-  font-weight: 500;
-}
-
-.settings-dialog > header:first-child button {
-  padding: 0.25rem;
-  margin: 0;
-  background-color: transparent !important;
-  line-height: 1;
-  color: var(--text-main);
-}
-
+.history-dialog ul,
 .settings-dialog ul {
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
+.history-dialog ul li,
 .settings-dialog ul li {
   position: relative;
   display: flex;
@@ -433,6 +465,37 @@ capture-photo::part(facing-mode-button) {
   color: var(--text-main);
   text-decoration: none;
   border-bottom: 1px solid var(--border);
+
+}
+
+.history-dialog ul {
+  max-width: 500px;
+}
+
+.history-dialog ul li {
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.5rem 0.75rem;
+  word-break: break-all;
+}
+
+.history-dialog__actions {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.history-dialog__actions button {
+  padding: 0.25rem 0.5rem;
+  margin: 0;
+  background-color: transparent !important;
+  line-height: 1;
+  color: var(--text-main);
+}
+
+.history-dialog__actions .history-dialog__delete-action {
+  color: var(--error-color);
+  margin-right: -0.5rem;
 }
 
 .settings-dialog ul li input[type="checkbox"] {
@@ -460,6 +523,13 @@ capture-photo::part(facing-mode-button) {
   font-weight: 500;
 }
 
+#deleteHistoryBtn {
+  width: calc(100% - 1.5rem);
+  margin: 0.75rem 0 0.75rem 0.75rem;
+  background-color: var(--error-color) !important;
+  color: #ffffff !important;
+}
+
 .visually-hidden {
   position: absolute !important;
   width: 1px !important;
@@ -473,6 +543,10 @@ capture-photo::part(facing-mode-button) {
 }
 
 @media (prefers-color-scheme: dark) {
+  :root {
+    --error-color: #e05260;
+  }
+
   capture-photo[loading]::part(video) {
     background-image: url(../assets/icons/spinner-light.svg);
   }
@@ -493,6 +567,15 @@ capture-photo::part(facing-mode-button) {
 
   capture-photo {
     max-width: var(--el-max-width);
+  }
+
+  .global-actions button span {
+    display: inline;
+  }
+
+  .global-actions button svg {
+    width: 18px;
+    height: 18px;
   }
 }
 
