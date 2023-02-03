@@ -4,7 +4,7 @@
   "description": "A Progressive Web Application (PWA) that scans barcodes of various formats, using the Barcode Detection API.",
   "source": "src/index.html",
   "scripts": {
-    "lint": "eslint src/js/**/*.js",
+    "lint": "eslint . --ext .js",
     "clean": "rimraf docs .parcel-cache",
     "generateSW": "workbox generateSW",
     "start": "parcel",
