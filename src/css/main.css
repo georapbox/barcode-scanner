@@ -1,6 +1,5 @@
 :root {
-  --container-max-width: 600px;
-  --el-max-width: 450px;
+  --container-max-width: 500px;
   --capture-border-width: 3px;
   --capture-border-radius: 6px;
   --video-border-radius: calc(var(--capture-border-radius) / 2);
@@ -94,7 +93,7 @@ h1 {
 }
 
 .toastContainer .alert {
-  max-width: 500px;
+  max-width: var(--container-max-width);
   margin: 0.5rem auto 1rem auto;
   padding-right: 0;
   pointer-events: all;
@@ -190,7 +189,7 @@ h1 {
 
 .scan-frame-container {
   position: relative;
-  max-width: var(--el-max-width);
+  max-width: var(--container-max-width);
   margin: 0 auto;
 }
 
@@ -236,50 +235,41 @@ input[type="file"]:disabled::-webkit-file-upload-button {
   cursor: not-allowed;
 }
 
-#fileInput {
-  width: 100%;
-  box-sizing: border-box;
-  border-top-left-radius: 0;
-  border-top-right-radius: 0;
-  max-width: var(--el-max-width);
-  margin: 0 auto;
-}
-
 .dropzone {
+  --dropzone-border-color: var(--border);
+  --dropzone-border-color-dragover: var(--accent);
+  --dropzone-background-color: var(--background-alt);
+  --dropzone-background-color-dragover: var(--background);
+  --dropzone-body-color: var(--text-muted);
+  --dropzone-body-color-dragover: var(--text-main);
+}
+
+.dropzone::part(dropzone) {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   justify-content: center;
-  border: 2px dashed var(--border);
-  border-radius: 6px;
-  max-width: var(--el-max-width);
   margin: 0 auto;
-  padding: 1rem;
   min-height: 250px;
-  text-align: center;
-  overflow: hidden;
-  background-color: var(--background-alt);
-  cursor: pointer;
-  color: var(--text-muted);
-  transition: border 0.2s ease-in-out;
+  border-radius: 6px;
 }
 
-.dropzone--dragover {
-  border-color: var(--accent);
+.dropzone-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
-.dropzone img {
+.dropzone-preview__image-wrapper {
   max-width: 200px;
+  margin: 0 auto;
 }
 
-.dropzone img~span {
-  display: none;
+.dropzone-preview__file-name {
+  font-size: 0.9rem;
+  color: var(--text-main);
 }
 
-.dropzone > * {
-  pointer-events: none !important;
-}
-
-.dropzone span {
+.dropzone-instructions {
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -297,7 +287,9 @@ body > footer {
 }
 
 .supported-formats {
-  max-width: 400px;
+  max-width: var(--container-max-width);
+  margin: 1rem auto 0 auto;
+  text-align: center;
   padding: 0 0.75rem;
   font-size: 0.75rem;
   color: var(--text-muted);
@@ -552,7 +544,8 @@ dialog {
   }
 
   .dropzone {
-    background-color: #1a1c1e;
+    --dropzone-background-color: #1a1c1e;
+    --dropzone-background-color-dragover: #161718;
   }
 }
 
@@ -566,7 +559,7 @@ dialog {
   }
 
   capture-photo {
-    max-width: var(--el-max-width);
+    max-width: var(--container-max-width);
   }
 
   .global-actions button span {

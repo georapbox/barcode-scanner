@@ -220,8 +220,8 @@
   </div>
 
   <div class="container" id="fileView" hidden>
-    <div id="dropzone" class="dropzone" tabindex="0" role="presentation">
-      <span>
+    <files-dropzone id="dropzone" class="dropzone">
+      <span class="dropzone-instructions">
         <svg width="50px" height="50px" viewBox="0 0 21 21" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
           <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
             <g transform="translate(-850.000000, -2681.000000)">
@@ -240,9 +240,7 @@
 
         Click or drop an image to scan
       </span>
-    </div>
-
-    <input type="file" name="file[]" id="fileInput" autocomplete="off" hidden />
+    </files-dropzone>
 
     <fieldset id="fileResults" class="results">
       <legend class="results__legend">Scan results</legend>
@@ -263,6 +261,8 @@
       </div>
     </fieldset>
   </div>
+
+  <p class="supported-formats" id="supportedFormats"></p>
 
   <footer>
     <p>

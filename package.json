@@ -54,6 +54,7 @@
   "dependencies": {
     "@georapbox/capture-photo-element": "~3.1.0",
     "@georapbox/clipboard-copy-element": "~2.0.0",
+    "@georapbox/files-dropzone-element": "~1.0.0",
     "@georapbox/resize-observer-element": "~2.0.0",
     "@georapbox/web-share-element": "~3.0.0",
     "barcode-detector": "~1.0.0",

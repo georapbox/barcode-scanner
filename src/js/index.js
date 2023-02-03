@@ -1,5 +1,6 @@
 import '@georapbox/clipboard-copy-element/dist/clipboard-copy-defined.js';
 import '@georapbox/web-share-element/dist/web-share-defined.js';
+import '@georapbox/files-dropzone-element/dist/files-dropzone-defined.js';
 import { isWebShareSupported } from '@georapbox/web-share-element/dist/is-web-share-supported.js';
 import '@georapbox/resize-observer-element/dist/resize-observer-defined.js';
 import { CapturePhoto } from '@georapbox/capture-photo-element/dist/capture-photo.js';
@@ -14,7 +15,6 @@ import { toastAlert } from './toast-alert.js';
   const scanInstructionsEl = document.getElementById('scanInstructions');
   const scanBtn = document.getElementById('scanBtn');
   const scanMethodSelect = document.getElementById('scanMethod');
-  const fileInput = document.getElementById('fileInput');
   const dropzoneEl = document.getElementById('dropzone');
   const cameraViewEl = document.getElementById('cameraView');
   const fileViewEl = document.getElementById('fileView');
@@ -30,19 +30,9 @@ import { toastAlert } from './toast-alert.js';
   const settingsForm = document.forms['settings-form'];
   const copyIconTemplate = document.getElementById('copyIconTemplate');
   const copiedIconTemplate = document.getElementById('copiedIconTemplate');
+  const supportedFormatsEl = document.getElementById('supportedFormats');
   let shouldRepeatScan = true;
   let rafId;
-
-  document.querySelectorAll('clipboard-copy').forEach(el => {
-    el.querySelector('button').appendChild(copyIconTemplate.content.cloneNode(true));
-  });
-
-  if (!isWebShareSupported()) {
-    document.querySelectorAll('web-share').forEach(el => {
-      el.hidden = true;
-      el.disabled = true;
-    });
-  }
 
   if (!('BarcodeDetector' in window)) {
     try {
@@ -56,9 +46,97 @@ import { toastAlert } from './toast-alert.js';
     }
   }
 
+  document.querySelectorAll('clipboard-copy').forEach(el => {
+    el.querySelector('button').appendChild(copyIconTemplate.content.cloneNode(true));
+  });
+
+  if (!isWebShareSupported()) {
+    document.querySelectorAll('web-share').forEach(el => {
+      el.hidden = true;
+      el.disabled = true;
+    });
+  }
+
   const { value: history = [] } = await getHistory();
 
   renderHistoryList(history);
+
+  capturePhotoEl.addEventListener('capture-photo:video-play', evt => {
+    scanFrameEl.hidden = false;
+    resizeScanFrame(evt.detail.video);
+    scan();
+
+    const trackSettings = capturePhotoEl.getTrackSettings();
+    const trackCapabilities = capturePhotoEl.getTrackCapabilities();
+    const zoomLevelEl = document.getElementById('zoomLevel');
+
+    if (trackSettings?.zoom && trackCapabilities?.zoom) {
+      const zoomControls = document.getElementById('zoomControls');
+      const minZoom = trackCapabilities?.zoom?.min || 0;
+      const maxZoom = trackCapabilities?.zoom?.max || 10;
+      let currentZoom = trackSettings?.zoom || 1;
+
+      zoomControls.hidden = false;
+      zoomLevelEl.textContent = currentZoom;
+
+      zoomControls.addEventListener('click', evt => {
+        const zoomInBtn = evt.target.closest('[data-action="zoom-in"]');
+        const zoomOutBtn = evt.target.closest('[data-action="zoom-out"]');
+
+        if (zoomInBtn && currentZoom < maxZoom) {
+          currentZoom += 0.5;
+        }
+
+        if (zoomOutBtn && currentZoom > minZoom) {
+          currentZoom -= 0.5;
+        }
+
+        zoomLevelEl.textContent = currentZoom;
+
+        capturePhotoEl.zoom = currentZoom;
+      });
+    }
+  }, {
+    once: true
+  });
+
+  capturePhotoEl.addEventListener('capture-photo:error', evt => {
+    cameraViewEl.hidden = true;
+    fileViewEl.hidden = false;
+    scanMethodSelect.hidden = true;
+
+    const error = evt.detail.error;
+
+    if (error.name === 'NotFoundError') {
+      return;
+    }
+
+    const errorMessage = error.name === 'NotAllowedError' ? 'Permission to use webcam was denied. Reload the page to give appropriate permissions to webcam.' : error.message;
+
+    toastAlert(errorMessage, 'danger');
+  }, {
+    once: true
+  });
+
+  CapturePhoto.defineCustomElement();
+
+  dropzoneEl.accept = ACCEPTED_MIME_TYPES.join(',');
+
+  const capturePhotoVideoEl = capturePhotoEl.shadowRoot.querySelector('video');
+  const formats = await window.BarcodeDetector.getSupportedFormats();
+  const barcodeDetector = new window.BarcodeDetector({ formats });
+  const { value: settings = {} } = await getSettings();
+
+  Object.entries(settings).forEach(([key, value]) => {
+    const settingInput = settingsForm.querySelector(`[name="${key}"]`);
+    if (settingInput) {
+      settingInput.checked = value;
+    }
+  });
+
+  if (Array.isArray(formats) && formats.length > 0) {
+    supportedFormatsEl.textContent = `Supported formats: ${formats.join(', ')}`;
+  }
 
   const beep = (() => {
     const audioCtx = new (window.AudioContext || window.webkitAudioContext || window.audioContext);
@@ -233,76 +311,6 @@ import { toastAlert } from './toast-alert.js';
     scanFrameEl.style.cssText = `width: ${rect.width}px; height: ${rect.height}px`;
   }
 
-  capturePhotoEl.addEventListener('capture-photo:video-play', evt => {
-    scanFrameEl.hidden = false;
-    resizeScanFrame(evt.detail.video);
-    scan();
-
-    const trackSettings = capturePhotoEl.getTrackSettings();
-    const trackCapabilities = capturePhotoEl.getTrackCapabilities();
-    const zoomLevelEl = document.getElementById('zoomLevel');
-
-    if (trackSettings?.zoom && trackCapabilities?.zoom) {
-      const zoomControls = document.getElementById('zoomControls');
-      const minZoom = trackCapabilities?.zoom?.min || 0;
-      const maxZoom = trackCapabilities?.zoom?.max || 10;
-      let currentZoom = trackSettings?.zoom || 1;
-
-      zoomControls.hidden = false;
-      zoomLevelEl.textContent = currentZoom;
-
-      zoomControls.addEventListener('click', evt => {
-        const zoomInBtn = evt.target.closest('[data-action="zoom-in"]');
-        const zoomOutBtn = evt.target.closest('[data-action="zoom-out"]');
-
-        if (zoomInBtn && currentZoom < maxZoom) {
-          currentZoom += 0.5;
-        }
-
-        if (zoomOutBtn && currentZoom > minZoom) {
-          currentZoom -= 0.5;
-        }
-
-        zoomLevelEl.textContent = currentZoom;
-
-        capturePhotoEl.zoom = currentZoom;
-      });
-    }
-  }, {
-    once: true
-  });
-
-  CapturePhoto.defineCustomElement();
-
-  fileInput.accept = ACCEPTED_MIME_TYPES.join(',');
-
-  const capturePhotoVideoEl = capturePhotoEl.shadowRoot.querySelector('video');
-  const formats = await window.BarcodeDetector.getSupportedFormats();
-  const barcodeDetector = new window.BarcodeDetector({ formats });
-  const { value: settings = {} } = await getSettings();
-
-  Object.entries(settings).forEach(([key, value]) => {
-    const settingInput = settingsForm.querySelector(`[name="${key}"]`);
-    if (settingInput) {
-      settingInput.checked = value;
-    }
-  });
-
-  displaySupportedFormats(formats, settingsDialog);
-
-  function displaySupportedFormats(supportedFormats, element) {
-    if (!Array.isArray(supportedFormats) || supportedFormats.length === 0) {
-      return;
-    }
-
-    const p = document.createElement('p');
-
-    p.className = 'supported-formats';
-    p.textContent = `Supported formats: ${supportedFormats.join(', ')}`;
-
-    element.appendChild(p);
-  }
-
   function emptyResults(el) {
     el.querySelectorAll('.results__item').forEach(el => el.remove());
   }
@@ -399,13 +407,17 @@ import { toastAlert } from './toast-alert.js';
   }
 
   function handleFileSelect(file) {
+    if (!file) {
+      return;
+    }
+
     const image = new Image();
     const reader = new FileReader();
 
-    reader.addEventListener('load', evt => {
+    reader.onload = evt => {
       const data = evt.target.result;
 
-      image.addEventListener('load', async () => {
+      image.onload = async () => {
         try {
           const barcode = await detectBarcode(image);
           emptyResults(fileResultsEl);
@@ -417,35 +429,30 @@ import { toastAlert } from './toast-alert.js';
           emptyResults(fileResultsEl);
           createResult('-', fileResultsEl);
         }
-      });
+      };
 
       image.src = data;
-      dropzoneEl.querySelectorAll('img').forEach(el => el.remove());
-      dropzoneEl.prepend(image);
-    });
 
-    if (file) {
-      reader.readAsDataURL(file);
-    }
+      dropzoneEl.replaceChildren();
+
+      const preview = document.createElement('div');
+      preview.className = 'dropzone-preview';
+
+      const imageWrapper = document.createElement('div');
+      imageWrapper.className = 'dropzone-preview__image-wrapper';
+
+      const fileNameWrapper = document.createElement('div');
+      fileNameWrapper.className = 'dropzone-preview__file-name';
+      fileNameWrapper.textContent = file.name;
+
+      imageWrapper.appendChild(image);
+      preview.appendChild(imageWrapper);
+      preview.appendChild(fileNameWrapper);
+      dropzoneEl.prepend(preview);
+    };
+
+    reader.readAsDataURL(file);
   }
-
-  document.addEventListener('capture-photo:error', evt => {
-    cameraViewEl.hidden = true;
-    fileViewEl.hidden = false;
-    scanMethodSelect.hidden = true;
-
-    const error = evt.detail.error;
-
-    if (error.name === 'NotFoundError') {
-      return;
-    }
-
-    const errorMessage = error.name === 'NotAllowedError' ? 'Permission to use webcam was denied. Reload the page to give appropriate permissions to webcam.' : error.message;
-
-    toastAlert(errorMessage, 'danger');
-  }, {
-    once: true
-  });
 
   scanBtn.addEventListener('click', () => {
     scanBtn.hidden = true;
@@ -478,48 +485,8 @@ import { toastAlert } from './toast-alert.js';
     }
   });
 
-  fileInput.addEventListener('change', evt => {
-    const file = evt.target.files[0];
-    handleFileSelect(file);
-  });
-
-  dropzoneEl.addEventListener('dragover', evt => {
-    evt.stopPropagation();
-    evt.preventDefault();
-    evt.dataTransfer.dropEffect = 'copy';
-    evt.target.classList.add('dropzone--dragover');
-  });
-
-  dropzoneEl.addEventListener('dragleave', evt => {
-    evt.target.classList.remove('dropzone--dragover');
-  });
-
-  dropzoneEl.addEventListener('drop', evt => {
-    evt.stopPropagation();
-    evt.preventDefault();
-
-    evt.target.classList.remove('dropzone--dragover');
-
-    const fileList = evt.dataTransfer.files;
-    const [file] = fileList;
-
-    if (!file || !ACCEPTED_MIME_TYPES.includes(file.type)) {
-      return;
-    }
-
-    fileInput.value = fileInput.defaultValue;
-
-    handleFileSelect(file);
-  });
-
-  dropzoneEl.addEventListener('click', () => {
-    fileInput.click();
-  });
-
-  dropzoneEl.addEventListener('keyup', evt => {
-    if (evt.key === ' ' || evt.key === 'Enter') {
-      fileInput.click();
-    }
+  dropzoneEl.addEventListener('files-dropzone-drop', evt => {
+    handleFileSelect(evt.detail.acceptedFiles[0]);
   });
 
   resizeObserverEl.addEventListener('resize-observer:resize', () => {
