@@ -146,6 +146,10 @@ h1 {
   text-align: center;
 }
 
+.results__legend + .results__actions {
+  display: none;
+}
+
 .results__item {
   display: flex;
   flex-direction: column;

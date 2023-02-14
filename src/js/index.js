@@ -312,7 +312,7 @@ import { toastAlert } from './toast-alert.js';
   }
 
   function emptyResults(el) {
-    el.querySelectorAll('.results__item').forEach(el => el.remove());
+    el?.querySelector('.results__item')?.remove();
   }
 
   async function createResult(value, resultEl) {
