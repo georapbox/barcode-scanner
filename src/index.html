@@ -38,7 +38,7 @@
     </button>
   </div>
 
-  <dialog id="historyDialog" class="history-dialog">
+  <dialog id="historyDialog" class="modal history-modal">
     <header>
       History
       <form method="dialog">
@@ -56,7 +56,7 @@
     <button type="button" id="deleteHistoryBtn">Delete history</button>
   </dialog>
 
-  <dialog id="settingsDialog" class="settings-dialog">
+  <dialog id="settingsDialog" class="modal settings-modal">
     <header>
       Settings
       <form method="dialog">
@@ -199,9 +199,7 @@
       <p>Align Barcode/QR Code in the center of the frame.</p>
     </div>
 
-    <fieldset id="cameraResults" class="results">
-      <legend class="results__legend">Scan results</legend>
-
+    <dialog id="cameraResults" class="results">
       <div class="results__actions">
         <clipboard-copy from="#cameraResults .results__item">
           <button slot="button" type="button" title="Copy to clipboard"></button>
@@ -216,7 +214,7 @@
           </button>
         </web-share>
       </div>
-    </fieldset>
+    </dialog>
   </div>
 
   <div class="container" id="fileView" hidden>
@@ -242,9 +240,7 @@
       </span>
     </files-dropzone>
 
-    <fieldset id="fileResults" class="results">
-      <legend class="results__legend">Scan results</legend>
-
+    <dialog id="fileResults" class="results">
       <div class="results__actions">
         <clipboard-copy from="#fileResults .results__item">
           <button slot="button" type="button" title="Copy to clipboard"></button>
@@ -259,7 +255,7 @@
           </button>
         </web-share>
       </div>
-    </fieldset>
+    </dialog>
   </div>
 
   <p class="supported-formats" id="supportedFormats"></p>

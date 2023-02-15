@@ -15,7 +15,7 @@
   box-sizing: border-box;
 }
 
-body:has(dialog[open]) {
+body:has(.modal[open]) {
   overflow-y: hidden;
 }
 
@@ -128,26 +128,12 @@ h1 {
 
 .results {
   position: relative;
+  width: 100%;
+  border: 1px solid var(--focus);
+  border-radius: 6px;
   margin: 1.5rem 0 0 0;
+  padding: 1rem;
   background-color: var(--background-alt);
-}
-
-@supports selector(:has(a, b)) {
-  .results {
-    display: none;
-  }
-}
-
-.results:has(.results__item) {
-  display: block;
-}
-
-.results__legend {
-  text-align: center;
-}
-
-.results__legend + .results__actions {
-  display: none;
 }
 
 .results__item {
@@ -157,6 +143,10 @@ h1 {
   text-align: center;
   word-wrap: break-word;
   word-break: break-word;
+}
+
+.results__item--no-barcode {
+  color: var(--error-color);
 }
 
 .results__actions {
@@ -415,11 +405,7 @@ capture-photo::part(facing-mode-button) {
   display: none;
 }
 
-dialog {
-  padding: 0;
-}
-
-dialog>header:first-child {
+.modal > header:first-child {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -428,7 +414,7 @@ dialog>header:first-child {
   font-weight: 500;
 }
 
-dialog>header:first-child button {
+.modal > header:first-child button {
   padding: 0.25rem;
   margin: 0;
   background-color: transparent !important;
@@ -436,7 +422,7 @@ dialog>header:first-child button {
   color: var(--text-main);
 }
 
-dialog {
+.modal {
   position: absolute;
   top: 16px;
   right: 16px;
@@ -446,15 +432,13 @@ dialog {
   font-size: 0.9rem;
 }
 
-.history-dialog ul,
-.settings-dialog ul {
+.modal ul {
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.history-dialog ul li,
-.settings-dialog ul li {
+.modal ul li {
   position: relative;
   display: flex;
   align-items: center;
@@ -464,11 +448,11 @@ dialog {
 
 }
 
-.history-dialog ul {
+.history-modal ul {
   max-width: 500px;
 }
 
-.history-dialog ul li {
+.history-modal ul li {
   justify-content: space-between;
   align-items: center;
   gap: 1rem;
@@ -476,12 +460,12 @@ dialog {
   word-break: break-all;
 }
 
-.history-dialog__actions {
+.history-modal__actions {
   display: flex;
   gap: 0.25rem;
 }
 
-.history-dialog__actions button {
+.history-modal__actions button {
   padding: 0.25rem 0.5rem;
   margin: 0;
   background-color: transparent !important;
@@ -489,17 +473,17 @@ dialog {
   color: var(--text-main);
 }
 
-.history-dialog__actions .history-dialog__delete-action {
+.history-modal__actions .history-modal__delete-action {
   color: var(--error-color);
   margin-right: -0.5rem;
 }
 
-.settings-dialog ul li input[type="checkbox"] {
+.settings-modal ul li input[type="checkbox"] {
   min-width: 16px;
   margin: 0.15rem 0.5rem 0 0;
 }
 
-.settings-dialog ul li label {
+.settings-modal ul li label {
   display: flex;
   flex: 1;
   margin: 0;
@@ -507,14 +491,14 @@ dialog {
   cursor: pointer;
 }
 
-.settings-dialog fieldset {
+.settings-modal fieldset {
   border: 0;
   padding: 0;
   margin: 0;
   border-radius: 0;
 }
 
-.settings-dialog fieldset legend {
+.settings-modal fieldset legend {
   padding: 0.5rem 0.75rem 0 0.75rem;
   font-weight: 500;
 }

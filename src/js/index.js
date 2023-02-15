@@ -8,6 +8,7 @@ import { getHistory, setHistory, getSettings, setSettings } from './services/sto
 import { toastAlert } from './toast-alert.js';
 
 (async function () {
+  const NO_BARCODE_DETECTED = 'No barcode detected';
   const ACCEPTED_MIME_TYPES = ['image/jpg', 'image/jpeg', 'image/png', 'image/apng', 'image/gif', 'image/webp', 'image/avif'];
   const capturePhotoEl = document.querySelector('capture-photo');
   const cameraResultsEl = document.getElementById('cameraResults');
@@ -208,7 +209,7 @@ import { toastAlert } from './toast-alert.js';
         historyItem.setAttribute('title', item);
 
         const actionsEl = document.createElement('div');
-        actionsEl.className = 'history-dialog__actions';
+        actionsEl.className = 'history-modal__actions';
 
         const copyBtn = document.createElement('clipboard-copy');
         copyBtn.innerHTML = /* html */`
@@ -224,7 +225,7 @@ import { toastAlert } from './toast-alert.js';
 
         const removeBtn = document.createElement('button');
         removeBtn.type = 'button';
-        removeBtn.className = 'history-dialog__delete-action';
+        removeBtn.className = 'history-modal__delete-action';
         removeBtn.title = 'Remove from history';
         removeBtn.setAttribute('data-action', 'delete');
         removeBtn.innerHTML = /* html */`
@@ -311,41 +312,44 @@ import { toastAlert } from './toast-alert.js';
     scanFrameEl.style.cssText = `width: ${rect.width}px; height: ${rect.height}px`;
   }
 
-  function emptyResults(el) {
-    el?.querySelector('.results__item')?.remove();
+  function emptyResults(resultDialog) {
+    resultDialog?.querySelector('.results__item')?.remove();
   }
 
-  async function createResult(value, resultEl) {
-    if (!value) {
+  async function createResult(value, resultDialog) {
+    if (!value || !resultDialog) {
       return;
     }
 
-    let el;
+    emptyResults(resultDialog);
+
+    let resultItem;
 
     try {
       new URL(value);
-      el = document.createElement('a');
-      el.href = value;
-      el.setAttribute('target', '_blank');
-      el.setAttribute('rel', 'noreferrer noopener');
+      resultItem = document.createElement('a');
+      resultItem.href = value;
+      resultItem.setAttribute('target', '_blank');
+      resultItem.setAttribute('rel', 'noreferrer noopener');
 
       const { value: settings } = await getSettings();
 
       if (settings?.openWebPage) {
-        el.click();
+        resultItem.click();
       }
     } catch (err) {
-      el = document.createElement('span');
+      resultItem = document.createElement('span');
     }
 
-    el.className = 'results__item';
-    el.textContent = value;
+    resultItem.className = 'results__item';
+    resultItem.classList.toggle('results__item--no-barcode', value === NO_BARCODE_DETECTED);
+    resultItem.textContent = value;
 
-    resultEl.insertBefore(el, resultEl.querySelector('.results__actions'));
+    resultDialog.insertBefore(resultItem, resultDialog.querySelector('.results__actions'));
 
-    const clipboarCopyEl = resultEl.querySelector('clipboard-copy');
-    const webShareEl = resultEl.querySelector('web-share');
-    const isValidValue = value !== '-';
+    const clipboarCopyEl = resultDialog.querySelector('clipboard-copy');
+    const webShareEl = resultDialog.querySelector('web-share');
+    const isValidValue = value !== NO_BARCODE_DETECTED;
 
     if (clipboarCopyEl) {
       clipboarCopyEl.disabled = !isValidValue;
@@ -362,6 +366,8 @@ import { toastAlert } from './toast-alert.js';
         webShareEl.removeAttribute('share-text');
       }
     }
+
+    resultDialog.show();
   }
 
   function detectBarcode(source) {
@@ -427,7 +433,7 @@ import { toastAlert } from './toast-alert.js';
           vibrate();
         } catch (err) {
           emptyResults(fileResultsEl);
-          createResult('-', fileResultsEl);
+          createResult(NO_BARCODE_DETECTED, fileResultsEl);
         }
       };
 
@@ -458,6 +464,7 @@ import { toastAlert } from './toast-alert.js';
     scanBtn.hidden = true;
     scanFrameEl.hidden = false;
     emptyResults(cameraResultsEl);
+    cameraResultsEl.close();
     scan();
   });
 
