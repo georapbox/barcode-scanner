@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://georapbox.github.io/barcode-scanner/">
-    <img src="assets/logo.png" width="130" height="130">
+    <img src="assets/logo.png" width="130" height="130" alt="Barcode Scanner">
   </a>
 </p>
 
