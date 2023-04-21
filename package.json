@@ -10,8 +10,7 @@
     "start": "parcel",
     "build:parcel": "parcel build --dist-dir=docs --public-url=./",
     "build": "npm-run-all clean build:parcel",
-    "postbuild": "npm run generateSW",
-    "webhint": "hint src/"
+    "postbuild": "npm run generateSW"
   },
   "repository": {
     "type": "git",
@@ -43,18 +42,17 @@
   },
   "homepage": "https://github.com/georapbox/barcode-scanner#readme",
   "devDependencies": {
-    "@parcel/packager-raw-url": "~2.8.0",
-    "@parcel/transformer-webmanifest": "~2.8.0",
-    "eslint": "~8.28.0",
-    "hint": "~7.1.3",
+    "@parcel/packager-raw-url": "~2.8.3",
+    "@parcel/transformer-webmanifest": "~2.8.3",
+    "eslint": "~8.38.0",
     "npm-run-all": "~4.1.5",
-    "parcel": "~2.8.0",
+    "parcel": "~2.8.3",
     "workbox-cli": "~6.5.3"
   },
   "dependencies": {
-    "@georapbox/capture-photo-element": "~3.1.0",
+    "@georapbox/capture-photo-element": "~3.2.1",
     "@georapbox/clipboard-copy-element": "~2.0.0",
-    "@georapbox/files-dropzone-element": "~1.0.0",
+    "@georapbox/files-dropzone-element": "~1.1.0",
     "@georapbox/resize-observer-element": "~2.0.0",
     "@georapbox/web-share-element": "~3.0.0",
     "barcode-detector": "~1.0.0",

@@ -232,6 +232,7 @@ input[type="file"]:disabled::-webkit-file-upload-button {
 .dropzone {
   --dropzone-border-color: var(--border);
   --dropzone-border-color-dragover: var(--accent);
+  --dropzone-focus-shadow-rgb: var(--accent-rgb);
   --dropzone-background-color: var(--background-alt);
   --dropzone-background-color-dragover: var(--background);
   --dropzone-body-color: var(--text-muted);
