@@ -326,13 +326,16 @@ import { toastAlert } from './toast-alert.js';
     let resultItem;
 
     try {
+      const { value: settings } = await getSettings();
+
       new URL(value);
       resultItem = document.createElement('a');
       resultItem.href = value;
-      resultItem.setAttribute('target', '_blank');
-      resultItem.setAttribute('rel', 'noreferrer noopener');
 
-      const { value: settings } = await getSettings();
+      if (!settings?.openWebPageSameTab) {
+        resultItem.setAttribute('target', '_blank');
+        resultItem.setAttribute('rel', 'noreferrer noopener');
+      }
 
       if (settings?.openWebPage) {
         resultItem.click();

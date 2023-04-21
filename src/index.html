@@ -77,6 +77,7 @@
           <li><label><input type="checkbox" name="beep"> Beep</label></li>
           <li><label><input type="checkbox" name="vibrate"> Vibrate (mobile)</label></li>
           <li><label><input type="checkbox" name="openWebPage"> Open web pages automatically</label></li>
+          <li><label><input type="checkbox" name="openWebPageSameTab"> Open web pages in the same tab</label></li>
           <li><label><input type="checkbox" name="addToHistory"> Add to history</label></li>
         </ul>
       </fieldset>
@@ -128,12 +129,14 @@
   </div>
 
   <div class="container" style="max-width: 250px;">
-    <select name="scanMethod" id="scanMethod" title="Select method" autocomplete="off">
-      <optgroup label="-- Select scan method --">
-        <option value="cameraView">Scan from webcam</option>
-        <option value="fileView">Scan from image</option>
-      </optgroup>
-    </select>
+    <form autocomplete="off">
+      <select name="scanMethod" id="scanMethod" title="Select scan method">
+        <optgroup label="-- Select scan method --">
+          <option value="cameraView">Scan from webcam</option>
+          <option value="fileView">Scan from image</option>
+        </optgroup>
+      </select>
+    </form>
   </div>
 
   <div class="container" id="cameraView">
