@@ -23,6 +23,7 @@
   --links: var(--accent);
   --focus: var(--accent);
   --border: #dbdbdb;
+  --border-radius: 6px;
   --code: #000;
   --animation-duration: 0.1s;
   --button-base: var(--accent);
@@ -223,7 +224,7 @@ input {
   margin-bottom: 6px;
   padding: 10px;
   border: none;
-  border-radius: 6px;
+  border-radius: var(--border-radius);
   outline: none;
 }
 
@@ -236,7 +237,7 @@ button {
   margin-bottom: 6px;
   padding: 10px;
   border: none;
-  border-radius: 6px;
+  border-radius: var(--border-radius);
   outline: none;
 }
 
@@ -249,7 +250,7 @@ textarea {
   margin-bottom: 6px;
   padding: 10px;
   border: none;
-  border-radius: 6px;
+  border-radius: var(--border-radius);
   outline: none;
 }
 
@@ -262,7 +263,7 @@ select {
   margin-bottom: 6px;
   padding: 10px;
   border: none;
-  border-radius: 6px;
+  border-radius: var(--border-radius);
   outline: none;
 }
 
@@ -391,7 +392,7 @@ textarea:disabled {
 
 fieldset {
   border: 1px var(--focus) solid;
-  border-radius: 6px;
+  border-radius: var(--border-radius);
   margin: 0;
   margin-bottom: 12px;
   padding: 10px;
@@ -417,7 +418,7 @@ input[type='range']::-webkit-slider-runnable-track {
   height: 9.5px;
   transition: 0.2s;
   background: var(--background);
-  border-radius: 3px;
+  border-radius: calc(var(--border-radius) / 2);
 }
 
 input[type='range']::-webkit-slider-thumb {
@@ -440,7 +441,7 @@ input[type='range']::-moz-range-track {
   -moz-transition: 0.2s;
   transition: 0.2s;
   background: var(--background);
-  border-radius: 3px;
+  border-radius: calc(var(--border-radius) / 2);
 }
 
 input[type='range']::-moz-range-thumb {
@@ -466,7 +467,7 @@ time {
   background: var(--background);
   color: var(--code);
   padding: 2.5px 5px;
-  border-radius: 6px;
+  border-radius: var(--border-radius);
   font-size: 0.9rem;
 }
 
@@ -551,7 +552,7 @@ details {
   background-color: var(--background-alt);
   padding: 10px 10px 0;
   margin: 16px 0;
-  border-radius: 6px;
+  border-radius: var(--border-radius);
   overflow: hidden;
 }
 
@@ -588,7 +589,7 @@ dialog {
   background-color: var(--background-alt);
   color: var(--text-main);
   border: none;
-  border-radius: 6px;
+  border-radius: var(--border-radius);
   border-color: var(--border);
   padding: 10px 30px;
 }
