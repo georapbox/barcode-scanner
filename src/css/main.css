@@ -159,7 +159,7 @@ h1 {
 }
 
 .results web-share button,
-.results rss-copy::part(button) {
+.results custom-clipboard-copy::part(button) {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -176,7 +176,7 @@ h1 {
   cursor: pointer;
 }
 
-rss-copy::part(button):focus-visible {
+custom-clipboard-copy::part(button):focus-visible {
   outline: 0;
   box-shadow: 0 0 0 2px var(--focus);
 }
@@ -477,7 +477,7 @@ capture-photo::part(facing-mode-button) {
 }
 
 .history-modal__actions button,
-.history-modal__actions rss-copy::part(button) {
+.history-modal__actions custom-clipboard-copy::part(button) {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -492,7 +492,7 @@ capture-photo::part(facing-mode-button) {
   cursor: pointer;
 }
 
-.history-modal__actions rss-copy::part(button--success) {
+.history-modal__actions custom-clipboard-copy::part(button--success) {
   color: var(--success-color);
 }
 

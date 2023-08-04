@@ -5,7 +5,7 @@ import '@georapbox/resize-observer-element/dist/resize-observer-defined.js';
 import { CapturePhoto } from '@georapbox/capture-photo-element/dist/capture-photo.js';
 import { getHistory, setHistory, getSettings, setSettings } from './services/storage.js';
 import { toastAlert } from './toast-alert.js';
-import './rss-copy.js';
+import './custom-clipboard-copy.js';
 
 (async function () {
   const NO_BARCODE_DETECTED = 'No barcode detected';
@@ -205,7 +205,7 @@ import './rss-copy.js';
         const actionsEl = document.createElement('div');
         actionsEl.className = 'history-modal__actions';
 
-        const copyBtn = document.createElement('rss-copy');
+        const copyBtn = document.createElement('custom-clipboard-copy');
         copyBtn.title = 'Copy to clipboard';
         copyBtn.setAttribute('only-icon', '');
         copyBtn.setAttribute('value', item);

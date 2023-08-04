@@ -5,10 +5,10 @@ import { ClipboardCopy } from '@georapbox/clipboard-copy-element/dist/clipboard-
  * in order to avoid repetition of the same markup throughout the application.
  * It also adds aditional properties and attributes, specific to the application.
  *
- * @class RSSCopy
+ * @class CustomClipboardCopy
  * @extends ClipboardCopy
  */
-class RSSCopy extends ClipboardCopy {
+class CustomClipboardCopy extends ClipboardCopy {
   constructor() {
     super();
 
@@ -96,13 +96,13 @@ class RSSCopy extends ClipboardCopy {
     }
   }
 
-  static defineCustomElement(elementName = 'rss-copy') {
+  static defineCustomElement(elementName = 'custom-clipboard-copy') {
     if (typeof window !== 'undefined' && !window.customElements.get(elementName)) {
-      window.customElements.define(elementName, RSSCopy);
+      window.customElements.define(elementName, CustomClipboardCopy);
     }
   }
 }
 
-RSSCopy.defineCustomElement();
+CustomClipboardCopy.defineCustomElement();
 
-export { RSSCopy };
+export { CustomClipboardCopy };
