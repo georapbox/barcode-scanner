@@ -29,8 +29,6 @@ import { toastAlert } from './toast-alert.js';
   const settingsBtn = document.getElementById('settingsBtn');
   const settingsDialog = document.getElementById('settingsDialog');
   const settingsForm = document.forms['settings-form'];
-  const copyIconTemplate = document.getElementById('copyIconTemplate');
-  const copiedIconTemplate = document.getElementById('copiedIconTemplate');
   const supportedFormatsEl = document.getElementById('supportedFormats');
   let shouldRepeatScan = true;
   let rafId;
@@ -46,10 +44,6 @@ import { toastAlert } from './toast-alert.js';
       return toastAlert('BarcodeDetector API is not supported by your browser.', 'danger');
     }
   }
-
-  document.querySelectorAll('clipboard-copy').forEach(el => {
-    el.querySelector('button').appendChild(copyIconTemplate.content.cloneNode(true));
-  });
 
   if (!isWebShareSupported()) {
     document.querySelectorAll('web-share').forEach(el => {
@@ -212,13 +206,22 @@ import { toastAlert } from './toast-alert.js';
         actionsEl.className = 'history-modal__actions';
 
         const copyBtn = document.createElement('clipboard-copy');
+        copyBtn.title = 'Copy to clipboard';
+        copyBtn.feedbackDuration = 1500;
         copyBtn.innerHTML = /* html */`
-          <button slot="button" type="button" title="Copy to clipboard">
+          <span slot="copy">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clipboard" viewBox="0 0 16 16">
               <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/>
               <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/>
             </svg>
-          </button>
+          </span>
+          <span slot="success">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clipboard-check" viewBox="0 0 16 16">
+              <path fill-rule="evenodd" d="M10.854 7.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 9.793l2.646-2.647a.5.5 0 0 1 .708 0z"/>
+              <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/>
+              <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/>
+            </svg>
+          </span>
         `;
         copyBtn.setAttribute('value', item);
         actionsEl.appendChild(copyBtn);
@@ -395,7 +398,8 @@ import { toastAlert } from './toast-alert.js';
     scanInstructionsEl.hidden = false;
 
     try {
-      const barcode = await detectBarcode(capturePhotoVideoEl);
+      let barcode = {};
+      barcode = await detectBarcode(capturePhotoVideoEl);
       window.cancelAnimationFrame(rafId);
       emptyResults(cameraResultsEl);
       createResult(barcode.rawValue, cameraResultsEl);
@@ -544,33 +548,6 @@ import { toastAlert } from './toast-alert.js';
   deleteHistoryBtn.addEventListener('click', () => {
     if (window.confirm('Are you sure you want to empty history?')) {
       emptyHistory();
-    }
-  });
-
-  document.addEventListener('clipboard-copy:success', evt => {
-    const copyBtn = evt.target.querySelector('button[slot="button"]');
-    const historyDialog = evt.target.closest('#historyDialog');
-    const copiedTemplate = copiedIconTemplate.content.cloneNode(true);
-    const copyTemplate = copyIconTemplate.content.cloneNode(true);
-    const copiedTextEl = copiedTemplate.querySelector('span');
-    const copyTextEl = copyTemplate.querySelector('span');
-
-    if (historyDialog) {
-      copiedTextEl.hidden = true;
-      copyTextEl.hidden = true;
-    } else {
-      copiedTextEl.hidden = false;
-      copyTextEl.hidden = false;
-    }
-
-    if (copyBtn) {
-      copyBtn.replaceChildren();
-      copyBtn.appendChild(copiedTemplate);
-
-      setTimeout(() => {
-        copyBtn.replaceChildren();
-        copyBtn.appendChild(copyTemplate);
-      }, 1500);
     }
   });
 }());

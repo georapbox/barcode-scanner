@@ -5,6 +5,7 @@
   --video-border-radius: calc(var(--capture-border-radius) / 2);
   --scan-frame-color: rgba(255, 255, 255, 0.9);
   --error-color: #dc3545;
+  --success-color: #28a745;
 
   accent-color: var(--accent);
 }
@@ -158,7 +159,7 @@ h1 {
 }
 
 .results web-share button,
-.results clipboard-copy button {
+.results clipboard-copy::part(button) {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -166,9 +167,19 @@ h1 {
   margin: 0.75rem 0 0 0;
   padding: 0.25rem;
   background-color: transparent;
+  border: 0;
   color: inherit;
   line-height: 1;
+  font-family: inherit;
   font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.results clipboard-copy span {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.25rem;
 }
 
 .scan-instructions {
@@ -466,12 +477,19 @@ capture-photo::part(facing-mode-button) {
   gap: 0.25rem;
 }
 
-.history-modal__actions button {
+.history-modal__actions button,
+.history-modal__actions clipboard-copy::part(button) {
   padding: 0.25rem 0.5rem;
   margin: 0;
+  border: 0;
   background-color: transparent !important;
   line-height: 1;
   color: var(--text-main);
+  cursor: pointer;
+}
+
+.history-modal__actions clipboard-copy::part(button--success) {
+  color: var(--success-color);
 }
 
 .history-modal__actions .history-modal__delete-action {
@@ -526,6 +544,7 @@ capture-photo::part(facing-mode-button) {
 @media (prefers-color-scheme: dark) {
   :root {
     --error-color: #e05260;
+    --success-color: #75b798;
   }
 
   capture-photo[loading]::part(video) {
