@@ -33,14 +33,21 @@ import './custom-clipboard-copy.js';
   let shouldRepeatScan = true;
   let rafId;
 
+  function log(...args) {
+    process.env.NODE_ENV === 'development' && console.log(...args);
+  }
+
   if (!('BarcodeDetector' in window)) {
     try {
-      window.BarcodeDetector = (await import('barcode-detector')).default;
+      await import('barcode-detector');
+      log('Using BarcodeDetector polyfill.');
     } catch (err) {
       globalActionsEl.hidden = true;
       tabGroupEl.style.display = 'none';
       return toastAlert('BarcodeDetector API is not supported by your browser.', 'danger');
     }
+  } else {
+    log('Using the native BarcodeDetector API.');
   }
 
   if (!isWebShareSupported()) {
@@ -375,7 +382,7 @@ import './custom-clipboard-copy.js';
   }
 
   async function scan() {
-    process.env.NODE_ENV === 'development' && console.log('Scanning...');
+    log('Scanning...');
 
     scanInstructionsEl.hidden = false;
 
