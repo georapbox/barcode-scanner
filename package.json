@@ -50,6 +50,7 @@
     "workbox-cli": "~7.0.0"
   },
   "dependencies": {
+    "@georapbox/a-tab-group": "~1.2.0",
     "@georapbox/capture-photo-element": "~3.2.1",
     "@georapbox/clipboard-copy-element": "~3.0.0",
     "@georapbox/files-dropzone-element": "~1.1.1",

@@ -1,3 +1,4 @@
+import '@georapbox/a-tab-group/dist/a-tab-group.js';
 import '@georapbox/web-share-element/dist/web-share-defined.js';
 import '@georapbox/files-dropzone-element/dist/files-dropzone-defined.js';
 import { isWebShareSupported } from '@georapbox/web-share-element/dist/is-web-share-supported.js';
@@ -10,15 +11,14 @@ import './custom-clipboard-copy.js';
 (async function () {
   const NO_BARCODE_DETECTED = 'No barcode detected';
   const ACCEPTED_MIME_TYPES = ['image/jpg', 'image/jpeg', 'image/png', 'image/apng', 'image/gif', 'image/webp', 'image/avif'];
+  const tabGroupEl = document.querySelector('a-tab-group');
+  const cameraPanel = document.getElementById('cameraPanel');
   const capturePhotoEl = document.querySelector('capture-photo');
   const cameraResultsEl = document.getElementById('cameraResults');
   const fileResultsEl = document.getElementById('fileResults');
   const scanInstructionsEl = document.getElementById('scanInstructions');
   const scanBtn = document.getElementById('scanBtn');
-  const scanMethodSelect = document.getElementById('scanMethod');
   const dropzoneEl = document.getElementById('dropzone');
-  const cameraViewEl = document.getElementById('cameraView');
-  const fileViewEl = document.getElementById('fileView');
   const resizeObserverEl = document.querySelector('resize-observer');
   const scanFrameEl = document.getElementById('scanFrame');
   const globalActionsEl = document.getElementById('globalActions');
@@ -37,10 +37,8 @@ import './custom-clipboard-copy.js';
     try {
       window.BarcodeDetector = (await import('barcode-detector')).default;
     } catch (err) {
-      cameraViewEl.hidden = true;
-      fileViewEl.hidden = true;
-      scanMethodSelect.hidden = true;
       globalActionsEl.hidden = true;
+      tabGroupEl.style.display = 'none';
       return toastAlert('BarcodeDetector API is not supported by your browser.', 'danger');
     }
   }
@@ -96,19 +94,18 @@ import './custom-clipboard-copy.js';
   });
 
   capturePhotoEl.addEventListener('capture-photo:error', evt => {
-    cameraViewEl.hidden = true;
-    fileViewEl.hidden = false;
-    scanMethodSelect.hidden = true;
-
     const error = evt.detail.error;
 
     if (error.name === 'NotFoundError') {
+      // If the browser cannot find all media tracks with the specified types that meet the constraints given.
       return;
     }
 
-    const errorMessage = error.name === 'NotAllowedError' ? 'Permission to use webcam was denied. Reload the page to give appropriate permissions to webcam.' : error.message;
+    const errorMessage = error.name === 'NotAllowedError'
+      ? 'Permission to use webcam was denied or video Autoplay is disabled. Reload the page to give appropriate permissions to webcam.'
+      : error.message;
 
-    toastAlert(errorMessage, 'danger');
+    cameraPanel.innerHTML = /* html */`<div class="alert alert-danger" role="alert">${errorMessage}</div>`;
   }, {
     once: true
   });
@@ -460,18 +457,14 @@ import './custom-clipboard-copy.js';
     scan();
   });
 
-  scanMethodSelect.addEventListener('change', evt => {
-    const value = evt.target.value;
+  tabGroupEl.addEventListener('a-tab-select', evt => {
+    const tabId = evt.detail.tabId;
 
-    [cameraViewEl, fileViewEl].forEach(el => {
-      el.hidden = el.id !== value;
-    });
-
-    if (value === 'cameraView') {
+    if (tabId === 'cameraTab') {
       shouldRepeatScan = true;
 
       if (
-        !cameraViewEl.hidden // Assumes that element is hidden because of error.
+        capturePhotoEl // Assumes that element exists; it might not be the case if the user is using a browser that does not support the BarcodeDetector API.
         && !capturePhotoEl.loading
         && !cameraResultsEl.querySelector('.results__item')
       ) {
@@ -479,7 +472,7 @@ import './custom-clipboard-copy.js';
       }
     }
 
-    if (value === 'fileView') {
+    if (tabId === 'fileTab') {
       shouldRepeatScan = false;
     }
   });
