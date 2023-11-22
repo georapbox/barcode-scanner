@@ -10,12 +10,12 @@
   "screenshots": [
     {
       "src": "assets/app-icons/screenshots/screenshot-light.png",
-      "sizes": "2048x1690",
+      "sizes": "1750x2504",
       "type": "image/png"
     },
     {
       "src": "assets/app-icons/screenshots/screenshot-dark.png",
-      "sizes": "2048x1690",
+      "sizes": "1750x2504",
       "type": "image/png"
     }
   ],
@@ -34,12 +34,6 @@
       "src": "assets/app-icons/icon-large.png",
       "sizes": "1024x1024",
       "type": "image/png"
-    },
-    {
-      "src": "assets/app-icons/icon-large-maskable.png",
-      "sizes": "1024x1024",
-      "type": "image/png",
-      "purpose": "maskable"
     }
   ],
   "start_url": ".",
