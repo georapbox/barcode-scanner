@@ -23,8 +23,7 @@ A Progressive Web Application (PWA) that scans barcodes of various formats, usin
 
 ## Screenshots
 
-![Camera scan](assets/camera-scan.jpg)
-![File scan](assets/file-scan.jpg)
+![Screenshot dark](assets/screenshot-dark.png)
 
 ## Development
 
