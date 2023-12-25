@@ -342,7 +342,7 @@ import './custom-clipboard-copy.js';
 
     resultDialog.insertBefore(resultItem, resultDialog.querySelector('.results__actions'));
 
-    const clipboarCopyEl = resultDialog.querySelector('clipboard-copy');
+    const clipboarCopyEl = resultDialog.querySelector('custom-clipboard-copy');
     const webShareEl = resultDialog.querySelector('web-share');
     const isValidValue = value !== NO_BARCODE_DETECTED;
 
