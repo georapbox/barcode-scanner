@@ -240,12 +240,15 @@ input[type="file"]:disabled::-webkit-file-upload-button {
 }
 
 .dropzone {
+  --dropzone-focus-box-shadow: inset 0 0 0 2px var(--focus);
+  --dropzone-transition-duration: var(--animation-duration);
   --dropzone-border-color: var(--border);
   --dropzone-border-color-dragover: var(--accent);
+  --dropzone-border-color-hover: var(--accent);
   --dropzone-background-color: var(--background-alt);
   --dropzone-background-color-dragover: var(--background);
-  --dropzone-body-color: var(--text-muted);
-  --dropzone-body-color-dragover: var(--text-main);
+  --dropzone-background-color-hover: var(--background);
+  --dropzone-body-color: var(--text-main);
 }
 
 .dropzone::part(dropzone) {
@@ -255,11 +258,6 @@ input[type="file"]:disabled::-webkit-file-upload-button {
   margin: 0 auto;
   min-height: 250px;
   border-radius: 6px;
-  transition: box-shadow var(--animation-duration) ease-in-out;
-}
-
-.dropzone::part(dropzone):focus-visible {
-  box-shadow: 0 0 0 2px var(--focus);
 }
 
 .dropzone-preview {
@@ -608,6 +606,7 @@ a-tab[selected]::part(base) {
   .dropzone {
     --dropzone-background-color: #1a1c1e;
     --dropzone-background-color-dragover: #161718;
+    --dropzone-background-color-hover: #161718;
   }
 }
 

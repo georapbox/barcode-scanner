@@ -34,10 +34,6 @@ import './custom-clipboard-copy.js';
   let shouldRepeatScan = true;
   let rafId;
 
-  function log(...args) {
-    process.env.NODE_ENV === 'development' && console.log(...args);
-  }
-
   if (!('BarcodeDetector' in window)) {
     try {
       await import('barcode-detector');
@@ -113,7 +109,7 @@ import './custom-clipboard-copy.js';
       ? 'Permission to use webcam was denied or video Autoplay is disabled. Reload the page to give appropriate permissions to webcam.'
       : error.message;
 
-    cameraPanel.innerHTML = /* html */`<div class="alert alert-danger" role="alert">${errorMessage}</div>`;
+    cameraPanel.innerHTML = /* html */`<div class="alert alert-danger" role="alert" style="margin: 0;">${errorMessage}</div>`;
   }, {
     once: true
   });
@@ -457,6 +453,10 @@ import './custom-clipboard-copy.js';
     reader.readAsDataURL(file);
   }
 
+  function log(...args) {
+    process.env.NODE_ENV === 'development' && console.log(...args);
+  }
+
   scanBtn.addEventListener('click', () => {
     scanBtn.hidden = true;
     scanFrameEl.hidden = false;
@@ -465,7 +465,7 @@ import './custom-clipboard-copy.js';
     scan();
   });
 
-  tabGroupEl.addEventListener('a-tab-select', debounce(evt => {
+  tabGroupEl.addEventListener('a-tab-show', debounce(evt => {
     const tabId = evt.detail.tabId;
 
     if (tabId === 'cameraTab') {
