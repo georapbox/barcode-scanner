@@ -310,17 +310,18 @@ capture-photo {
   overflow: hidden;
   border: var(--capture-border-width) solid var(--border);
   border-radius: var(--capture-border-radius);
-  background-color: var(--background-alt);
+  background-color: #000000;
 }
 
 capture-photo::part(video) {
   width: 100%;
   height: calc(100% - 10px);
   border-radius: var(--video-border-radius);
+  background-color: #000000;
 }
 
 capture-photo[loading]::part(video) {
-  background-image: url(../assets/icons/spinner-dark.svg);
+  background-image: url(../assets/icons/spinner-light.svg);
   background-size: 60px;
   background-position: center center;
   background-repeat: no-repeat;
@@ -409,8 +410,8 @@ capture-photo::part(facing-mode-button) {
 }
 
 .global-actions button svg {
-  width: 22px;
-  height: 22px;
+  width: 20px;
+  height: 20px;
 }
 
 .global-actions button span {
@@ -543,7 +544,6 @@ a-tab-group:not(:defined) {
 }
 
 a-tab-group::part(tabs) {
-  background-color: var(--background);
   border-radius: var(--border-radius);
   padding: 0;
   overflow: hidden;
@@ -558,21 +558,13 @@ a-tab::part(base) {
   flex: 1;
   justify-content: center;
   padding: 0.5rem 0.75rem;
+  background-color: var(--background);
   transition: background-color var(--animation-duration) ease-in-out, color var(--animation-duration) ease-in-out;
 }
 
 a-tab:focus-visible {
   outline: none;
   box-shadow: inset 0 0 0 2px var(--focus);
-}
-
-
-@supports (color: rgb(from white r g b)) {
-  @media (hover: hover) {
-    a-tab:not([selected])::part(base):hover {
-      background-color: rgb(from var(--accent) r g b / 0.06);
-    }
-  }
 }
 
 a-tab[selected]::part(base) {
@@ -597,10 +589,6 @@ a-tab[selected]::part(base) {
   :root {
     --error-color: #e05260;
     --success-color: #75b798;
-  }
-
-  capture-photo[loading]::part(video) {
-    background-image: url(../assets/icons/spinner-light.svg);
   }
 
   .dropzone {
