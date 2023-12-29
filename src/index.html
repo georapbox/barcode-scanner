@@ -141,7 +141,7 @@
       <a-tab-panel slot="panel" id="cameraPanel">
         <div class="scan-frame-container">
           <resize-observer>
-            <capture-photo facing-mode="environment" no-image>
+            <capture-photo facing-mode="environment" no-image auto-play>
               <button type="button" id="scanBtn" class="scan-button" hidden>
                 <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" fill="currentColor" viewBox="0 0 16 16">
                   <path d="M1.5 1a.5.5 0 0 0-.5.5v3a.5.5 0 0 1-1 0v-3A1.5 1.5 0 0 1 1.5 0h3a.5.5 0 0 1 0 1h-3zM11 .5a.5.5 0 0 1 .5-.5h3A1.5 1.5 0 0 1 16 1.5v3a.5.5 0 0 1-1 0v-3a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 1-.5-.5zM.5 11a.5.5 0 0 1 .5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 1 0 1h-3A1.5 1.5 0 0 1 0 14.5v-3a.5.5 0 0 1 .5-.5zm15 0a.5.5 0 0 1 .5.5v3a1.5 1.5 0 0 1-1.5 1.5h-3a.5.5 0 0 1 0-1h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 1 .5-.5zM3 4.5a.5.5 0 0 1 1 0v7a.5.5 0 0 1-1 0v-7zm2 0a.5.5 0 0 1 1 0v7a.5.5 0 0 1-1 0v-7zm2 0a.5.5 0 0 1 1 0v7a.5.5 0 0 1-1 0v-7zm2 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-7zm3 0a.5.5 0 0 1 1 0v7a.5.5 0 0 1-1 0v-7z"/>
@@ -185,12 +185,6 @@
           </resize-observer>
 
           <div id="scanFrame" class="scan-frame" hidden>
-            <!-- <svg viewBox="0 0 100 100">
-              <path d="M15,2 L2,2 L2,15" fill="none" stroke="var(--scan-frame-color)" stroke-width="2" stroke-linejoin="round" />
-              <path d="M2,85 L2,98 L15,98" fill="none" stroke="var(--scan-frame-color)" stroke-width="2" stroke-linejoin="round" />
-              <path d="M85,98 L98,98 L98,85" fill="none" stroke="var(--scan-frame-color)" stroke-width="2" stroke-linejoin="round" />
-              <path d="M98,15 L98,2 L85,2" fill="none" stroke="var(--scan-frame-color)" stroke-width="2" stroke-linejoin="round" />
-            </svg> -->
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
               <path d="M336 448h56a56 56 0 0056-56v-56M448 176v-56a56 56 0 00-56-56h-56M176 448h-56a56 56 0 01-56-56v-56M64 176v-56a56 56 0 0156-56h56" fill="none" stroke="var(--scan-frame-color)" stroke-linecap="round" stroke-linejoin="round" stroke-width="10"/>
             </svg>
@@ -198,7 +192,7 @@
         </div>
 
         <div id="scanInstructions" class="scan-instructions" hidden>
-          <p>Align Barcode/QR Code in the center of the frame.</p>
+          <p>Align barcode in the center of the frame.</p>
         </div>
 
         <dialog id="cameraResults" class="results">

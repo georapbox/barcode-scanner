@@ -6,6 +6,7 @@ import '@georapbox/resize-observer-element/dist/resize-observer-defined.js';
 import { CapturePhoto } from '@georapbox/capture-photo-element/dist/capture-photo.js';
 import { getHistory, setHistory, getSettings, setSettings } from './services/storage.js';
 import { toastAlert } from './toast-alert.js';
+import { debounce } from './utils/debounce.js';
 import './custom-clipboard-copy.js';
 
 (async function () {
@@ -32,10 +33,6 @@ import './custom-clipboard-copy.js';
   const supportedFormatsEl = document.getElementById('supportedFormats');
   let shouldRepeatScan = true;
   let rafId;
-
-  function log(...args) {
-    process.env.NODE_ENV === 'development' && console.log(...args);
-  }
 
   if (!('BarcodeDetector' in window)) {
     try {
@@ -112,7 +109,7 @@ import './custom-clipboard-copy.js';
       ? 'Permission to use webcam was denied or video Autoplay is disabled. Reload the page to give appropriate permissions to webcam.'
       : error.message;
 
-    cameraPanel.innerHTML = /* html */`<div class="alert alert-danger" role="alert">${errorMessage}</div>`;
+    cameraPanel.innerHTML = /* html */`<div class="alert alert-danger" role="alert" style="margin: 0;">${errorMessage}</div>`;
   }, {
     once: true
   });
@@ -456,6 +453,10 @@ import './custom-clipboard-copy.js';
     reader.readAsDataURL(file);
   }
 
+  function log(...args) {
+    process.env.NODE_ENV === 'development' && console.log(...args);
+  }
+
   scanBtn.addEventListener('click', () => {
     scanBtn.hidden = true;
     scanFrameEl.hidden = false;
@@ -464,11 +465,14 @@ import './custom-clipboard-copy.js';
     scan();
   });
 
-  tabGroupEl.addEventListener('a-tab-select', evt => {
+  tabGroupEl.addEventListener('a-tab-show', debounce(evt => {
     const tabId = evt.detail.tabId;
 
     if (tabId === 'cameraTab') {
       shouldRepeatScan = true;
+
+      // Get the latest instance of capture-photo element to ensure we don't use the cached one.
+      const capturePhotoEl = document.querySelector('capture-photo');
 
       if (
         capturePhotoEl // Assumes that element exists; it might not be the case if the user is using a browser that does not support the BarcodeDetector API.
@@ -477,12 +481,20 @@ import './custom-clipboard-copy.js';
       ) {
         scan();
       }
+
+      if (capturePhotoEl != null && typeof capturePhotoEl.startVideoStream === 'function') {
+        capturePhotoEl.startVideoStream();
+      }
     }
 
     if (tabId === 'fileTab') {
       shouldRepeatScan = false;
+
+      if (capturePhotoEl != null && typeof capturePhotoEl.stopVideoStream === 'function') {
+        capturePhotoEl.stopVideoStream();
+      }
     }
-  });
+  }, 250));
 
   dropzoneEl.addEventListener('files-dropzone-drop', evt => {
     handleFileSelect(evt.detail.acceptedFiles[0]);
