@@ -410,8 +410,8 @@ capture-photo::part(facing-mode-button) {
 }
 
 .global-actions button svg {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
 }
 
 .global-actions button span {
@@ -613,11 +613,6 @@ a-tab[selected]::part(base) {
 
   .global-actions button span {
     display: inline;
-  }
-
-  .global-actions button svg {
-    width: 18px;
-    height: 18px;
   }
 }
 
