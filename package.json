@@ -42,17 +42,17 @@
   },
   "homepage": "https://github.com/georapbox/barcode-scanner#readme",
   "devDependencies": {
-    "@parcel/packager-raw-url": "~2.10.3",
-    "@parcel/transformer-webmanifest": "~2.10.3",
+    "@parcel/packager-raw-url": "~2.11.0",
+    "@parcel/transformer-webmanifest": "~2.11.0",
     "eslint": "~8.56.0",
     "npm-run-all": "~4.1.5",
-    "parcel": "~2.10.3",
+    "parcel": "~2.11.0",
     "process": "~0.11.10",
     "rimraf": "~5.0.5",
     "workbox-cli": "~7.0.0"
   },
   "dependencies": {
-    "@georapbox/a-tab-group": "~2.1.0",
+    "@georapbox/a-tab-group": "~2.2.1",
     "@georapbox/capture-photo-element": "~4.0.1",
     "@georapbox/clipboard-copy-element": "~3.0.1",
     "@georapbox/files-dropzone-element": "~1.2.1",
