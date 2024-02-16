@@ -27,23 +27,56 @@ A Progressive Web Application (PWA) that scans barcodes of various formats, usin
 
 ## Development
 
-### Install dependencies
+Below are the instructions for setting up the development environment.
 
-```sh
-$ npm install
+### Prerequisites
+
+- Node.js (v20.x.x)
+- npm (v10.x.x)
+
+### Installation
+
+Clone the repository to your local machine:
+
+```bash
+git clone git@github.com:georapbox/barcode-scanner.git
 ```
 
-### Start development server
+Navigate to the project's directory and install the dependencies:
 
-```sh
-$ npm run start -- --open
+```bash
+npm install
 ```
 
-### Build for production
+### Running the application
 
-```sh
-$ npm run build
+To run the application in development mode, run the following command:
+
+```bash
+npm start -- --open
 ```
+
+This will start the development server and open the application in your default web browser.
+
+### Building the application for production
+
+To build the application for production, run the following command:
+
+```bash
+npm run build
+```
+
+This will create a `dist` directory containing the production build of the application.
+
+### Deployment
+
+To deploy the application, run the following command:
+
+```bash
+npm run deploy
+```
+
+This will build the application first and then deploy it to GitHub Pages in the `gh-pages` branch.
 
 ## License
 
