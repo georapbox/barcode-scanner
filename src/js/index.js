@@ -63,8 +63,8 @@ import './custom-clipboard-copy.js';
     resizeScanFrame(evt.detail.video);
     scan();
 
-    const trackSettings = capturePhotoEl.getTrackSettings();
-    const trackCapabilities = capturePhotoEl.getTrackCapabilities();
+    const trackSettings = evt.target.getTrackSettings();
+    const trackCapabilities = evt.target.getTrackCapabilities();
     const zoomLevelEl = document.getElementById('zoomLevel');
 
     if (trackSettings?.zoom && trackCapabilities?.zoom) {
@@ -474,15 +474,15 @@ import './custom-clipboard-copy.js';
       // Get the latest instance of capture-photo element to ensure we don't use the cached one.
       const capturePhotoEl = document.querySelector('capture-photo');
 
-      if (
-        capturePhotoEl // Assumes that element exists; it might not be the case if the user is using a browser that does not support the BarcodeDetector API.
-        && !capturePhotoEl.loading
-        && !cameraResultsEl.querySelector('.results__item')
-      ) {
+      if (!capturePhotoEl) {
+        return;
+      }
+
+      if (!capturePhotoEl.loading && !cameraResultsEl.querySelector('.results__item')) {
         scan();
       }
 
-      if (capturePhotoEl != null && typeof capturePhotoEl.startVideoStream === 'function') {
+      if (typeof capturePhotoEl.startVideoStream === 'function') {
         capturePhotoEl.startVideoStream();
       }
     }
@@ -495,6 +495,40 @@ import './custom-clipboard-copy.js';
       }
     }
   }, 250));
+
+  document.addEventListener('visibilitychange', () => {
+    const selectedTab = tabGroupEl.querySelector('[selected]');
+    const tabId = selectedTab.getAttribute('id');
+
+    if (tabId !== 'cameraTab') {
+      return;
+    }
+
+    if (document.visibilityState === 'hidden') {
+      shouldRepeatScan = false;
+
+      if (capturePhotoEl != null && typeof capturePhotoEl.stopVideoStream === 'function') {
+        capturePhotoEl.stopVideoStream();
+      }
+    } else {
+      shouldRepeatScan = true;
+
+      // Get the latest instance of capture-photo element to ensure we don't use the cached one.
+      const capturePhotoEl = document.querySelector('capture-photo');
+
+      if (!capturePhotoEl) {
+        return;
+      }
+
+      if (!capturePhotoEl.loading && !cameraResultsEl.querySelector('.results__item')) {
+        scan();
+      }
+
+      if (typeof capturePhotoEl.startVideoStream === 'function') {
+        capturePhotoEl.startVideoStream();
+      }
+    }
+  });
 
   dropzoneEl.addEventListener('files-dropzone-drop', evt => {
     handleFileSelect(evt.detail.acceptedFiles[0]);
