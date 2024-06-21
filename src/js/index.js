@@ -11,7 +11,15 @@ import './custom-clipboard-copy.js';
 
 (async function () {
   const NO_BARCODE_DETECTED = 'No barcode detected';
-  const ACCEPTED_MIME_TYPES = ['image/jpg', 'image/jpeg', 'image/png', 'image/apng', 'image/gif', 'image/webp', 'image/avif'];
+  const ACCEPTED_MIME_TYPES = [
+    'image/jpg',
+    'image/jpeg',
+    'image/png',
+    'image/apng',
+    'image/gif',
+    'image/webp',
+    'image/avif'
+  ];
   const tabGroupEl = document.querySelector('a-tab-group');
   const cameraPanel = document.getElementById('cameraPanel');
   const capturePhotoEl = document.querySelector('capture-photo');
@@ -38,7 +46,7 @@ import './custom-clipboard-copy.js';
     try {
       await import('barcode-detector');
       log('Using BarcodeDetector polyfill.');
-    } catch (err) {
+    } catch {
       globalActionsEl.hidden = true;
       tabGroupEl.style.display = 'none';
       return toastAlert('BarcodeDetector API is not supported by your browser.', 'danger');
@@ -58,61 +66,70 @@ import './custom-clipboard-copy.js';
 
   renderHistoryList(history);
 
-  capturePhotoEl.addEventListener('capture-photo:video-play', evt => {
-    scanFrameEl.hidden = false;
-    resizeScanFrame(evt.detail.video);
-    scan();
+  capturePhotoEl.addEventListener(
+    'capture-photo:video-play',
+    evt => {
+      scanFrameEl.hidden = false;
+      resizeScanFrame(evt.detail.video);
+      scan();
 
-    const trackSettings = evt.target.getTrackSettings();
-    const trackCapabilities = evt.target.getTrackCapabilities();
-    const zoomLevelEl = document.getElementById('zoomLevel');
+      const trackSettings = evt.target.getTrackSettings();
+      const trackCapabilities = evt.target.getTrackCapabilities();
+      const zoomLevelEl = document.getElementById('zoomLevel');
 
-    if (trackSettings?.zoom && trackCapabilities?.zoom) {
-      const zoomControls = document.getElementById('zoomControls');
-      const minZoom = trackCapabilities?.zoom?.min || 0;
-      const maxZoom = trackCapabilities?.zoom?.max || 10;
-      let currentZoom = trackSettings?.zoom || 1;
+      if (trackSettings?.zoom && trackCapabilities?.zoom) {
+        const zoomControls = document.getElementById('zoomControls');
+        const minZoom = trackCapabilities?.zoom?.min || 0;
+        const maxZoom = trackCapabilities?.zoom?.max || 10;
+        let currentZoom = trackSettings?.zoom || 1;
 
-      zoomControls.hidden = false;
-      zoomLevelEl.textContent = currentZoom;
-
-      zoomControls.addEventListener('click', evt => {
-        const zoomInBtn = evt.target.closest('[data-action="zoom-in"]');
-        const zoomOutBtn = evt.target.closest('[data-action="zoom-out"]');
-
-        if (zoomInBtn && currentZoom < maxZoom) {
-          currentZoom += 0.5;
-        }
-
-        if (zoomOutBtn && currentZoom > minZoom) {
-          currentZoom -= 0.5;
-        }
-
+        zoomControls.hidden = false;
         zoomLevelEl.textContent = currentZoom;
 
-        capturePhotoEl.zoom = currentZoom;
-      });
+        zoomControls.addEventListener('click', evt => {
+          const zoomInBtn = evt.target.closest('[data-action="zoom-in"]');
+          const zoomOutBtn = evt.target.closest('[data-action="zoom-out"]');
+
+          if (zoomInBtn && currentZoom < maxZoom) {
+            currentZoom += 0.5;
+          }
+
+          if (zoomOutBtn && currentZoom > minZoom) {
+            currentZoom -= 0.5;
+          }
+
+          zoomLevelEl.textContent = currentZoom;
+
+          capturePhotoEl.zoom = currentZoom;
+        });
+      }
+    },
+    {
+      once: true
     }
-  }, {
-    once: true
-  });
+  );
 
-  capturePhotoEl.addEventListener('capture-photo:error', evt => {
-    const error = evt.detail.error;
+  capturePhotoEl.addEventListener(
+    'capture-photo:error',
+    evt => {
+      const error = evt.detail.error;
 
-    if (error.name === 'NotFoundError') {
-      // If the browser cannot find all media tracks with the specified types that meet the constraints given.
-      return;
+      if (error.name === 'NotFoundError') {
+        // If the browser cannot find all media tracks with the specified types that meet the constraints given.
+        return;
+      }
+
+      const errorMessage =
+        error.name === 'NotAllowedError'
+          ? 'Permission to use webcam was denied or video Autoplay is disabled. Reload the page to give appropriate permissions to webcam.'
+          : error.message;
+
+      cameraPanel.innerHTML = /* html */ `<div class="alert alert-danger" role="alert" style="margin: 0;">${errorMessage}</div>`;
+    },
+    {
+      once: true
     }
-
-    const errorMessage = error.name === 'NotAllowedError'
-      ? 'Permission to use webcam was denied or video Autoplay is disabled. Reload the page to give appropriate permissions to webcam.'
-      : error.message;
-
-    cameraPanel.innerHTML = /* html */`<div class="alert alert-danger" role="alert" style="margin: 0;">${errorMessage}</div>`;
-  }, {
-    once: true
-  });
+  );
 
   CapturePhoto.defineCustomElement();
 
@@ -135,7 +152,9 @@ import './custom-clipboard-copy.js';
   }
 
   const beep = (() => {
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext || window.audioContext);
+    const audioCtx = new (window.AudioContext ||
+      window.webkitAudioContext ||
+      window.audioContext)();
 
     if (!audioCtx) {
       return;
@@ -171,7 +190,7 @@ import './custom-clipboard-copy.js';
       }
 
       oscillator.start(audioCtx.currentTime);
-      oscillator.stop(audioCtx.currentTime + ((duration || 500) / 1000));
+      oscillator.stop(audioCtx.currentTime + (duration || 500) / 1000);
     };
   })();
 
@@ -196,7 +215,7 @@ import './custom-clipboard-copy.js';
           historyItem.href = item;
           historyItem.setAttribute('target', '_blank');
           historyItem.setAttribute('rel', 'noreferrer noopener');
-        } catch (err) {
+        } catch {
           historyItem = document.createElement('span');
         }
 
@@ -217,7 +236,7 @@ import './custom-clipboard-copy.js';
         removeBtn.className = 'history-modal__delete-action';
         removeBtn.title = 'Remove from history';
         removeBtn.setAttribute('data-action', 'delete');
-        removeBtn.innerHTML = /* html */`
+        removeBtn.innerHTML = /* html */ `
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash3-fill" viewBox="0 0 16 16">
             <path d="M11 1.5v1h3.5a.5.5 0 0 1 0 1h-.538l-.853 10.66A2 2 0 0 1 11.115 16h-6.23a2 2 0 0 1-1.994-1.84L2.038 3.5H1.5a.5.5 0 0 1 0-1H5v-1A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5Zm-5 0v1h4v-1a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5ZM4.5 5.029l.5 8.5a.5.5 0 1 0 .998-.06l-.5-8.5a.5.5 0 1 0-.998.06Zm6.53-.528a.5.5 0 0 0-.528.47l-.5 8.5a.5.5 0 0 0 .998.058l.5-8.5a.5.5 0 0 0-.47-.528ZM8 4.5a.5.5 0 0 0-.5.5v8.5a.5.5 0 0 0 1 0V5a.5.5 0 0 0-.5-.5Z"/>
           </svg>
@@ -329,7 +348,7 @@ import './custom-clipboard-copy.js';
       if (settings?.openWebPage) {
         resultItem.click();
       }
-    } catch (err) {
+    } catch {
       resultItem = document.createElement('span');
     }
 
@@ -364,17 +383,20 @@ import './custom-clipboard-copy.js';
 
   function detectBarcode(source) {
     return new Promise((resolve, reject) => {
-      barcodeDetector.detect(source).then(results => {
-        if (Array.isArray(results) && results.length > 0) {
-          resolve(results[0]);
-        } else {
-          reject({
-            message: 'Could not detect barcode from provided source.'
-          });
-        }
-      }).catch(err => {
-        reject(err);
-      });
+      barcodeDetector
+        .detect(source)
+        .then(results => {
+          if (Array.isArray(results) && results.length > 0) {
+            resolve(results[0]);
+          } else {
+            reject({
+              message: 'Could not detect barcode from provided source.'
+            });
+          }
+        })
+        .catch(err => {
+          reject(err);
+        });
     });
   }
 
@@ -396,7 +418,7 @@ import './custom-clipboard-copy.js';
       beep(200, 860, 0.03, 'square');
       vibrate();
       return;
-    } catch (err) {
+    } catch {
       // Fail silently...
     }
 
@@ -424,7 +446,7 @@ import './custom-clipboard-copy.js';
           addToHistory(barcode.rawValue);
           beep(200, 860, 0.03, 'square');
           vibrate();
-        } catch (err) {
+        } catch {
           emptyResults(fileResultsEl);
           createResult(NO_BARCODE_DETECTED, fileResultsEl);
         }
@@ -465,36 +487,39 @@ import './custom-clipboard-copy.js';
     scan();
   });
 
-  tabGroupEl.addEventListener('a-tab-show', debounce(evt => {
-    const tabId = evt.detail.tabId;
+  tabGroupEl.addEventListener(
+    'a-tab-show',
+    debounce(evt => {
+      const tabId = evt.detail.tabId;
 
-    if (tabId === 'cameraTab') {
-      shouldRepeatScan = true;
+      if (tabId === 'cameraTab') {
+        shouldRepeatScan = true;
 
-      // Get the latest instance of capture-photo element to ensure we don't use the cached one.
-      const capturePhotoEl = document.querySelector('capture-photo');
+        // Get the latest instance of capture-photo element to ensure we don't use the cached one.
+        const capturePhotoEl = document.querySelector('capture-photo');
 
-      if (!capturePhotoEl) {
-        return;
+        if (!capturePhotoEl) {
+          return;
+        }
+
+        if (!capturePhotoEl.loading && !cameraResultsEl.querySelector('.results__item')) {
+          scan();
+        }
+
+        if (typeof capturePhotoEl.startVideoStream === 'function') {
+          capturePhotoEl.startVideoStream();
+        }
       }
 
-      if (!capturePhotoEl.loading && !cameraResultsEl.querySelector('.results__item')) {
-        scan();
-      }
+      if (tabId === 'fileTab') {
+        shouldRepeatScan = false;
 
-      if (typeof capturePhotoEl.startVideoStream === 'function') {
-        capturePhotoEl.startVideoStream();
+        if (capturePhotoEl != null && typeof capturePhotoEl.stopVideoStream === 'function') {
+          capturePhotoEl.stopVideoStream();
+        }
       }
-    }
-
-    if (tabId === 'fileTab') {
-      shouldRepeatScan = false;
-
-      if (capturePhotoEl != null && typeof capturePhotoEl.stopVideoStream === 'function') {
-        capturePhotoEl.stopVideoStream();
-      }
-    }
-  }, 250));
+    }, 250)
+  );
 
   document.addEventListener('visibilitychange', () => {
     const selectedTab = tabGroupEl.querySelector('[selected]');
@@ -562,7 +587,7 @@ import './custom-clipboard-copy.js';
     const settings = {};
     const checkboxes = evt.currentTarget.querySelectorAll('input[type="checkbox"]');
 
-    checkboxes.forEach(item => settings[item.name] = item.checked);
+    checkboxes.forEach(item => (settings[item.name] = item.checked));
     setSettings(settings);
   });
 
@@ -581,4 +606,4 @@ import './custom-clipboard-copy.js';
       emptyHistory();
     }
   });
-}());
+})();

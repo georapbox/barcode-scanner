@@ -4,7 +4,8 @@
   "description": "A Progressive Web Application (PWA) that scans barcodes of various formats, using the Barcode Detection API.",
   "source": "src/index.html",
   "scripts": {
-    "lint": "eslint . --ext .js",
+    "lint": "eslint src/js/**",
+    "format": "prettier --ignore-unknown --write .",
     "clean": "rimraf dist .parcel-cache",
     "generateSW": "workbox generateSW",
     "start": "parcel",
@@ -44,24 +45,27 @@
   },
   "homepage": "https://github.com/georapbox/barcode-scanner#readme",
   "devDependencies": {
-    "@parcel/packager-raw-url": "~2.11.0",
-    "@parcel/transformer-webmanifest": "~2.11.0",
-    "eslint": "~8.56.0",
+    "@eslint/js": "~9.5.0",
+    "@parcel/packager-raw-url": "~2.12.0",
+    "@parcel/transformer-webmanifest": "~2.12.0",
+    "eslint": "~9.5.0",
     "gh-pages": "~6.1.1",
+    "globals": "~15.6.0",
     "npm-run-all": "~4.1.5",
-    "parcel": "~2.11.0",
+    "parcel": "~2.12.0",
+    "prettier": "~3.3.2",
     "process": "~0.11.10",
-    "rimraf": "~5.0.5",
-    "workbox-cli": "~7.0.0"
+    "rimraf": "~5.0.7",
+    "workbox-cli": "~7.1.0"
   },
   "dependencies": {
-    "@georapbox/a-tab-group": "~2.2.1",
+    "@georapbox/a-tab-group": "~2.3.0",
     "@georapbox/capture-photo-element": "~4.0.1",
     "@georapbox/clipboard-copy-element": "~3.0.1",
-    "@georapbox/files-dropzone-element": "~1.2.1",
+    "@georapbox/files-dropzone-element": "~2.0.0",
     "@georapbox/resize-observer-element": "~2.0.0",
     "@georapbox/web-share-element": "~3.1.0",
-    "barcode-detector": "~2.2.2",
+    "barcode-detector": "~2.2.7",
     "idb-keyval": "~6.2.1"
   },
   "browserslist": "> 0.5%, last 2 versions, not dead"
