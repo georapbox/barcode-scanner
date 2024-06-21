@@ -15,13 +15,14 @@ export const toastAlert = (message = '', type = 'info') => {
 
   const template = /* html */ `
     ${message}
-    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+    <button type="button" class="close" aria-label="Close">
       <span aria-hidden="true">&times;</span>
     </button>
   `;
 
   const div = document.createElement('div');
   div.className = `alert alert-${type} alert-dismissible text-break`;
+  div.setAttribute('role', 'alert');
   div.innerHTML = template;
   div.querySelector('button').addEventListener('click', hideAlert);
   toastContainer.appendChild(div);
