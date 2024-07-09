@@ -461,7 +461,46 @@ capture-photo::part(facing-mode-button) {
   color: var(--text-main);
   text-decoration: none;
   border-bottom: 1px solid var(--border);
+}
 
+/* Modal animations */
+@media (prefers-reduced-motion: no-preference) {
+  .modal::backdrop {
+    opacity: 0;
+  }
+
+  .modal[open]::backdrop {
+    opacity: 1;
+  }
+
+  .modal,
+  .modal::backdrop {
+    transition: transform 0.3s, opacity 0.3s, display 0.3s allow-discrete, overlay 0.3s allow-discrete;
+  }
+
+  /* 1. IS-OPEN STATE */
+  .modal[open] {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  /* 2. EXIT STATE */
+  .modal {
+    transform: translateY(-16px);
+    opacity: 0;
+  }
+
+  /* 0. BEFORE-OPEN STATE */
+  @starting-style {
+    .modal[open] {
+      transform: translateY(-16px);
+      opacity: 0;
+    }
+
+    .modal[open]::backdrop {
+      opacity: 0;
+    }
+  }
 }
 
 .history-modal ul {
