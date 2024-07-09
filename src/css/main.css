@@ -1,8 +1,8 @@
 :root {
-  --container-max-width: 600px;
+  --body-max-width: 75rem;
+  --container-max-width: 37.5rem;
   --capture-border-width: 3px;
-  --capture-border-radius: 6px;
-  --video-border-radius: calc(var(--capture-border-radius) / 2);
+  --video-border-radius: calc(var(--border-radius) / 2);
   --scan-frame-color: rgba(255, 255, 255, 0.9);
   --error-color: #dc3545;
   --success-color: #28a745;
@@ -256,8 +256,8 @@ input[type="file"]:disabled::-webkit-file-upload-button {
   flex-direction: column;
   justify-content: center;
   margin: 0 auto;
-  min-height: 250px;
-  border-radius: 6px;
+  min-height: 15.625rem;
+  border-radius: var(--border-radius);
 }
 
 .dropzone-preview {
@@ -309,7 +309,7 @@ capture-photo {
   margin: 0 auto 1.5rem auto;
   overflow: hidden;
   border: var(--capture-border-width) solid var(--border);
-  border-radius: var(--capture-border-radius);
+  border-radius: var(--border-radius);
   background-color: #000000;
 }
 
@@ -322,7 +322,7 @@ capture-photo::part(video) {
 
 capture-photo[loading]::part(video) {
   background-image: url(../assets/icons/spinner-light.svg);
-  background-size: 60px;
+  background-size: 3.75rem;
   background-position: center center;
   background-repeat: no-repeat;
 }
@@ -334,8 +334,8 @@ capture-photo::part(facing-mode-button) {
   position: absolute;
   bottom: 0.25rem;
   left: 0.25rem;
-  width: 36px;
-  height: 36px;
+  width: 2.25rem;
+  height: 2.25rem;
   padding: 0;
   border: 0;
   border-radius: var(--video-border-radius);
@@ -360,8 +360,9 @@ capture-photo::part(facing-mode-button) {
   justify-content: center;
   align-items: center;
   margin: 0;
-  width: 36px;
-  height: 36px;
+  width: 2.25rem;
+  width: 2.25rem;
+  height: 2.25rem;
   padding: 0;
   border-radius: 0;
   background-color: var(--background);
@@ -379,7 +380,7 @@ capture-photo::part(facing-mode-button) {
 }
 
 .zoom-controls label {
-  width: 25px;
+  width: 1.5625rem;
   font-size: 0.9rem;
   overflow: hidden;
   font-family: Arial, Helvetica, sans-serif;
@@ -410,8 +411,8 @@ capture-photo::part(facing-mode-button) {
 }
 
 .global-actions button svg {
-  width: 18px;
-  height: 18px;
+  width: 1.125em;
+  height: 1.125em;
 }
 
 .global-actions button span {
@@ -532,6 +533,7 @@ capture-photo::part(facing-mode-button) {
   border-radius: var(--border-radius);
   background-color: transparent !important;
   line-height: 1;
+  font-size: 1em;
   color: var(--text-main);
   cursor: pointer;
 }
@@ -546,7 +548,6 @@ capture-photo::part(facing-mode-button) {
 }
 
 .settings-modal ul li input[type="checkbox"] {
-  min-width: 16px;
   margin: 0.15rem 0.5rem 0 0;
 }
 
@@ -585,7 +586,6 @@ a-tab-group:not(:defined) {
 a-tab-group::part(tabs) {
   border-radius: var(--border-radius);
   padding: 0;
-  overflow: hidden;
 }
 
 a-tab {
@@ -637,7 +637,7 @@ a-tab[selected]::part(base) {
   }
 }
 
-@media (min-width: 600px) {
+@media (min-width: 37.5rem) {
   h1 {
     font-size: 2rem;
   }
@@ -655,13 +655,13 @@ a-tab[selected]::part(base) {
   }
 }
 
-@media (min-height: 700px) {
+@media (min-height: 43.75rem) {
   header {
     margin: 3rem 0;
   }
 }
 
-@media screen and (max-width: 320px) {
+@media screen and (max-width: 20rem) {
   a-tab span {
     font-size: 0.9rem;
   }

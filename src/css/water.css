@@ -69,8 +69,8 @@ body {
   font-family: var(--font-family);
   line-height: 1.4;
   max-width: var(--body-max-width);
-  margin: 20px auto;
-  padding: 0 10px;
+  padding: 0 0.75rem;
+  margin: 1.25rem auto;
   word-wrap: break-word;
   color: var(--text-main);
   background: var(--background-body);
@@ -292,8 +292,9 @@ input[type='color'] {
 
 input[type='checkbox'],
 input[type='radio'] {
-  height: 16px;
-  width: 16px;
+  min-width: 1rem;
+  width: 1rem;
+  height: 1rem;
 }
 
 input[type='radio'] {
@@ -605,15 +606,8 @@ dialog>header:first-child {
   text-align: center;
 }
 
-dialog::-webkit-backdrop {
-  background: #0000009c;
-  -webkit-backdrop-filter: blur(4px);
-  backdrop-filter: blur(4px);
-}
-
 dialog::backdrop {
   background: #0000009c;
-  -webkit-backdrop-filter: blur(4px);
   backdrop-filter: blur(4px);
 }
 
