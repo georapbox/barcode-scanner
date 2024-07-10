@@ -5,9 +5,9 @@ import { isWebShareSupported } from '@georapbox/web-share-element/dist/is-web-sh
 import '@georapbox/resize-observer-element/dist/resize-observer-defined.js';
 import { CapturePhoto } from '@georapbox/capture-photo-element/dist/capture-photo.js';
 import { getHistory, setHistory, getSettings, setSettings } from './services/storage.js';
-import { toastAlert } from './toast-alert.js';
 import { debounce } from './utils/debounce.js';
-import './custom-clipboard-copy.js';
+import { toastAlert } from './helpers/toast-alert.js';
+import './components/clipboard-copy.js';
 
 (async function () {
   const NO_BARCODE_DETECTED = 'No barcode detected';
@@ -522,40 +522,6 @@ import './custom-clipboard-copy.js';
     }, 250)
   );
 
-  document.addEventListener('visibilitychange', () => {
-    const selectedTab = tabGroupEl.querySelector('[selected]');
-    const tabId = selectedTab.getAttribute('id');
-
-    if (tabId !== 'cameraTab') {
-      return;
-    }
-
-    if (document.visibilityState === 'hidden') {
-      shouldRepeatScan = false;
-
-      if (capturePhotoEl != null && typeof capturePhotoEl.stopVideoStream === 'function') {
-        capturePhotoEl.stopVideoStream();
-      }
-    } else {
-      shouldRepeatScan = true;
-
-      // Get the latest instance of capture-photo element to ensure we don't use the cached one.
-      const capturePhotoEl = document.querySelector('capture-photo');
-
-      if (!capturePhotoEl) {
-        return;
-      }
-
-      if (!capturePhotoEl.loading && !cameraResultsEl.querySelector('.results__item')) {
-        scan();
-      }
-
-      if (typeof capturePhotoEl.startVideoStream === 'function') {
-        capturePhotoEl.startVideoStream();
-      }
-    }
-  });
-
   dropzoneEl.addEventListener('files-dropzone-drop', evt => {
     handleFileSelect(evt.detail.acceptedFiles[0]);
   });
@@ -606,5 +572,55 @@ import './custom-clipboard-copy.js';
     if (window.confirm('Are you sure you want to empty history?')) {
       emptyHistory();
     }
+  });
+
+  document.addEventListener('visibilitychange', () => {
+    const selectedTab = tabGroupEl.querySelector('[selected]');
+    const tabId = selectedTab.getAttribute('id');
+
+    if (tabId !== 'cameraTab') {
+      return;
+    }
+
+    if (document.visibilityState === 'hidden') {
+      shouldRepeatScan = false;
+
+      if (capturePhotoEl != null && typeof capturePhotoEl.stopVideoStream === 'function') {
+        capturePhotoEl.stopVideoStream();
+      }
+    } else {
+      shouldRepeatScan = true;
+
+      // Get the latest instance of capture-photo element to ensure we don't use the cached one.
+      const capturePhotoEl = document.querySelector('capture-photo');
+
+      if (!capturePhotoEl) {
+        return;
+      }
+
+      if (!capturePhotoEl.loading && !cameraResultsEl.querySelector('.results__item')) {
+        scan();
+      }
+
+      if (typeof capturePhotoEl.startVideoStream === 'function') {
+        capturePhotoEl.startVideoStream();
+      }
+    }
+  });
+
+  document.addEventListener('keydown', evt => {
+    const cameraTabSelected = tabGroupEl.querySelector('#cameraTab').hasAttribute('selected');
+    const scanBtnVisible = !scanBtn.hidden;
+    const settingsDialogOpen = settingsDialog.hasAttribute('open');
+    const historyDialogOpen = historyDialog.hasAttribute('open');
+    const anyDialogOpen = settingsDialogOpen || historyDialogOpen;
+    const escapeKeyPressed = evt.key === 'Escape';
+    const shouldRespond = scanBtnVisible && cameraTabSelected && escapeKeyPressed && !anyDialogOpen;
+
+    if (!shouldRespond) {
+      return;
+    }
+
+    scanBtn.click();
   });
 })();

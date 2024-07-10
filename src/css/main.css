@@ -1,11 +1,9 @@
 :root {
   --font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', sans-serif;
-
   --accent-h: 217.75deg;
   --accent-s: 98.36%;
   --accent-l: 52.16%;
   --accent: hsl(var(--accent-h), var(--accent-s), var(--accent-l));
-
   --body-max-width: 75rem;
   --background-body: #ffffff;
   --background-alt: #f7f7f7;
@@ -18,7 +16,6 @@
   --dialog-background: #ffffff;
   --border-radius: 6px;
   --animation-duration: 0.1s;
-
   --container-max-width: 37.5rem;
   --capture-border-width: 3px;
   --video-border-radius: calc(var(--border-radius) / 2);
@@ -35,7 +32,6 @@
     --accent-s: 100%;
     --accent-l: 73%;
     --accent: hsl(var(--accent-h), var(--accent-s), var(--accent-l));
-
     --background-body: #212529;
     --background-alt: #343a40;
     --background: var(--background-alt);
@@ -46,7 +42,6 @@
     --border: #495057;
     --dialog-background: var(--background-alt);
     --animation-duration: 0.1s;
-
     --error-color: #ff808d;
     --success-color: #75b798;
   }
@@ -254,7 +249,8 @@ dialog::backdrop {
   background-color: rgba(0, 0, 0, 0.7) !important;
   backdrop-filter: blur(6px);
   font-family: var(--font-family);
-  font-size: 0.9rem;
+  text-wrap: balance;
+  line-height: 1.5;
 }
 
 .results {
