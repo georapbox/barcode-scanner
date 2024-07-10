@@ -1,5 +1,24 @@
 :root {
+  --font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', sans-serif;
+
+  --accent-h: 217.75deg;
+  --accent-s: 98.36%;
+  --accent-l: 52.16%;
+  --accent: hsl(var(--accent-h), var(--accent-s), var(--accent-l));
+
   --body-max-width: 75rem;
+  --background-body: #ffffff;
+  --background-alt: #f7f7f7;
+  --background: #efefef;
+  --text-main: #363636;
+  --text-muted: #70777f;
+  --links: var(--accent);
+  --focus: var(--accent);
+  --border: #b9b8b8;
+  --dialog-background: #ffffff;
+  --border-radius: 6px;
+  --animation-duration: 0.1s;
+
   --container-max-width: 37.5rem;
   --capture-border-width: 3px;
   --video-border-radius: calc(var(--border-radius) / 2);
@@ -10,14 +29,135 @@
   accent-color: var(--accent);
 }
 
+@media (prefers-color-scheme: dark) {
+  :root {
+    --accent-h: 206;
+    --accent-s: 100%;
+    --accent-l: 73%;
+    --accent: hsl(var(--accent-h), var(--accent-s), var(--accent-l));
+
+    --background-body: #212529;
+    --background-alt: #343a40;
+    --background: var(--background-alt);
+    --text-main: #dbdbdb;
+    --text-muted: #a9b1ba;
+    --links: var(--accent);
+    --focus: var(--accent);
+    --border: #495057;
+    --dialog-background: var(--background-alt);
+    --animation-duration: 0.1s;
+
+    --error-color: #ff808d;
+    --success-color: #75b798;
+  }
+}
+
 *,
 *:before,
 *:after {
   box-sizing: border-box;
 }
 
-body:has(.modal[open]) {
+body {
+  font-family: var(--font-family);
+  line-height: 1.4;
+  max-width: var(--body-max-width);
+  padding: 0 0.75rem;
+  margin: 1.25rem auto;
+  word-wrap: break-word;
+  color: var(--text-main);
+  background: var(--background-body);
+  text-rendering: optimizeLegibility;
+}
+
+body:has(.popover-dialog[open]) {
   overflow-y: hidden;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+a {
+  text-decoration: none;
+  color: var(--links);
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+a > code,
+a > strong {
+  color: inherit;
+}
+
+a,
+button,
+input {
+  outline-color: var(--accent);
+}
+
+button {
+  color: var(--text-main);
+  font-family: inherit;
+  font-size: inherit;
+  padding: 0.625rem;
+  border: none;
+  border-radius: var(--border-radius);
+}
+
+button:not(:disabled) {
+  cursor: pointer;
+}
+
+input[type='checkbox'] {
+  min-width: 1rem;
+  width: 1rem;
+  height: 1rem;
+}
+
+input[type="checkbox"]:not(:disabled) {
+  cursor: pointer;
+}
+
+kbd {
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  color: var(--text-main);
+  padding: 0.125rem 0.25rem;
+}
+
+img,
+video {
+  max-width: 100%;
+  height: auto;
+}
+
+hr {
+  border: none;
+  border-top: 1px solid var(--border);
+}
+
+h1 {
+  margin: 0.75rem 0;
+  font-size: 1.6rem;
+  font-weight: 300;
+}
+
+dialog {
+  background-color: var(--dialog-background);
+  color: var(--text-main);
+  border: none;
+  border-radius: var(--border-radius);
+  border-color: var(--border);
+  padding: 10px 30px;
+}
+
+dialog::backdrop {
+  background: #0000009c;
+  backdrop-filter: blur(4px);
 }
 
 .noscript {
@@ -33,10 +173,6 @@ body:has(.modal[open]) {
   background-color: #f8d7da;
 }
 
-[hidden] {
-  display: none !important;
-}
-
 .site-header {
   display: flex;
   justify-content: center;
@@ -44,12 +180,6 @@ body:has(.modal[open]) {
   flex-direction: column;
   margin: 2rem 0;
   text-align: center;
-}
-
-h1 {
-  margin: 0.75rem 0;
-  font-size: 1.6rem;
-  font-weight: 300;
 }
 
 .container {
@@ -177,8 +307,7 @@ h1 {
 }
 
 custom-clipboard-copy::part(button):focus-visible {
-  outline: 0;
-  box-shadow: 0 0 0 2px var(--focus);
+  outline-color: var(--accent);
 }
 
 .scan-instructions {
@@ -286,6 +415,10 @@ input[type="file"]:disabled::-webkit-file-upload-button {
 
 body > footer {
   margin-top: 1.5rem;
+  border-top: 1px solid #dbdbdb;
+  border-top: 1px solid var(--border);
+  padding-top: 10px;
+  color: var(--text-muted);
   text-align: center;
 }
 
@@ -411,15 +544,15 @@ capture-photo::part(facing-mode-button) {
 }
 
 .global-actions button svg {
-  width: 1.125em;
-  height: 1.125em;
+  width: 1.125rem;
+  height: 1.125rem;
 }
 
 .global-actions button span {
   display: none;
 }
 
-.modal > header:first-child {
+.popover-dialog > header:first-child {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -428,7 +561,7 @@ capture-photo::part(facing-mode-button) {
   font-weight: 500;
 }
 
-.modal > header:first-child button {
+.popover-dialog > header:first-child button {
   padding: 0.25rem;
   margin: 0;
   background-color: transparent !important;
@@ -436,26 +569,26 @@ capture-photo::part(facing-mode-button) {
   color: var(--text-main);
 }
 
-.modal {
+.popover-dialog {
   position: absolute;
-  top: 16px;
-  right: 16px;
+  top: 1rem;
+  right: 1rem;
   left: auto;
   padding: 0;
   margin: 0;
 }
 
-.modal :not(header) {
+.popover-dialog :not(header) {
   font-size: 0.9rem;
 }
 
-.modal ul {
+.popover-dialog ul {
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.modal ul li {
+.popover-dialog ul li {
   position: relative;
   display: flex;
   align-items: center;
@@ -464,51 +597,55 @@ capture-photo::part(facing-mode-button) {
   border-bottom: 1px solid var(--border);
 }
 
+.popover-dialog ul li:last-child {
+  border-bottom: 0;
+}
+
 /* Modal animations */
 @media (prefers-reduced-motion: no-preference) {
-  .modal::backdrop {
+  .popover-dialog::backdrop {
     opacity: 0;
   }
 
-  .modal[open]::backdrop {
+  .popover-dialog[open]::backdrop {
     opacity: 1;
   }
 
-  .modal,
-  .modal::backdrop {
+  .popover-dialog,
+  .popover-dialog::backdrop {
     transition: transform 0.3s, opacity 0.3s, display 0.3s allow-discrete, overlay 0.3s allow-discrete;
   }
 
   /* 1. IS-OPEN STATE */
-  .modal[open] {
+  .popover-dialog[open] {
     transform: translateY(0);
     opacity: 1;
   }
 
   /* 2. EXIT STATE */
-  .modal {
+  .popover-dialog {
     transform: translateY(-16px);
     opacity: 0;
   }
 
   /* 0. BEFORE-OPEN STATE */
   @starting-style {
-    .modal[open] {
+    .popover-dialog[open] {
       transform: translateY(-16px);
       opacity: 0;
     }
 
-    .modal[open]::backdrop {
+    .popover-dialog[open]::backdrop {
       opacity: 0;
     }
   }
 }
 
-.history-modal ul {
+.popover-dialog--history ul {
   max-width: 500px;
 }
 
-.history-modal ul li {
+.popover-dialog--history ul li {
   justify-content: space-between;
   align-items: center;
   gap: 1rem;
@@ -533,7 +670,7 @@ capture-photo::part(facing-mode-button) {
   border-radius: var(--border-radius);
   background-color: transparent !important;
   line-height: 1;
-  font-size: 1em;
+  font-size: 1rem;
   color: var(--text-main);
   cursor: pointer;
 }
@@ -547,11 +684,11 @@ capture-photo::part(facing-mode-button) {
   margin-right: -0.5rem;
 }
 
-.settings-modal ul li input[type="checkbox"] {
+.popover-dialog--settings ul li input[type="checkbox"] {
   margin: 0.15rem 0.5rem 0 0;
 }
 
-.settings-modal ul li label {
+.popover-dialog--settings ul li label {
   display: flex;
   flex: 1;
   margin: 0;
@@ -559,14 +696,14 @@ capture-photo::part(facing-mode-button) {
   cursor: pointer;
 }
 
-.settings-modal fieldset {
+.popover-dialog--settings fieldset {
   border: 0;
   padding: 0;
   margin: 0;
   border-radius: 0;
 }
 
-.settings-modal fieldset legend {
+.popover-dialog--settings fieldset legend {
   padding: 0.5rem 0.75rem 0 0.75rem;
   font-weight: 500;
 }
@@ -575,7 +712,7 @@ capture-photo::part(facing-mode-button) {
   width: calc(100% - 1.5rem);
   margin: 0.75rem 0 0.75rem 0.75rem;
   background-color: var(--error-color) !important;
-  color: #ffffff !important;
+  color: #ffffff;
 }
 
 /* Tab group */
@@ -601,7 +738,7 @@ a-tab::part(base) {
   transition: background-color var(--animation-duration) ease-in-out, color var(--animation-duration) ease-in-out;
 }
 
-a-tab:focus-visible {
+a-tab:focus-visible::part(base) {
   outline: none;
   box-shadow: inset 0 0 0 2px var(--focus);
 }
@@ -624,10 +761,14 @@ a-tab[selected]::part(base) {
   border: 0 !important;
 }
 
+.text-underline {
+  text-decoration: underline !important;
+}
+
+/* Media queries */
 @media (prefers-color-scheme: dark) {
-  :root {
-    --error-color: #e05260;
-    --success-color: #75b798;
+  #deleteHistoryBtn {
+    color: #000;
   }
 
   .dropzone {
