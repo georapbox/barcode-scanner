@@ -4,22 +4,26 @@ import '@georapbox/files-dropzone-element/dist/files-dropzone-defined.js';
 import { isWebShareSupported } from '@georapbox/web-share-element/dist/is-web-share-supported.js';
 import '@georapbox/resize-observer-element/dist/resize-observer-defined.js';
 import { CapturePhoto } from '@georapbox/capture-photo-element/dist/capture-photo.js';
-import { getHistory, setHistory, getSettings, setSettings } from './services/storage.js';
+import { NO_BARCODE_DETECTED, ACCEPTED_MIME_TYPES } from './constants.js';
+import { getHistory, setSettings } from './services/storage.js';
 import { debounce } from './utils/debounce.js';
-import { toastAlert } from './helpers/toast-alert.js';
+import { log } from './utils/log.js';
+import { toastAlert } from './helpers/toastAlert.js';
+import { renderSupportedFormats } from './helpers/renderSupportedFormats.js';
+import {
+  addToHistory,
+  removeFromHistory,
+  emptyHistory,
+  renderHistoryList
+} from './helpers/history.js';
+import { emptyResults, createResult } from './helpers/results.js';
+import { triggerScanEffects } from './helpers/triggerScanEffects.js';
+import { resizeScanFrame } from './helpers/resizeScanFrame.js';
+import { detectBarcode } from './helpers/detectBarcode.js';
+import { initializeSettingsForm } from './helpers/initializeSettingsForm.js';
 import './components/clipboard-copy.js';
 
 (async function () {
-  const NO_BARCODE_DETECTED = 'No barcode detected';
-  const ACCEPTED_MIME_TYPES = [
-    'image/jpg',
-    'image/jpeg',
-    'image/png',
-    'image/apng',
-    'image/gif',
-    'image/webp',
-    'image/avif'
-  ];
   const tabGroupEl = document.querySelector('a-tab-group');
   const cameraPanel = document.getElementById('cameraPanel');
   const capturePhotoEl = document.querySelector('capture-photo');
@@ -38,7 +42,6 @@ import './components/clipboard-copy.js';
   const settingsBtn = document.getElementById('settingsBtn');
   const settingsDialog = document.getElementById('settingsDialog');
   const settingsForm = document.forms['settings-form'];
-  const supportedFormatsEl = document.getElementById('supportedFormats');
   let shouldRepeatScan = true;
   let rafId;
 
@@ -62,15 +65,13 @@ import './components/clipboard-copy.js';
     });
   }
 
-  const { value: history = [] } = await getHistory();
-
-  renderHistoryList(history);
+  renderHistoryList((await getHistory()).value || []);
 
   capturePhotoEl.addEventListener(
     'capture-photo:video-play',
     evt => {
       scanFrameEl.hidden = false;
-      resizeScanFrame(evt.detail.video);
+      resizeScanFrame(evt.detail.video, scanFrameEl);
       scan();
 
       const trackSettings = evt.target.getTrackSettings();
@@ -138,267 +139,9 @@ import './components/clipboard-copy.js';
   const capturePhotoVideoEl = capturePhotoEl.shadowRoot.querySelector('video');
   const formats = await window.BarcodeDetector.getSupportedFormats();
   const barcodeDetector = new window.BarcodeDetector({ formats });
-  const { value: settings = {} } = await getSettings();
 
-  Object.entries(settings).forEach(([key, value]) => {
-    const settingInput = settingsForm.querySelector(`[name="${key}"]`);
-    if (settingInput) {
-      settingInput.checked = value;
-    }
-  });
-
-  if (Array.isArray(formats) && formats.length > 0) {
-    supportedFormatsEl.textContent = `Supported formats: ${formats.join(', ')}`;
-  }
-
-  const beep = (() => {
-    const audioCtx = new (window.AudioContext ||
-      window.webkitAudioContext ||
-      window.audioContext)();
-
-    if (!audioCtx) {
-      return;
-    }
-
-    return async (duration, frequency, volume, type, callback) => {
-      const { value: settings } = await getSettings();
-
-      if (!settings?.beep) {
-        return;
-      }
-
-      const oscillator = audioCtx.createOscillator();
-      const gainNode = audioCtx.createGain();
-
-      oscillator.connect(gainNode);
-      gainNode.connect(audioCtx.destination);
-
-      if (volume) {
-        gainNode.gain.value = volume;
-      }
-
-      if (frequency) {
-        oscillator.frequency.value = frequency;
-      }
-
-      if (type) {
-        oscillator.type = type;
-      }
-
-      if (typeof callback === 'function') {
-        oscillator.onended = callback;
-      }
-
-      oscillator.start(audioCtx.currentTime);
-      oscillator.stop(audioCtx.currentTime + (duration || 500) / 1000);
-    };
-  })();
-
-  function renderHistoryList(data) {
-    historyList.innerHTML = '';
-
-    if (!Array.isArray(data) || !data.length) {
-      historyList.innerHTML = '<li class=>There are no saved items in history.</li>';
-      deleteHistoryBtn.style.display = 'none';
-    } else {
-      deleteHistoryBtn.style.display = 'block';
-
-      data.forEach(item => {
-        const li = document.createElement('li');
-        li.setAttribute('data-value', item);
-
-        let historyItem;
-
-        try {
-          new URL(item);
-          historyItem = document.createElement('a');
-          historyItem.href = item;
-          historyItem.setAttribute('target', '_blank');
-          historyItem.setAttribute('rel', 'noreferrer noopener');
-        } catch {
-          historyItem = document.createElement('span');
-        }
-
-        historyItem.textContent = item;
-        historyItem.setAttribute('title', item);
-
-        const actionsEl = document.createElement('div');
-        actionsEl.className = 'history-modal__actions';
-
-        const copyBtn = document.createElement('custom-clipboard-copy');
-        copyBtn.title = 'Copy to clipboard';
-        copyBtn.setAttribute('only-icon', '');
-        copyBtn.setAttribute('value', item);
-        actionsEl.appendChild(copyBtn);
-
-        const removeBtn = document.createElement('button');
-        removeBtn.type = 'button';
-        removeBtn.className = 'history-modal__delete-action';
-        removeBtn.title = 'Remove from history';
-        removeBtn.setAttribute('data-action', 'delete');
-        removeBtn.innerHTML = /* html */ `
-          <svg xmlns="http://www.w3.org/2000/svg" width="1.125rem" height="1.125rem" fill="currentColor" viewBox="0 0 16 16">
-            <path d="M11 1.5v1h3.5a.5.5 0 0 1 0 1h-.538l-.853 10.66A2 2 0 0 1 11.115 16h-6.23a2 2 0 0 1-1.994-1.84L2.038 3.5H1.5a.5.5 0 0 1 0-1H5v-1A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5Zm-5 0v1h4v-1a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5ZM4.5 5.029l.5 8.5a.5.5 0 1 0 .998-.06l-.5-8.5a.5.5 0 1 0-.998.06Zm6.53-.528a.5.5 0 0 0-.528.47l-.5 8.5a.5.5 0 0 0 .998.058l.5-8.5a.5.5 0 0 0-.47-.528ZM8 4.5a.5.5 0 0 0-.5.5v8.5a.5.5 0 0 0 1 0V5a.5.5 0 0 0-.5-.5Z"/>
-          </svg>
-        `;
-        actionsEl.appendChild(removeBtn);
-
-        li.appendChild(historyItem);
-        li.appendChild(actionsEl);
-        historyList.appendChild(li);
-      });
-    }
-  }
-
-  async function addToHistory(item) {
-    const { value: settings } = await getSettings();
-
-    if (!item || !settings?.addToHistory) {
-      return;
-    }
-
-    const { value: history = [], error: getHistoryError } = await getHistory();
-
-    if (!getHistoryError && !history.find(h => h === item)) {
-      const data = [...history, item];
-
-      const { error: setHistoryError } = await setHistory(data);
-
-      if (!setHistoryError) {
-        renderHistoryList(data);
-      }
-    }
-  }
-
-  async function removeFromHistory(value) {
-    if (!value) {
-      return;
-    }
-
-    const { value: history = [], error: getHistoryError } = await getHistory();
-
-    if (!getHistoryError) {
-      const data = history.filter(item => item !== value);
-
-      const { error: setHistoryError } = await setHistory(data);
-
-      if (!setHistoryError) {
-        renderHistoryList(data);
-      }
-    }
-  }
-
-  async function emptyHistory() {
-    const { error: setHistoryError } = await setHistory([]);
-
-    if (!setHistoryError) {
-      renderHistoryList([]);
-    }
-  }
-
-  async function vibrate(duration = 100) {
-    const { value: settings } = await getSettings();
-
-    if (typeof window.navigator.vibrate !== 'function' || !settings?.vibrate) {
-      return;
-    }
-
-    try {
-      window.navigator.vibrate(duration);
-    } catch {
-      // Fail silently...
-    }
-  }
-
-  function resizeScanFrame(videoEl) {
-    if (!videoEl) {
-      return;
-    }
-
-    const rect = videoEl.getBoundingClientRect();
-
-    scanFrameEl.style.cssText = `width: ${rect.width}px; height: ${rect.height}px`;
-  }
-
-  function emptyResults(resultDialog) {
-    resultDialog?.querySelector('.results__item')?.remove();
-  }
-
-  async function createResult(value, resultDialog) {
-    if (!value || !resultDialog) {
-      return;
-    }
-
-    emptyResults(resultDialog);
-
-    let resultItem;
-
-    try {
-      const { value: settings } = await getSettings();
-
-      new URL(value);
-      resultItem = document.createElement('a');
-      resultItem.href = value;
-
-      if (!settings?.openWebPageSameTab) {
-        resultItem.setAttribute('target', '_blank');
-        resultItem.setAttribute('rel', 'noreferrer noopener');
-      }
-
-      if (settings?.openWebPage) {
-        resultItem.click();
-      }
-    } catch {
-      resultItem = document.createElement('span');
-    }
-
-    resultItem.className = 'results__item';
-    resultItem.classList.toggle('results__item--no-barcode', value === NO_BARCODE_DETECTED);
-    resultItem.textContent = value;
-
-    resultDialog.insertBefore(resultItem, resultDialog.querySelector('.results__actions'));
-
-    const clipboarCopyEl = resultDialog.querySelector('custom-clipboard-copy');
-    const webShareEl = resultDialog.querySelector('web-share');
-    const isValidValue = value !== NO_BARCODE_DETECTED;
-
-    if (clipboarCopyEl) {
-      clipboarCopyEl.disabled = !isValidValue;
-      clipboarCopyEl.hidden = !isValidValue;
-    }
-
-    if (webShareEl && isWebShareSupported()) {
-      webShareEl.disabled = !isValidValue;
-      webShareEl.hidden = !isValidValue;
-
-      if (isValidValue) {
-        webShareEl.setAttribute('share-text', value);
-      } else {
-        webShareEl.removeAttribute('share-text');
-      }
-    }
-
-    resultDialog.show();
-  }
-
-  function detectBarcode(source) {
-    return new Promise((resolve, reject) => {
-      barcodeDetector
-        .detect(source)
-        .then(results => {
-          if (Array.isArray(results) && results.length > 0) {
-            resolve(results[0]);
-          } else {
-            reject({
-              message: 'Could not detect barcode from provided source.'
-            });
-          }
-        })
-        .catch(err => {
-          reject(err);
-        });
-    });
-  }
+  initializeSettingsForm(settingsForm);
+  renderSupportedFormats(formats);
 
   async function scan() {
     log('Scanning...');
@@ -407,7 +150,7 @@ import './components/clipboard-copy.js';
 
     try {
       let barcode = {};
-      barcode = await detectBarcode(capturePhotoVideoEl);
+      barcode = await detectBarcode(barcodeDetector, capturePhotoVideoEl);
       window.cancelAnimationFrame(rafId);
       emptyResults(cameraResultsEl);
       createResult(barcode.rawValue, cameraResultsEl);
@@ -415,8 +158,7 @@ import './components/clipboard-copy.js';
       scanInstructionsEl.hidden = true;
       scanBtn.hidden = false;
       scanFrameEl.hidden = true;
-      beep(200, 860, 0.03, 'square');
-      vibrate();
+      triggerScanEffects();
       return;
     } catch {
       // Fail silently...
@@ -440,12 +182,11 @@ import './components/clipboard-copy.js';
 
       image.onload = async () => {
         try {
-          const barcode = await detectBarcode(image);
+          const barcode = await detectBarcode(barcodeDetector, image);
           emptyResults(fileResultsEl);
           createResult(barcode.rawValue, fileResultsEl);
           addToHistory(barcode.rawValue);
-          beep(200, 860, 0.03, 'square');
-          vibrate();
+          triggerScanEffects();
         } catch {
           emptyResults(fileResultsEl);
           createResult(NO_BARCODE_DETECTED, fileResultsEl);
@@ -474,10 +215,6 @@ import './components/clipboard-copy.js';
     };
 
     reader.readAsDataURL(file);
-  }
-
-  function log(...args) {
-    process.env.NODE_ENV === 'development' && console.log(...args);
   }
 
   scanBtn.addEventListener('click', () => {
@@ -527,7 +264,7 @@ import './components/clipboard-copy.js';
   });
 
   resizeObserverEl.addEventListener('resize-observer:resize', () => {
-    resizeScanFrame(capturePhotoEl.shadowRoot.querySelector('video'));
+    resizeScanFrame(capturePhotoEl.shadowRoot.querySelector('video'), scanFrameEl);
   });
 
   settingsBtn.addEventListener('click', () => {
