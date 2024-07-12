@@ -19,7 +19,7 @@ import {
 import { emptyResults, createResult } from './helpers/results.js';
 import { triggerScanEffects } from './helpers/triggerScanEffects.js';
 import { resizeScanFrame } from './helpers/resizeScanFrame.js';
-import { detectBarcode } from './helpers/detectBarcode.js';
+import { BarcodeReader } from './helpers/BarcodeReader.js';
 import { initializeSettingsForm } from './helpers/initializeSettingsForm.js';
 import './components/clipboard-copy.js';
 
@@ -42,30 +42,18 @@ import './components/clipboard-copy.js';
   const settingsBtn = document.getElementById('settingsBtn');
   const settingsDialog = document.getElementById('settingsDialog');
   const settingsForm = document.forms['settings-form'];
-  let shouldRepeatScan = true;
+  let shouldScan = true;
   let rafId;
 
-  if (!('BarcodeDetector' in window)) {
-    try {
-      await import('barcode-detector');
-      log('Using BarcodeDetector polyfill.');
-    } catch {
-      globalActionsEl.hidden = true;
-      tabGroupEl.style.display = 'none';
-      return toastAlert('BarcodeDetector API is not supported by your browser.', 'danger');
-    }
-  } else {
-    log('Using the native BarcodeDetector API.');
-  }
+  const { barcodeReader, barcodeFormats, barcodeReaderError } = await BarcodeReader.init();
 
-  if (!isWebShareSupported()) {
-    document.querySelectorAll('web-share').forEach(el => {
-      el.hidden = true;
-      el.disabled = true;
-    });
+  if (barcodeReaderError) {
+    shouldScan = false;
+    globalActionsEl.hidden = true;
+    tabGroupEl.hidden = true;
+    toastAlert(barcodeReaderError.message, 'danger');
+    return; // Stop the script execution as BarcodeDetector API is not supported.
   }
-
-  renderHistoryList((await getHistory()).value || []);
 
   capturePhotoEl.addEventListener(
     'capture-photo:video-play',
@@ -134,14 +122,19 @@ import './components/clipboard-copy.js';
 
   CapturePhoto.defineCustomElement();
 
-  dropzoneEl.accept = ACCEPTED_MIME_TYPES.join(',');
-
   const capturePhotoVideoEl = capturePhotoEl.shadowRoot.querySelector('video');
-  const formats = await window.BarcodeDetector.getSupportedFormats();
-  const barcodeDetector = new window.BarcodeDetector({ formats });
 
+  dropzoneEl.accept = ACCEPTED_MIME_TYPES.join(',');
   initializeSettingsForm(settingsForm);
-  renderSupportedFormats(formats);
+  renderSupportedFormats(barcodeFormats);
+  renderHistoryList((await getHistory()).value || []);
+
+  if (!isWebShareSupported()) {
+    document.querySelectorAll('web-share').forEach(el => {
+      el.hidden = true;
+      el.disabled = true;
+    });
+  }
 
   async function scan() {
     log('Scanning...');
@@ -150,7 +143,7 @@ import './components/clipboard-copy.js';
 
     try {
       let barcode = {};
-      barcode = await detectBarcode(barcodeDetector, capturePhotoVideoEl);
+      barcode = await barcodeReader.detect(capturePhotoVideoEl);
       window.cancelAnimationFrame(rafId);
       emptyResults(cameraResultsEl);
       createResult(barcode.rawValue, cameraResultsEl);
@@ -161,10 +154,11 @@ import './components/clipboard-copy.js';
       triggerScanEffects();
       return;
     } catch {
-      // Fail silently...
+      // If no barcode is detected, the error is caught here.
+      // We can ignore the error and continue scanning.
     }
 
-    if (shouldRepeatScan) {
+    if (shouldScan) {
       rafId = window.requestAnimationFrame(() => scan());
     }
   }
@@ -182,7 +176,7 @@ import './components/clipboard-copy.js';
 
       image.onload = async () => {
         try {
-          const barcode = await detectBarcode(barcodeDetector, image);
+          const barcode = await barcodeReader.detect(image);
           emptyResults(fileResultsEl);
           createResult(barcode.rawValue, fileResultsEl);
           addToHistory(barcode.rawValue);
@@ -231,7 +225,7 @@ import './components/clipboard-copy.js';
       const tabId = evt.detail.tabId;
 
       if (tabId === 'cameraTab') {
-        shouldRepeatScan = true;
+        shouldScan = true;
 
         // Get the latest instance of capture-photo element to ensure we don't use the cached one.
         const capturePhotoEl = document.querySelector('capture-photo');
@@ -250,7 +244,7 @@ import './components/clipboard-copy.js';
       }
 
       if (tabId === 'fileTab') {
-        shouldRepeatScan = false;
+        shouldScan = false;
 
         if (capturePhotoEl != null && typeof capturePhotoEl.stopVideoStream === 'function') {
           capturePhotoEl.stopVideoStream();
@@ -320,13 +314,13 @@ import './components/clipboard-copy.js';
     }
 
     if (document.visibilityState === 'hidden') {
-      shouldRepeatScan = false;
+      shouldScan = false;
 
       if (capturePhotoEl != null && typeof capturePhotoEl.stopVideoStream === 'function') {
         capturePhotoEl.stopVideoStream();
       }
     } else {
-      shouldRepeatScan = true;
+      shouldScan = true;
 
       // Get the latest instance of capture-photo element to ensure we don't use the cached one.
       const capturePhotoEl = document.querySelector('capture-photo');
