@@ -89,7 +89,8 @@ a > strong {
 
 a,
 button,
-input {
+input,
+custom-clipboard-copy::part(button) {
   outline-color: var(--accent);
 }
 
@@ -249,8 +250,14 @@ dialog::backdrop {
   background-color: rgba(0, 0, 0, 0.7) !important;
   backdrop-filter: blur(6px);
   font-family: var(--font-family);
+  font-size: 0.9375rem;
   text-wrap: balance;
   line-height: 1.5;
+  outline-offset: -2px;
+}
+
+.scan-button kbd {
+  font-size: 0.8rem;
 }
 
 .results {
@@ -300,10 +307,6 @@ dialog::backdrop {
   font-family: inherit;
   font-size: 0.9rem;
   cursor: pointer;
-}
-
-custom-clipboard-copy::part(button):focus-visible {
-  outline-color: var(--accent);
 }
 
 .scan-instructions {
@@ -411,7 +414,6 @@ input[type="file"]:disabled::-webkit-file-upload-button {
 
 body > footer {
   margin-top: 1.5rem;
-  border-top: 1px solid #dbdbdb;
   border-top: 1px solid var(--border);
   padding-top: 10px;
   color: var(--text-muted);
@@ -474,6 +476,7 @@ capture-photo::part(facing-mode-button) {
   -webkit-appearance: none;
   appearance: none;
   transition: background-color 0.15s ease-in-out;
+  font-size: 1rem;
 }
 
 .zoom-controls {
@@ -537,11 +540,6 @@ capture-photo::part(facing-mode-button) {
   padding: 8px;
   margin: 0;
   font-size: 0.9rem;
-}
-
-.global-actions button svg {
-  width: 1.125rem;
-  height: 1.125rem;
 }
 
 .global-actions button span {
