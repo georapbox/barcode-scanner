@@ -688,7 +688,7 @@ capture-photo::part(facing-mode-button) {
   font-weight: 500;
 }
 
-#deleteHistoryBtn {
+.empty-history-button {
   width: calc(100% - 1.5rem);
   margin: 0.75rem 0 0.75rem 0.75rem;
   background-color: var(--error-color) !important;
@@ -747,8 +747,8 @@ a-tab[selected]::part(base) {
 
 /* Media queries */
 @media (prefers-color-scheme: dark) {
-  #deleteHistoryBtn {
-    color: #000;
+  .empty-history-button {
+    color: #000000;
   }
 
   .dropzone {

@@ -2,15 +2,15 @@ import { getHistory, setHistory, getSettings } from '../services/storage.js';
 
 export function renderHistoryList(data) {
   const historyList = document.getElementById('historyList');
-  const deleteHistoryBtn = document.getElementById('deleteHistoryBtn');
+  const emptyHistoryBtn = document.getElementById('emptyHistoryBtn');
 
   historyList.innerHTML = '';
 
   if (!Array.isArray(data) || data.length === 0) {
     historyList.innerHTML = '<li>There are no saved items in history.</li>';
-    deleteHistoryBtn.hidden = true;
+    emptyHistoryBtn.hidden = true;
   } else {
-    deleteHistoryBtn.hidden = false;
+    emptyHistoryBtn.hidden = false;
 
     data.forEach(item => {
       const li = document.createElement('li');
