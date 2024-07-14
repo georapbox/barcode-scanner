@@ -125,11 +125,11 @@
     </div>
   </header>
 
-  <div class="toastContainer">
-    <div id="toastContainer"></div>
-  </div>
-
   <div class="container">
+    <div class="alert alert-danger" id="barcodeReaderError" hidden>
+      An error occurred while initializing BarcodeReader.
+    </div>
+
     <a-tab-group no-scroll-controls no-tab-cycling>
       <a-tab slot="tab" role="heading" id="cameraTab">
         <svg xmlns="http://www.w3.org/2000/svg" width="1.625em" height="1.625em" fill="currentColor" viewBox="0 0 16 16">

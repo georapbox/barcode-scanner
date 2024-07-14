@@ -8,7 +8,6 @@ import { NO_BARCODE_DETECTED, ACCEPTED_MIME_TYPES } from './constants.js';
 import { getHistory, setSettings } from './services/storage.js';
 import { debounce } from './utils/debounce.js';
 import { log } from './utils/log.js';
-import { toastAlert } from './helpers/toastAlert.js';
 import { renderSupportedFormats } from './helpers/renderSupportedFormats.js';
 import {
   addToHistory,
@@ -48,10 +47,13 @@ import './components/clipboard-copy.js';
   const { barcodeReader, barcodeFormats, barcodeReaderError } = await BarcodeReader.init();
 
   if (barcodeReaderError) {
+    const alertEl = document.getElementById('barcodeReaderError');
+
     shouldScan = false;
     globalActionsEl.hidden = true;
     tabGroupEl.hidden = true;
-    toastAlert(barcodeReaderError.message, 'danger');
+    alertEl.hidden = false;
+    alertEl.textContent = barcodeReaderError?.message;
     return; // Stop the script execution as BarcodeDetector API is not supported.
   }
 

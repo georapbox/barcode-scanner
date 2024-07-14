@@ -183,13 +183,6 @@ dialog::backdrop {
   margin: 0 auto;
 }
 
-.toastContainer {
-  width: 100%;
-  padding: 0 0.5rem;
-  z-index: 1051;
-  pointer-events: none;
-}
-
 .alert {
   display: flex;
   align-items: center;
@@ -217,13 +210,6 @@ dialog::backdrop {
   background-color: #f8d7da;
   border: 1px solid #f5c2c7;
   border-radius: 0.25rem;
-}
-
-.toastContainer .alert {
-  max-width: var(--container-max-width);
-  margin: 0.5rem auto 1rem auto;
-  padding-right: 0;
-  pointer-events: all;
 }
 
 .fork {
