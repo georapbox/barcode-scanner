@@ -1,6 +1,11 @@
 import { log } from '../utils/log.js';
 
-export class BarcodeReader {
+/**
+ * BarcodeReader class to detect barcodes from images or videos.
+ *
+ * @see https://developer.mozilla.org/docs/Web/API/BarcodeDetector
+ */
+class BarcodeReader {
   static async polyfill() {
     if (!('BarcodeDetector' in window)) {
       try {
@@ -14,15 +19,31 @@ export class BarcodeReader {
     }
   }
 
+  /**
+   * Get the supported barcode formats.
+   *
+   * @see https://developer.mozilla.org/docs/Web/API/BarcodeDetector/getSupportedFormats
+   * @returns {Promise<Array<string>>} - Supported barcode formats
+   */
   static async getSupportedFormats() {
     return await window.BarcodeDetector.getSupportedFormats();
   }
 
+  /**
+   * Create a new BarcodeReader instance.
+   *
+   * @returns {Promise<BarcodeReader>} - New BarcodeReader instance
+   */
   static async create() {
     const formats = await window.BarcodeDetector.getSupportedFormats();
     return new BarcodeReader(formats);
   }
 
+  /**
+   * Initialize the BarcodeReader.
+   *
+   * @returns {Promise<{ barcodeReader: BarcodeReader, barcodeFormats: Array<string>, barcodeReaderError: Error }>} - BarcodeReader instance, supported formats, and error
+   */
   static async init() {
     try {
       await BarcodeReader.polyfill();
@@ -38,10 +59,22 @@ export class BarcodeReader {
     }
   }
 
+  /**
+   * Create a new BarcodeReader instance.
+   *
+   * @param {Array<string>} formats - Supported barcode formats
+   */
   constructor(formats) {
     this.barcodeReader = new window.BarcodeDetector({ formats });
   }
 
+  /**
+   * Detect barcodes from the provided source.
+   *
+   * @see https://developer.mozilla.org/docs/Web/API/BarcodeDetector/detect
+   * @param {HTMLImageElement|HTMLVideoElement|ImageBitmap} source - Image or video element or ImageBitmap
+   * @returns {Promise<BarcodeDetection>} - Barcode detection result
+   */
   async detect(source) {
     if (!this.barcodeReader) {
       throw new Error('BarcodeReader is not initialized.');
@@ -56,3 +89,5 @@ export class BarcodeReader {
     }
   }
 }
+
+export { BarcodeReader };

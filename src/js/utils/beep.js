@@ -1,3 +1,13 @@
+/**
+ * Beep sound using the `AudioContext` interface.
+ *
+ * @param {Object} options
+ * @param {Number} options.duration - Duration in milliseconds
+ * @param {Number} options.frequency - Frequency in Hz
+ * @param {Number} options.volume - Volume
+ * @param {String} options.type - Type of oscillator
+ * @param {Function} options.onEnded - Callback function when the sound ends
+ */
 export const beep = (() => {
   const audioCtx = new (window.AudioContext || window.webkitAudioContext || window.audioContext)();
 
@@ -5,7 +15,8 @@ export const beep = (() => {
     return;
   }
 
-  return ({ duration, frequency, volume, type, onEnded }) => {
+  return options => {
+    const { duration, frequency, volume, type, onEnded } = options;
     const oscillator = audioCtx.createOscillator();
     const gainNode = audioCtx.createGain();
 

@@ -1,5 +1,10 @@
 import { getHistory, setHistory, getSettings } from '../services/storage.js';
 
+/**
+ * Renders the history list. If there are no items in history, it will show a message.
+ *
+ * @param {Array<string>} data - Hidsoty data as an array of strings
+ */
 export function renderHistoryList(data) {
   const historyList = document.getElementById('historyList');
   const emptyHistoryBtn = document.getElementById('emptyHistoryBtn');
@@ -59,6 +64,12 @@ export function renderHistoryList(data) {
   }
 }
 
+/**
+ * Adds an item to the history.
+ * If the item is already in history, it will not be added.
+ *
+ * @param {string} item - Item to add to history
+ */
 export async function addToHistory(item) {
   const { value: settings } = await getSettings();
 
@@ -79,16 +90,20 @@ export async function addToHistory(item) {
   }
 }
 
-export async function removeFromHistory(value) {
-  if (!value) {
+/**
+ * Removes an item from the history.
+ *
+ * @param {string} item - Item to remove from history
+ */
+export async function removeFromHistory(item) {
+  if (!item) {
     return;
   }
 
   const { value: history = [], error: getHistoryError } = await getHistory();
 
   if (!getHistoryError) {
-    const data = history.filter(item => item !== value);
-
+    const data = history.filter(el => el !== item);
     const { error: setHistoryError } = await setHistory(data);
 
     if (!setHistoryError) {
@@ -97,6 +112,9 @@ export async function removeFromHistory(value) {
   }
 }
 
+/**
+ * Removes all items from the history.
+ */
 export async function emptyHistory() {
   const { error: setHistoryError } = await setHistory([]);
 

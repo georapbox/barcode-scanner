@@ -2,10 +2,21 @@ import { isWebShareSupported } from '@georapbox/web-share-element/dist/is-web-sh
 import { getSettings } from '../services/storage.js';
 import { NO_BARCODE_DETECTED } from '../constants.js';
 
+/**
+ * Empties the scanned barcode results.
+ *
+ * @param {HTMLDialogElement} resultDialog - The dialog element to empty the results.
+ */
 export function emptyResults(resultDialog) {
   resultDialog?.querySelector('.results__item')?.remove();
 }
 
+/**
+ * Creates a result element with the given value.
+ *
+ * @param {string} value - The value to create the result with.
+ * @param {HTMLDialogElement} resultDialog - The dialog element to create the result in.
+ */
 export async function createResult(value, resultDialog) {
   if (!value || !resultDialog) {
     return;
