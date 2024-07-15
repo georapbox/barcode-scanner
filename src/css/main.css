@@ -1,10 +1,12 @@
 :root {
+  /* Font variables */
   --font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', sans-serif;
+
+  /* Color variables */
   --accent-h: 217.75deg;
   --accent-s: 98.36%;
   --accent-l: 52.16%;
   --accent: hsl(var(--accent-h), var(--accent-s), var(--accent-l));
-  --body-max-width: 75rem;
   --background-body: #ffffff;
   --background-alt: #f7f7f7;
   --background: #efefef;
@@ -13,15 +15,22 @@
   --links: var(--accent);
   --focus: var(--accent);
   --border: #b9b8b8;
+  --error-color: #dc3545;
+  --success-color: #28a745;
   --dialog-background: #ffffff;
+  --scan-frame-color: rgba(255, 255, 255, 0.9);
+  --dropzone-background: var(--background-alt);
+  --dropzone-background-dragover: var(--background);
+  --dropzone-background-hover: var(--background);
+  --empty-history-button-color: #ffffff;
+
+  /* Other variables */
+  --body-max-width: 75rem;
   --border-radius: 6px;
   --animation-duration: 0.1s;
   --container-max-width: 37.5rem;
   --capture-border-width: 3px;
   --video-border-radius: calc(var(--border-radius) / 2);
-  --scan-frame-color: rgba(255, 255, 255, 0.9);
-  --error-color: #dc3545;
-  --success-color: #28a745;
 
   accent-color: var(--accent);
 }
@@ -31,7 +40,6 @@
     --accent-h: 206;
     --accent-s: 100%;
     --accent-l: 73%;
-    --accent: hsl(var(--accent-h), var(--accent-s), var(--accent-l));
     --background-body: #212529;
     --background-alt: #343a40;
     --background: var(--background-alt);
@@ -40,10 +48,13 @@
     --links: var(--accent);
     --focus: var(--accent);
     --border: #495057;
-    --dialog-background: var(--background-alt);
-    --animation-duration: 0.1s;
     --error-color: #ff808d;
     --success-color: #75b798;
+    --dialog-background: var(--background-alt);
+    --dropzone-background: #1a1c1e;
+    --dropzone-background-dragover: #161718;
+    --dropzone-background-hover: #161718;
+    --empty-history-button-color: #000000;
   }
 }
 
@@ -359,9 +370,9 @@ input[type="file"]:disabled::-webkit-file-upload-button {
   --dropzone-border-color: var(--border);
   --dropzone-border-color-dragover: var(--accent);
   --dropzone-border-color-hover: var(--accent);
-  --dropzone-background-color: var(--background-alt);
-  --dropzone-background-color-dragover: var(--background);
-  --dropzone-background-color-hover: var(--background);
+  --dropzone-background-color: var(--dropzone-background);
+  --dropzone-background-color-dragover: var(--dropzone-background-dragover);
+  --dropzone-background-color-hover: var(--dropzone-background-hover);
   --dropzone-body-color: var(--text-main);
 }
 
@@ -692,7 +703,7 @@ capture-photo::part(facing-mode-button) {
   width: calc(100% - 1.5rem);
   margin: 0.75rem 0 0.75rem 0.75rem;
   background-color: var(--error-color) !important;
-  color: #ffffff;
+  color: var(--empty-history-button-color);
 }
 
 /* Tab group */
@@ -746,18 +757,6 @@ a-tab[selected]::part(base) {
 }
 
 /* Media queries */
-@media (prefers-color-scheme: dark) {
-  .empty-history-button {
-    color: #000000;
-  }
-
-  .dropzone {
-    --dropzone-background-color: #1a1c1e;
-    --dropzone-background-color-dragover: #161718;
-    --dropzone-background-color-hover: #161718;
-  }
-}
-
 @media (min-width: 37.5rem) {
   h1 {
     font-size: 2rem;
