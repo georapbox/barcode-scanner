@@ -223,7 +223,7 @@ dialog::backdrop {
   border-radius: 0.25rem;
 }
 
-.fork {
+.source-code {
   display: inline-flex;
   align-items: center;
   gap: 0.375rem;
@@ -307,13 +307,9 @@ dialog::backdrop {
 }
 
 .scan-instructions {
-  text-align: center;
-}
-
-.scan-instructions p {
-  max-width: 320px;
-  margin: 0 auto;
   font-size: 0.95rem;
+  text-align: center;
+  text-wrap: balance;
 }
 
 .scan-frame-container {

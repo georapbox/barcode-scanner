@@ -1,29 +1,31 @@
-<p align="center">
-  <a href="https://georapbox.github.io/barcode-scanner/">
-    <img src="assets/logo.png" width="130" height="130" alt="Barcode Scanner">
-  </a>
-</p>
-
-<h1 align="center">Barcode/QR code Scanner</h1>
+# Barcode/QR code Scanner
 
 A Progressive Web Application (PWA) that scans barcodes of various formats, using the [Barcode Detection API](https://developer.mozilla.org/docs/Web/API/Barcode_Detection_API).
 
-> **NOTE**: The Barcode Detection API is part of the [Fugu](https://fugu-tracker.web.app/) project. Currently it is supported only on Chromium browsers in MacOS and Android. For non-supporting browsers, a [polyfill](https://github.com/gruhn/barcode-detector) is used.
+> [!NOTE]
+> The Barcode Detection API is part of the [Fugu](https://fugu-tracker.web.app/) project. Currently it is supported only on Chromium browsers in MacOS and Android. For non-supporting browsers, a [polyfill](https://github.com/gruhn/barcode-detector) is used.
 
-[Live demo](https://georapbox.github.io/barcode-scanner/)
+## Live demo
+
+👉 [Barcode/QR code Scanner](https://georapbox.github.io/barcode-scanner/)
 
 ## Features
+
+Some of the key features of the application include:
 
 - Scan barcodes from web camera
 - Scan barcodes from image files
 - Copy detected barcode to clipboard
-- Share detected barcode via Web Share API (Android)
-- If barcode is a URL, offer option to open in new tab
-- Offer to save detected barcodes to history (local storage)
+- Share detected barcode via Web Share API (mobile)
+- Offer option to open detected barcode in a new tab if it is a URL
+- Offer to save detected barcodes to history (IndexedDB)
 
 ## Screenshots
 
-![Screenshot dark](assets/screenshot-dark.png)
+The following screenshots show the application in action:
+
+![Camera scanner screenshot](screenshots/camera-scanner.png)
+![Image scanner screenshot](screenshots/image-scanner.png)
 
 ## Development
 
@@ -38,13 +40,13 @@ Below are the instructions for setting up the development environment.
 
 Clone the repository to your local machine:
 
-```bash
+```sh
 git clone git@github.com:georapbox/barcode-scanner.git
 ```
 
 Navigate to the project's directory and install the dependencies:
 
-```bash
+```sh
 npm install
 ```
 
@@ -52,7 +54,7 @@ npm install
 
 To run the application in development mode, run the following command:
 
-```bash
+```sh
 npm start -- --open
 ```
 
@@ -62,7 +64,7 @@ This will start the development server and open the application in your default 
 
 To build the application for production, run the following command:
 
-```bash
+```sh
 npm run build
 ```
 
@@ -72,7 +74,7 @@ This will create a `dist` directory containing the production build of the appli
 
 To deploy the application, run the following command:
 
-```bash
+```sh
 npm run deploy
 ```
 
