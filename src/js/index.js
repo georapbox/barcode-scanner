@@ -65,7 +65,7 @@ import './components/clipboard-copy.js';
 
   CapturePhoto.defineCustomElement();
 
-  const capturePhotoVideoEl = capturePhotoEl.shadowRoot.querySelector('video');
+  const capturePhotoVideoEl = capturePhotoEl?.shadowRoot?.querySelector('video');
 
   dropzoneEl.accept = ACCEPTED_MIME_TYPES.join(',');
   initializeSettingsForm(settingsForm);
