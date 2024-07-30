@@ -3,26 +3,31 @@ import { getSettings } from '../services/storage.js';
 import { NO_BARCODE_DETECTED } from '../constants.js';
 
 /**
- * Empties the scanned barcode results.
+ * Removes and hides the scanned result.
  *
- * @param {HTMLDialogElement} resultDialog - The dialog element to empty the results.
+ * @param {HTMLDialogElement} dialog - The dialog element to empty the results.
  */
-export function emptyResults(resultDialog) {
-  resultDialog?.querySelector('.results__item')?.remove();
-}
-
-/**
- * Creates a result element with the given value.
- *
- * @param {string} value - The value to create the result with.
- * @param {HTMLDialogElement} resultDialog - The dialog element to create the result in.
- */
-export async function createResult(value, resultDialog) {
-  if (!value || !resultDialog) {
+export function hideResult(dialog) {
+  if (!dialog) {
     return;
   }
 
-  emptyResults(resultDialog);
+  dialog.querySelector('.results__item')?.remove();
+  dialog.close();
+}
+
+/**
+ * Creates and shows the scanned result.
+ *
+ * @param {string} value - The value to create the result with.
+ * @param {HTMLDialogElement} dialog - The dialog element to create the result in.
+ */
+export async function showResult(value, dialog) {
+  if (!value || !dialog) {
+    return;
+  }
+
+  dialog.querySelector('.results__item')?.remove();
 
   let resultItem;
 
@@ -49,10 +54,10 @@ export async function createResult(value, resultDialog) {
   resultItem.classList.toggle('results__item--no-barcode', value === NO_BARCODE_DETECTED);
   resultItem.textContent = value;
 
-  resultDialog.insertBefore(resultItem, resultDialog.querySelector('.results__actions'));
+  dialog.insertBefore(resultItem, dialog.querySelector('.results__actions'));
 
-  const clipboarCopyEl = resultDialog.querySelector('custom-clipboard-copy');
-  const webShareEl = resultDialog.querySelector('web-share');
+  const clipboarCopyEl = dialog.querySelector('custom-clipboard-copy');
+  const webShareEl = dialog.querySelector('web-share');
   const isValidValue = value !== NO_BARCODE_DETECTED;
 
   if (clipboarCopyEl) {
@@ -71,5 +76,5 @@ export async function createResult(value, resultDialog) {
     }
   }
 
-  resultDialog.show();
+  dialog.show();
 }

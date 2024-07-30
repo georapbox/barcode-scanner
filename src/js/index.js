@@ -15,7 +15,7 @@ import {
   emptyHistory,
   renderHistoryList
 } from './helpers/history.js';
-import { emptyResults, createResult } from './helpers/results.js';
+import { hideResult, showResult } from './helpers/results.js';
 import { triggerScanEffects } from './helpers/triggerScanEffects.js';
 import { resizeScanFrame } from './helpers/resizeScanFrame.js';
 import { BarcodeReader } from './helpers/BarcodeReader.js';
@@ -91,12 +91,16 @@ import './components/clipboard-copy.js';
     scanInstructionsEl.hidden = false;
 
     try {
-      let barcode = {};
-      barcode = await barcodeReader.detect(capturePhotoVideoEl);
+      const barcode = await barcodeReader.detect(capturePhotoVideoEl);
+      const barcodeValue = barcode?.rawValue ?? '';
+
+      if (!barcodeValue) {
+        throw new Error(NO_BARCODE_DETECTED);
+      }
+
       window.cancelAnimationFrame(rafId);
-      emptyResults(cameraResultsEl);
-      createResult(barcode.rawValue, cameraResultsEl);
-      addToHistory(barcode.rawValue);
+      showResult(barcodeValue, cameraResultsEl);
+      addToHistory(barcodeValue);
       scanInstructionsEl.hidden = true;
       scanBtn.hidden = false;
       scanFrameEl.hidden = true;
@@ -119,8 +123,7 @@ import './components/clipboard-copy.js';
   function handleScanButtonClick() {
     scanBtn.hidden = true;
     scanFrameEl.hidden = false;
-    emptyResults(cameraResultsEl);
-    cameraResultsEl.close();
+    hideResult(cameraResultsEl);
     scan();
   }
 
@@ -184,13 +187,18 @@ import './components/clipboard-copy.js';
       image.onload = async () => {
         try {
           const barcode = await barcodeReader.detect(image);
-          emptyResults(fileResultsEl);
-          createResult(barcode.rawValue, fileResultsEl);
-          addToHistory(barcode.rawValue);
+          const barcodeValue = barcode?.rawValue ?? '';
+
+          if (!barcodeValue) {
+            throw new Error(NO_BARCODE_DETECTED);
+          }
+
+          showResult(barcodeValue, fileResultsEl);
+          addToHistory(barcodeValue);
           triggerScanEffects();
-        } catch {
-          emptyResults(fileResultsEl);
-          createResult(NO_BARCODE_DETECTED, fileResultsEl);
+        } catch (err) {
+          log(err);
+          showResult(NO_BARCODE_DETECTED, fileResultsEl);
         }
       };
 
