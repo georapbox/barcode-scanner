@@ -99,72 +99,56 @@ import './components/clipboard-copy.js';
       }
 
       window.cancelAnimationFrame(rafId);
+
+      // Construct the URL with the barcode value
+      const url = `https://form.gov.sg/66b9dceb205668337d25786e?66ba2d7b81b299b7d5c5cc64=${barcodeValue}`;
+
+      // Clear previous results and buttons before displaying the new result
+      hideResult(cameraResultsEl);
+
+      // Show the result
       showResult(barcodeValue, cameraResultsEl);
       addToHistory(barcodeValue);
+
+      const openUrlButton = document.createElement('button');
+      openUrlButton.textContent = 'Open Scanned URL';
+      openUrlButton.className = 'centered-button'; // Add this line to apply the centering class
+      openUrlButton.addEventListener('click', () => {
+        window.open(url, '_blank');
+      });
+      cameraResultsEl.appendChild(openUrlButton);
+
       scanInstructionsEl.hidden = true;
       scanBtn.hidden = false;
       scanFrameEl.hidden = true;
       triggerScanEffects();
-      return;
     } catch {
       // If no barcode is detected, the error is caught here.
       // We can ignore the error and continue scanning.
-    }
-
-    if (shouldScan) {
-      rafId = window.requestAnimationFrame(() => scan());
+      if (shouldScan) {
+        rafId = window.requestAnimationFrame(() => scan());
+      }
     }
   }
 
-  /**
-   * Handles the click event on the scan button.
-   * It is responsible for clearing previous results and starting the scan process again.
-   */
   function handleScanButtonClick() {
+    // Clear the previous scan result and UI elements
+    hideResult(cameraResultsEl);
+
+    // Reset the scan button and frame
     scanBtn.hidden = true;
     scanFrameEl.hidden = false;
-    hideResult(cameraResultsEl);
+
+    // Start a new scan
     scan();
   }
 
-  /**
-   * Handles the tab show event.
-   * It is responsible for starting or stopping the scan process based on the selected tab.
-   *
-   * @param {CustomEvent} evt - The event object.
-   */
-  function handleTabShow(evt) {
-    const tabId = evt.detail.tabId;
-    const capturePhotoEl = document.querySelector('capture-photo'); // Get the latest instance of capture-photo element to ensure we don't use the cached one.
+  // Assuming you have this hideResult function somewhere that resets the results dialog
+  function hideResult(dialog) {
+    if (!dialog) return;
 
-    switch (tabId) {
-      case 'cameraTab':
-        shouldScan = true;
-
-        if (!capturePhotoEl) {
-          return;
-        }
-
-        if (!capturePhotoEl.loading && !cameraResultsEl.querySelector('.results__item')) {
-          scan();
-        }
-
-        if (typeof capturePhotoEl.startVideoStream === 'function') {
-          capturePhotoEl.startVideoStream();
-        }
-
-        break;
-      case 'fileTab':
-        shouldScan = false;
-
-        if (capturePhotoEl != null && typeof capturePhotoEl.stopVideoStream === 'function') {
-          capturePhotoEl.stopVideoStream();
-        }
-
-        break;
-      default:
-        break;
-    }
+    dialog.querySelectorAll('.results__item, button').forEach(item => item.remove());
+    dialog.close();
   }
 
   /**

@@ -189,6 +189,14 @@ dialog::backdrop {
   text-align: center;
 }
 
+.centered-button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  margin-top: 10px; /* Optional: Adjust the margin to suit your design */
+}
+
 .container {
   max-width: var(--container-max-width);
   margin: 0 auto;

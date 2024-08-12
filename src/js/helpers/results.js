@@ -29,33 +29,38 @@ export async function showResult(value, dialog) {
 
   dialog.querySelector('.results__item')?.remove();
 
-  let resultItem;
-
   try {
     const { value: settings } = await getSettings();
 
+    // Check if the value is a valid URL
     new URL(value);
-    resultItem = document.createElement('a');
+
+    // Automatically open the URL in a new tab
+    window.open(value, '_blank');
+
+    // Optionally, you can still add the result to the dialog for history purposes
+    let resultItem = document.createElement('a');
     resultItem.href = value;
+    resultItem.className = 'results__item';
+    resultItem.textContent = value;
 
     if (!settings?.openWebPageSameTab) {
       resultItem.setAttribute('target', '_blank');
       resultItem.setAttribute('rel', 'noreferrer noopener');
     }
 
-    if (settings?.openWebPage) {
-      resultItem.click();
-    }
+    dialog.insertBefore(resultItem, dialog.querySelector('.results__actions'));
   } catch {
-    resultItem = document.createElement('span');
+    let resultItem = document.createElement('span');
+    resultItem.className = 'results__item results__item--no-barcode';
+    resultItem.textContent = value;
+
+    dialog.insertBefore(resultItem, dialog.querySelector('.results__actions'));
   }
 
-  resultItem.className = 'results__item';
-  resultItem.classList.toggle('results__item--no-barcode', value === NO_BARCODE_DETECTED);
-  resultItem.textContent = value;
+  dialog.show();
 
-  dialog.insertBefore(resultItem, dialog.querySelector('.results__actions'));
-
+  // Optionally, handle clipboard and web-share elements
   const clipboarCopyEl = dialog.querySelector('custom-clipboard-copy');
   const webShareEl = dialog.querySelector('web-share');
   const isValidValue = value !== NO_BARCODE_DETECTED;
@@ -75,6 +80,4 @@ export async function showResult(value, dialog) {
       webShareEl.removeAttribute('share-text');
     }
   }
-
-  dialog.show();
 }
