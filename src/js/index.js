@@ -20,6 +20,7 @@ import { triggerScanEffects } from './helpers/triggerScanEffects.js';
 import { resizeScanFrame } from './helpers/resizeScanFrame.js';
 import { BarcodeReader } from './helpers/BarcodeReader.js';
 import { initializeSettingsForm } from './helpers/initializeSettingsForm.js';
+import { toggleTorchButtonStatus } from './helpers/toggleTorchButtonStatus.js';
 import './components/clipboard-copy.js';
 
 (async function () {
@@ -33,6 +34,7 @@ import './components/clipboard-copy.js';
   const dropzoneEl = document.getElementById('dropzone');
   const resizeObserverEl = document.querySelector('resize-observer');
   const scanFrameEl = document.getElementById('scanFrame');
+  const torchButton = document.getElementById('torchButton');
   const globalActionsEl = document.getElementById('globalActions');
   const historyBtn = document.getElementById('historyBtn');
   const historyDialog = document.getElementById('historyDialog');
@@ -260,6 +262,14 @@ import './components/clipboard-copy.js';
     const trackCapabilities = evt.target.getTrackCapabilities();
     const zoomLevelEl = document.getElementById('zoomLevel');
 
+    if (trackCapabilities?.torch) {
+      torchButton.hidden = false;
+
+      if (capturePhotoEl.hasAttribute('torch')) {
+        toggleTorchButtonStatus({ el: torchButton, isTorchOn: true });
+      }
+    }
+
     if (trackSettings?.zoom && trackCapabilities?.zoom) {
       const zoomControls = document.getElementById('zoomControls');
       const minZoom = trackCapabilities?.zoom?.min || 0;
@@ -389,6 +399,21 @@ import './components/clipboard-copy.js';
   }
 
   /**
+   * Handles the click event on the torch button.
+   * It is responsible for toggling the torch on and off.
+   *
+   * @param {MouseEvent} evt - The event object.
+   */
+  function handleTorchButtonClick(evt) {
+    capturePhotoEl.torch = !capturePhotoEl.torch;
+
+    toggleTorchButtonStatus({
+      el: evt.currentTarget,
+      isTorchOn: capturePhotoEl.hasAttribute('torch')
+    });
+  }
+
+  /**
    * Handles the visibility change event on the document.
    * It is responsible for stopping the scan process when the document is not visible.
    */
@@ -462,6 +487,7 @@ import './components/clipboard-copy.js';
   settingsForm.addEventListener('change', handleSettingsFormChange);
   historyBtn.addEventListener('click', handleHistoryButtonClick);
   historyDialog.addEventListener('click', handleHistoryDialogClick);
+  torchButton.addEventListener('click', handleTorchButtonClick);
   document.addEventListener('visibilitychange', handleDocumentVisibilityChange);
   document.addEventListener('keydown', handleDocumentKeyDown);
 })();

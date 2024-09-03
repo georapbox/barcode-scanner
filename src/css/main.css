@@ -31,6 +31,7 @@
   --container-max-width: 37.5rem;
   --capture-border-width: 3px;
   --video-border-radius: calc(var(--border-radius) / 2);
+  --track-control-button-dimensions: 2.25rem;
 
   accent-color: var(--accent);
 }
@@ -458,8 +459,8 @@ capture-photo::part(facing-mode-button) {
   position: absolute;
   bottom: 0.25rem;
   left: 0.25rem;
-  width: 2.25rem;
-  height: 2.25rem;
+  width: var(--track-control-button-dimensions);
+  height: var(--track-control-button-dimensions);
   padding: 0;
   border: 0;
   border-radius: var(--video-border-radius);
@@ -479,19 +480,26 @@ capture-photo::part(facing-mode-button) {
   display: flex;
 }
 
+.torch-button,
 .zoom-controls button,
 .zoom-controls label {
   display: flex;
   justify-content: center;
   align-items: center;
   margin: 0;
-  width: 2.25rem;
-  width: 2.25rem;
-  height: 2.25rem;
+  width: var(--track-control-button-dimensions);
+  height: var(--track-control-button-dimensions);
   padding: 0;
   border-radius: 0;
   background-color: var(--background);
   color: var(--text-main);
+}
+
+.torch-button {
+  position: absolute;
+  bottom: 0.25rem;
+  left: calc(var(--track-control-button-dimensions) + 0.5rem);
+  border-radius: var(--video-border-radius);
 }
 
 .zoom-controls button[data-action="zoom-in"] {
