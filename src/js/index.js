@@ -20,6 +20,7 @@ import { triggerScanEffects } from './helpers/triggerScanEffects.js';
 import { resizeScanFrame } from './helpers/resizeScanFrame.js';
 import { BarcodeReader } from './helpers/BarcodeReader.js';
 import { initializeSettingsForm } from './helpers/initializeSettingsForm.js';
+import { toggleTorchButtonStatus } from './helpers/toggleTorchButtonStatus.js';
 import './components/clipboard-copy.js';
 
 (async function () {
@@ -263,6 +264,10 @@ import './components/clipboard-copy.js';
 
     if (trackCapabilities?.torch) {
       torchButton.hidden = false;
+
+      if (capturePhotoEl.hasAttribute('torch')) {
+        toggleTorchButtonStatus({ el: torchButton, isTorchOn: true });
+      }
     }
 
     if (trackSettings?.zoom && trackCapabilities?.zoom) {
@@ -402,12 +407,10 @@ import './components/clipboard-copy.js';
   function handleTorchButtonClick(evt) {
     capturePhotoEl.torch = !capturePhotoEl.torch;
 
-    const btn = evt.currentTarget;
-    const iconPaths = btn.querySelectorAll('svg path');
-
-    iconPaths[0].style.display = capturePhotoEl.torch ? 'none' : 'block';
-    iconPaths[1].style.display = capturePhotoEl.torch ? 'block' : 'none';
-    btn.setAttribute('title', `Turn ${capturePhotoEl.torch ? 'off' : 'on'} flash`);
+    toggleTorchButtonStatus({
+      el: evt.currentTarget,
+      isTorchOn: capturePhotoEl.hasAttribute('torch')
+    });
   }
 
   /**
