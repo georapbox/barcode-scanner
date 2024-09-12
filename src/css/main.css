@@ -30,7 +30,6 @@
   --animation-duration: 0.1s;
   --container-max-width: 37.5rem;
   --capture-border-width: 3px;
-  --video-border-radius: calc(var(--border-radius) / 2);
   --track-control-button-dimensions: 2.25rem;
 
   accent-color: var(--accent);
@@ -461,7 +460,7 @@ capture-photo::part(facing-mode-button) {
   height: var(--track-control-button-dimensions);
   padding: 0;
   border: 0;
-  border-radius: var(--video-border-radius);
+  border-radius: calc(var(--border-radius) / 2);
   background-color: var(--background);
   color: var(--text-main);
   cursor: pointer;
@@ -497,17 +496,17 @@ capture-photo::part(facing-mode-button) {
   position: absolute;
   bottom: 0.25rem;
   left: calc(var(--track-control-button-dimensions) + 0.5rem);
-  border-radius: var(--video-border-radius);
+  border-radius: calc(var(--border-radius) / 2);
 }
 
 .zoom-controls button[data-action="zoom-in"] {
-  border-top-right-radius: var(--video-border-radius);
-  border-bottom-right-radius: var(--video-border-radius);
+  border-top-right-radius: calc(var(--border-radius) / 2);
+  border-bottom-right-radius: calc(var(--border-radius) / 2);
 }
 
 .zoom-controls button[data-action="zoom-out"] {
-  border-top-left-radius: var(--video-border-radius);
-  border-bottom-left-radius: var(--video-border-radius);
+  border-top-left-radius: calc(var(--border-radius) / 2);
+  border-bottom-left-radius: calc(var(--border-radius) / 2);
 }
 
 .zoom-controls label {
