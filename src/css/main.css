@@ -440,8 +440,6 @@ capture-photo {
 
 capture-photo::part(video) {
   width: 100%;
-  height: calc(100% - 10px);
-  border-radius: var(--video-border-radius);
   background-color: #000000;
 }
 
