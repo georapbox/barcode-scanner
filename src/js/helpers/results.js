@@ -37,6 +37,7 @@ export async function showResult(value, resultEl) {
     new URL(value);
     resultItem = document.createElement('a');
     resultItem.href = value;
+    window.requestAnimationFrame(() => resultItem.focus());
 
     if (!settings?.openWebPageSameTab) {
       resultItem.setAttribute('target', '_blank');
@@ -50,7 +51,6 @@ export async function showResult(value, resultEl) {
     resultItem = document.createElement('span');
   }
 
-  window.requestAnimationFrame(() => resultItem.focus());
   resultItem.className = 'results__item';
   resultItem.classList.toggle('results__item--no-barcode', value === NO_BARCODE_DETECTED);
   resultItem.textContent = value;
