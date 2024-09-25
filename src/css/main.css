@@ -25,7 +25,7 @@
   --empty-history-button-color: #ffffff;
 
   /* Other variables */
-  --body-max-width: 75rem;
+  --body-max-width: 64rem;
   --border-radius: 6px;
   --animation-duration: 0.1s;
   --container-max-width: 37.5rem;
@@ -168,14 +168,10 @@ dialog::backdrop {
 }
 
 .noscript {
-  position: fixed;
-  top: 0;
-  left: 0;
-  display: block;
   width: 100%;
-  padding: 0.5rem 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: var(--border-radius);
   text-align: center;
-  font-size: 0.9rem;
   color: #842029;
   background-color: #f8d7da;
 }

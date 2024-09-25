@@ -5,29 +5,29 @@ import { NO_BARCODE_DETECTED } from '../constants.js';
 /**
  * Removes and hides the scanned result.
  *
- * @param {HTMLDialogElement} dialog - The dialog element to empty the results.
+ * @param {HTMLDivElement} resultEl - The element to remove the result from.
  */
-export function hideResult(dialog) {
-  if (!dialog) {
+export function hideResult(resultEl) {
+  if (!resultEl) {
     return;
   }
 
-  dialog.querySelector('.results__item')?.remove();
-  dialog.close();
+  resultEl.querySelector('.results__item')?.remove();
+  resultEl.hidden = true;
 }
 
 /**
  * Creates and shows the scanned result.
  *
  * @param {string} value - The value to create the result with.
- * @param {HTMLDialogElement} dialog - The dialog element to create the result in.
+ * @param {HTMLDivElement} resultEl - The element to show the result in.
  */
-export async function showResult(value, dialog) {
-  if (!value || !dialog) {
+export async function showResult(value, resultEl) {
+  if (!value || !resultEl) {
     return;
   }
 
-  dialog.querySelector('.results__item')?.remove();
+  resultEl.querySelector('.results__item')?.remove();
 
   let resultItem;
 
@@ -50,14 +50,15 @@ export async function showResult(value, dialog) {
     resultItem = document.createElement('span');
   }
 
+  window.requestAnimationFrame(() => resultItem.focus());
   resultItem.className = 'results__item';
   resultItem.classList.toggle('results__item--no-barcode', value === NO_BARCODE_DETECTED);
   resultItem.textContent = value;
 
-  dialog.insertBefore(resultItem, dialog.querySelector('.results__actions'));
+  resultEl.insertBefore(resultItem, resultEl.querySelector('.results__actions'));
 
-  const clipboarCopyEl = dialog.querySelector('custom-clipboard-copy');
-  const webShareEl = dialog.querySelector('web-share');
+  const clipboarCopyEl = resultEl.querySelector('custom-clipboard-copy');
+  const webShareEl = resultEl.querySelector('web-share');
   const isValidValue = value !== NO_BARCODE_DETECTED;
 
   if (clipboarCopyEl) {
@@ -76,5 +77,5 @@ export async function showResult(value, dialog) {
     }
   }
 
-  dialog.show();
+  resultEl.hidden = false;
 }

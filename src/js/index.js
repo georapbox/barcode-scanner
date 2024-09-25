@@ -8,6 +8,7 @@ import { NO_BARCODE_DETECTED, ACCEPTED_MIME_TYPES } from './constants.js';
 import { getHistory, setSettings } from './services/storage.js';
 import { debounce } from './utils/debounce.js';
 import { log } from './utils/log.js';
+import { isDialogElementSupported } from './utils/isDialogElementSupported.js';
 import { renderSupportedFormats } from './helpers/renderSupportedFormats.js';
 import {
   addToHistory,
@@ -43,6 +44,15 @@ import './components/clipboard-copy.js';
   const settingsForm = document.forms['settings-form'];
   let shouldScan = true;
   let rafId;
+
+  // By default the dialog elements are hidden for browsers that don't support the dialog element.
+  // If the dialog element is supported, we remove the hidden attribute and the dialogs' visibility
+  // is controlled by using the `showModal()` and `close()` methods.
+  if (isDialogElementSupported()) {
+    globalActionsEl.hidden = false;
+    historyDialog.hidden = false;
+    settingsDialog.hidden = false;
+  }
 
   const { barcodeReader, barcodeFormats, barcodeReaderError } = await BarcodeReader.init();
 
@@ -211,6 +221,7 @@ import './components/clipboard-copy.js';
 
       const preview = document.createElement('div');
       preview.className = 'dropzone-preview';
+      preview.setAttribute('aria-hidden', 'true');
 
       const imageWrapper = document.createElement('div');
       imageWrapper.className = 'dropzone-preview__image-wrapper';
