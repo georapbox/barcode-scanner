@@ -104,5 +104,3 @@ class CustomClipboardCopy extends ClipboardCopy {
 }
 
 CustomClipboardCopy.defineCustomElement();
-
-// export { CustomClipboardCopy };

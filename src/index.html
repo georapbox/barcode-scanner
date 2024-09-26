@@ -202,21 +202,6 @@
         <div id="scanInstructions" class="scan-instructions" hidden>
           Align barcode in the center of the frame.
         </div>
-
-        <div id="cameraResults" class="results" hidden role="alert" aria-live="assertive" aria-atomic="true">
-          <div class="results__actions">
-            <custom-clipboard-copy from="#cameraResults .results__item"></custom-clipboard-copy>
-
-            <web-share>
-              <button slot="button" type="button">
-                <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
-                  <path d="M13.5 1a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM11 2.5a2.5 2.5 0 1 1 .603 1.628l-6.718 3.12a2.499 2.499 0 0 1 0 1.504l6.718 3.12a2.5 2.5 0 1 1-.488.876l-6.718-3.12a2.5 2.5 0 1 1 0-3.256l6.718-3.12A2.5 2.5 0 0 1 11 2.5zm-8.5 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm11 5.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3z"/>
-                </svg>
-                Share
-              </button>
-            </web-share>
-          </div>
-        </div>
       </a-tab-panel>
 
       <a-tab role="heading" id="fileTab">
@@ -260,21 +245,6 @@
             Click or drop an image to scan
           </span>
         </files-dropzone>
-
-        <div id="fileResults" class="results" hidden role="alert" aria-live="assertive" aria-atomic="true">
-          <div class="results__actions">
-            <custom-clipboard-copy from="#fileResults .results__item"></custom-clipboard-copy>
-
-            <web-share>
-              <button slot="button" type="button">
-                <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
-                  <path d="M13.5 1a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM11 2.5a2.5 2.5 0 1 1 .603 1.628l-6.718 3.12a2.499 2.499 0 0 1 0 1.504l6.718 3.12a2.5 2.5 0 1 1-.488.876l-6.718-3.12a2.5 2.5 0 1 1 0-3.256l6.718-3.12A2.5 2.5 0 0 1 11 2.5zm-8.5 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm11 5.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3z"/>
-                </svg>
-                Share
-              </button>
-            </web-share>
-          </div>
-        </div>
       </a-tab-panel>
     </a-tab-group>
   </div>

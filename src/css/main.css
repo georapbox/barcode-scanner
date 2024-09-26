@@ -253,55 +253,6 @@ dialog::backdrop {
   font-size: 0.8rem;
 }
 
-.results {
-  position: relative;
-  width: 100%;
-  border: 1px solid var(--focus);
-  border-radius: 6px;
-  margin: 1.5rem 0 0 0;
-  padding: 1rem;
-  background-color: var(--background-alt);
-}
-
-.results__item {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  text-align: center;
-  word-wrap: break-word;
-  word-break: break-word;
-}
-
-.results__item--no-barcode {
-  color: var(--error-color);
-}
-
-.results__actions {
-  display: flex;
-  align-items: center;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
-}
-
-.results web-share button,
-.results custom-clipboard-copy::part(button) {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 0.25rem;
-  margin: 0.75rem 0 0 0;
-  padding: 0.25rem;
-  background-color: transparent;
-  border: 0;
-  border-radius: var(--border-radius);
-  color: inherit;
-  line-height: 1;
-  font-family: inherit;
-  font-size: 0.9rem;
-  cursor: pointer;
-}
-
 .scan-instructions {
   font-size: 0.95rem;
   text-align: center;

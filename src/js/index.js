@@ -1,7 +1,6 @@
 import '@georapbox/a-tab-group/dist/a-tab-group.js';
 import '@georapbox/web-share-element/dist/web-share-defined.js';
 import '@georapbox/files-dropzone-element/dist/files-dropzone-defined.js';
-import { isWebShareSupported } from '@georapbox/web-share-element/dist/is-web-share-supported.js';
 import '@georapbox/resize-observer-element/dist/resize-observer-defined.js';
 import { CapturePhoto } from '@georapbox/capture-photo-element/dist/capture-photo.js';
 import { NO_BARCODE_DETECTED, ACCEPTED_MIME_TYPES } from './constants.js';
@@ -23,13 +22,13 @@ import { BarcodeReader } from './helpers/BarcodeReader.js';
 import { initializeSettingsForm } from './helpers/initializeSettingsForm.js';
 import { toggleTorchButtonStatus } from './helpers/toggleTorchButtonStatus.js';
 import './components/clipboard-copy.js';
+import './components/scan-result.js';
 
 (async function () {
   const tabGroupEl = document.querySelector('a-tab-group');
-  const cameraPanel = document.getElementById('cameraPanel');
   const capturePhotoEl = document.querySelector('capture-photo');
-  const cameraResultsEl = document.getElementById('cameraResults');
-  const fileResultsEl = document.getElementById('fileResults');
+  const cameraPanel = document.getElementById('cameraPanel');
+  const filePanel = document.getElementById('filePanel');
   const scanInstructionsEl = document.getElementById('scanInstructions');
   const scanBtn = document.getElementById('scanBtn');
   const dropzoneEl = document.getElementById('dropzone');
@@ -84,13 +83,6 @@ import './components/clipboard-copy.js';
   renderSupportedFormats(barcodeFormats);
   renderHistoryList((await getHistory()).value || []);
 
-  if (!isWebShareSupported()) {
-    document.querySelectorAll('web-share').forEach(el => {
-      el.hidden = true;
-      el.disabled = true;
-    });
-  }
-
   /**
    * Scans for barcodes.
    * If a barcode is detected, it stops scanning and displays the result.
@@ -111,7 +103,7 @@ import './components/clipboard-copy.js';
       }
 
       window.cancelAnimationFrame(rafId);
-      showResult(barcodeValue, cameraResultsEl);
+      showResult(cameraPanel, barcodeValue);
       addToHistory(barcodeValue);
       scanInstructionsEl.hidden = true;
       scanBtn.hidden = false;
@@ -135,7 +127,7 @@ import './components/clipboard-copy.js';
   function handleScanButtonClick() {
     scanBtn.hidden = true;
     scanFrameEl.hidden = false;
-    hideResult(cameraResultsEl);
+    hideResult(cameraPanel);
     scan();
   }
 
@@ -157,7 +149,7 @@ import './components/clipboard-copy.js';
           return;
         }
 
-        if (!capturePhotoEl.loading && !cameraResultsEl.querySelector('.results__item')) {
+        if (!capturePhotoEl.loading && !cameraPanel.querySelector('scan-result')) {
           scan();
         }
 
@@ -205,12 +197,12 @@ import './components/clipboard-copy.js';
             throw new Error(NO_BARCODE_DETECTED);
           }
 
-          showResult(barcodeValue, fileResultsEl);
+          showResult(filePanel, barcodeValue);
           addToHistory(barcodeValue);
           triggerScanEffects();
         } catch (err) {
           log(err);
-          showResult(NO_BARCODE_DETECTED, fileResultsEl);
+          showResult(filePanel, NO_BARCODE_DETECTED);
         }
       };
 
@@ -452,7 +444,7 @@ import './components/clipboard-copy.js';
         return;
       }
 
-      if (!capturePhotoEl.loading && !cameraResultsEl.querySelector('.results__item')) {
+      if (!capturePhotoEl.loading && !cameraPanel.querySelector('scan-result')) {
         scan();
       }
 
