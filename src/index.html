@@ -209,59 +209,27 @@
     </p>
   </footer>
 
-  <dialog id="historyDialog" class="popover-dialog popover-dialog--history" hidden>
-    <div aria-labelledby="historyDialogTitle">
-      <header>
-        <span id="historyDialogTitle">History</span>
+  <modal-element id="historyDialog" class="popover-dialog popover-dialog--history" placement="top-end" hidden>
+    <span slot="header">History</span>
+    <ul id="historyList"></ul>
+    <button slot="footer" type="button" class="empty-history-button" id="emptyHistoryBtn" hidden>Empty history</button>
+  </modal-element>
 
-        <form method="dialog">
-          <button type="submit">
-            <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
-              <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854Z" />
-            </svg>
-            <span class="visually-hidden">Close</span>
-          </button>
-        </form>
-      </header>
-
-      <ul id="historyList">
-        <li>There are no saved items in history.</li>
-      </ul>
-
-      <button type="button" class="empty-history-button" id="emptyHistoryBtn" hidden>Empty history</button>
-    </div>
-  </dialog>
-
-  <dialog id="settingsDialog" class="popover-dialog popover-dialog--settings" hidden>
-    <div aria-labelledby="settingsDialogTitle">
-      <header>
-        <span id="settingsDialogTitle">Settings</span>
-
-        <form method="dialog">
-          <button type="submit">
-            <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
-              <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854Z" />
-            </svg>
-            <span class="visually-hidden">Close</span>
-          </button>
-        </form>
-      </header>
-
-      <form name="settings-form" autocomplete="false">
-        <fieldset name="barcode-found-settings">
-          <legend>When barcode is found...</legend>
-
-          <ul>
-            <li><label><input type="checkbox" name="beep"> Beep</label></li>
-            <li><label><input type="checkbox" name="vibrate"> Vibrate (Android)</label></li>
-            <li><label><input type="checkbox" name="openWebPage"> Open web pages automatically</label></li>
-            <li><label><input type="checkbox" name="openWebPageSameTab"> Open web pages in the same tab</label></li>
-            <li><label><input type="checkbox" name="addToHistory"> Add to history</label></li>
-          </ul>
-        </fieldset>
-      </form>
-    </div>
-  </dialog>
+  <modal-element id="settingsDialog" class="popover-dialog popover-dialog--settings" placement="top-end" hidden>
+    <span slot="header">Settings</span>
+    <form name="settings-form" autocomplete="off">
+      <fieldset name="barcode-found-settings">
+        <legend>When barcode is found...</legend>
+        <ul>
+          <li><label><input type="checkbox" name="beep"> Beep</label></li>
+          <li><label><input type="checkbox" name="vibrate"> Vibrate (Android)</label></li>
+          <li><label><input type="checkbox" name="openWebPage"> Open web pages automatically</label></li>
+          <li><label><input type="checkbox" name="openWebPageSameTab"> Open web pages in the same tab</label></li>
+          <li><label><input type="checkbox" name="addToHistory"> Add to history</label></li>
+        </ul>
+      </fieldset>
+    </form>
+  </modal-element>
 
   <script src="./js/register-service-worker.js" type="module"></script>
   <script src="./js/index.js" type="module"></script>

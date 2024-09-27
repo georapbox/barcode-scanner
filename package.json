@@ -63,6 +63,7 @@
     "@georapbox/capture-photo-element": "~4.1.0",
     "@georapbox/clipboard-copy-element": "~3.0.2",
     "@georapbox/files-dropzone-element": "~2.0.1",
+    "@georapbox/modal-element": "~1.7.1",
     "@georapbox/resize-observer-element": "~2.0.1",
     "@georapbox/web-share-element": "~3.1.1",
     "barcode-detector": "~2.2.8",

@@ -76,12 +76,12 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-body:has(.popover-dialog[open]) {
-  overflow-y: hidden;
-}
-
 [hidden] {
   display: none !important;
+}
+
+:not(:defined) {
+  display: none;
 }
 
 a {
@@ -151,20 +151,6 @@ h1 {
   margin: 0.75rem 0;
   font-size: 1.6rem;
   font-weight: 300;
-}
-
-dialog {
-  background-color: var(--dialog-background);
-  color: var(--text-main);
-  border: none;
-  border-radius: var(--border-radius);
-  border-color: var(--border);
-  padding: 10px 30px;
-}
-
-dialog::backdrop {
-  background: #0000009c;
-  backdrop-filter: blur(4px);
 }
 
 .noscript {
@@ -491,30 +477,25 @@ capture-photo::part(facing-mode-button) {
   display: none;
 }
 
-.popover-dialog header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin: 0;
-  padding: 0.5rem 0.75rem;
-  font-weight: 500;
-}
-
-.popover-dialog header button {
-  padding: 0.25rem;
-  margin: 0;
-  background-color: transparent !important;
-  line-height: 1;
-  color: var(--text-main);
-}
-
 .popover-dialog {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  left: auto;
+  --me-background-color: var(--dialog-background);
+  --me-border-radius: var(--border-radius);
+  --me-border-style: none;
+  --me-width: fit-content;
+  --me-backdrop-filter: blur(4px);
+}
+
+.popover-dialog::part(header) {
+  padding: 0.75rem;
+}
+
+.popover-dialog::part(footer) {
+  padding: 0.75rem;
+  text-align: center;
+}
+
+.popover-dialog::part(body) {
   padding: 0;
-  margin: 0;
   font-size: 0.9rem;
 }
 
@@ -535,46 +516,6 @@ capture-photo::part(facing-mode-button) {
 
 .popover-dialog ul li:last-child {
   border-bottom: 0;
-}
-
-/* Modal animations */
-@media (prefers-reduced-motion: no-preference) {
-  .popover-dialog::backdrop {
-    opacity: 0;
-  }
-
-  .popover-dialog[open]::backdrop {
-    opacity: 1;
-  }
-
-  .popover-dialog,
-  .popover-dialog::backdrop {
-    transition: transform 0.3s, opacity 0.3s, display 0.3s allow-discrete, overlay 0.3s allow-discrete;
-  }
-
-  /* 1. IS-OPEN STATE */
-  .popover-dialog[open] {
-    transform: translateY(0);
-    opacity: 1;
-  }
-
-  /* 2. EXIT STATE */
-  .popover-dialog {
-    transform: translateY(-16px);
-    opacity: 0;
-  }
-
-  /* 0. BEFORE-OPEN STATE */
-  @starting-style {
-    .popover-dialog[open] {
-      transform: translateY(-16px);
-      opacity: 0;
-    }
-
-    .popover-dialog[open]::backdrop {
-      opacity: 0;
-    }
-  }
 }
 
 .popover-dialog--history ul {
@@ -645,17 +586,12 @@ capture-photo::part(facing-mode-button) {
 }
 
 .empty-history-button {
-  width: calc(100% - 1.5rem);
-  margin: 0.75rem 0 0.75rem 0.75rem;
-  background-color: var(--error-color) !important;
+  width: 100%;
+  background-color: var(--error-color);
   color: var(--empty-history-button-color);
 }
 
 /* Tab group */
-a-tab-group:not(:defined) {
-  display: none;
-}
-
 a-tab-group::part(tabs) {
   border-radius: var(--border-radius);
   padding: 0;

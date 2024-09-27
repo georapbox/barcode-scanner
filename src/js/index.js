@@ -2,6 +2,7 @@ import '@georapbox/a-tab-group/dist/a-tab-group.js';
 import '@georapbox/web-share-element/dist/web-share-defined.js';
 import '@georapbox/files-dropzone-element/dist/files-dropzone-defined.js';
 import '@georapbox/resize-observer-element/dist/resize-observer-defined.js';
+import '@georapbox/modal-element/dist/modal-element-defined.js';
 import { CapturePhoto } from '@georapbox/capture-photo-element/dist/capture-photo.js';
 import { NO_BARCODE_DETECTED, ACCEPTED_MIME_TYPES } from './constants.js';
 import { getHistory, setSettings } from './services/storage.js';
@@ -329,20 +330,7 @@ import './components/scan-result.js';
    * It is responsible for displaying the settings dialog.
    */
   function handleSettingsButtonClick() {
-    settingsDialog.showModal();
-  }
-
-  /**
-   * Handles the click event on the settings dialog.
-   *
-   * @param {MouseEvent} evt - The event object.
-   */
-  function handleSettingsDialogClick(evt) {
-    if (evt.target !== evt.currentTarget) {
-      return;
-    }
-
-    settingsDialog.close();
+    settingsDialog.open = true;
   }
 
   /**
@@ -364,7 +352,7 @@ import './components/scan-result.js';
    * It is responsible for displaying the history dialog.
    */
   function handleHistoryButtonClick() {
-    historyDialog.showModal();
+    historyDialog.open = true;
   }
 
   /**
@@ -375,12 +363,6 @@ import './components/scan-result.js';
    */
   function handleHistoryDialogClick(evt) {
     const target = evt.target;
-
-    // Close the dialog if the click is on the dialog itself
-    if (target === evt.currentTarget) {
-      historyDialog.close();
-      return;
-    }
 
     // Handle delete action
     if (target.closest('[data-action="delete"]')) {
@@ -486,7 +468,6 @@ import './components/scan-result.js';
   dropzoneEl.addEventListener('files-dropzone-drop', handleFileDrop);
   resizeObserverEl.addEventListener('resize-observer:resize', handleCapturePhotoResize);
   settingsBtn.addEventListener('click', handleSettingsButtonClick);
-  settingsDialog.addEventListener('click', handleSettingsDialogClick);
   settingsForm.addEventListener('change', handleSettingsFormChange);
   historyBtn.addEventListener('click', handleHistoryButtonClick);
   historyDialog.addEventListener('click', handleHistoryDialogClick);
