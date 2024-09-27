@@ -386,7 +386,7 @@ import './components/scan-result.js';
     if (target.closest('[data-action="delete"]')) {
       const value = target.closest('li').dataset.value;
 
-      if (window.confirm(`Delete ${value}?`)) {
+      if (window.confirm(`Delete history item ${value}?`)) {
         removeFromHistory(value);
         return;
       }
@@ -394,7 +394,7 @@ import './components/scan-result.js';
 
     // Handle empty history action
     if (target.closest('#emptyHistoryBtn')) {
-      if (window.confirm('Are you sure you want to empty history?')) {
+      if (window.confirm('Empty history? This action cannot be undone.')) {
         emptyHistory();
         return;
       }

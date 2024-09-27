@@ -491,7 +491,7 @@ capture-photo::part(facing-mode-button) {
   display: none;
 }
 
-.popover-dialog > header:first-child {
+.popover-dialog header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -500,7 +500,7 @@ capture-photo::part(facing-mode-button) {
   font-weight: 500;
 }
 
-.popover-dialog > header:first-child button {
+.popover-dialog header button {
   padding: 0.25rem;
   margin: 0;
   background-color: transparent !important;
@@ -515,9 +515,6 @@ capture-photo::part(facing-mode-button) {
   left: auto;
   padding: 0;
   margin: 0;
-}
-
-.popover-dialog :not(header) {
   font-size: 0.9rem;
 }
 
@@ -581,7 +578,7 @@ capture-photo::part(facing-mode-button) {
 }
 
 .popover-dialog--history ul {
-  max-width: 500px;
+  max-width: 31.25rem;
 }
 
 .popover-dialog--history ul li {
