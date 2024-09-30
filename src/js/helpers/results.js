@@ -1,80 +1,38 @@
-import { isWebShareSupported } from '@georapbox/web-share-element/dist/is-web-share-supported.js';
-import { getSettings } from '../services/storage.js';
-import { NO_BARCODE_DETECTED } from '../constants.js';
-
 /**
- * Removes and hides the scanned result.
+ * Removes the scanned result from the element where it is shown.
  *
- * @param {HTMLDialogElement} dialog - The dialog element to empty the results.
+ * @param {HTMLElement} element - The element to remove the result from.
  */
-export function hideResult(dialog) {
-  if (!dialog) {
+export function hideResult(element) {
+  if (!element) {
     return;
   }
 
-  dialog.querySelector('.results__item')?.remove();
-  dialog.close();
+  const scanResultEl = element.querySelector('scan-result');
+  scanResultEl?.remove();
 }
 
 /**
- * Creates and shows the scanned result.
+ * Creates and shows the scanned result inside the given element.
  *
+ * @param {HTMLElement} element - The element to show the result in.
  * @param {string} value - The value to create the result with.
- * @param {HTMLDialogElement} dialog - The dialog element to create the result in.
  */
-export async function showResult(value, dialog) {
-  if (!value || !dialog) {
+export async function showResult(element, value) {
+  if (!element || !value) {
     return;
   }
 
-  dialog.querySelector('.results__item')?.remove();
+  const oldScanResultEl = element.querySelector('scan-result');
 
-  let resultItem;
-
-  try {
-    const { value: settings } = await getSettings();
-
-    new URL(value);
-    resultItem = document.createElement('a');
-    resultItem.href = value;
-
-    if (!settings?.openWebPageSameTab) {
-      resultItem.setAttribute('target', '_blank');
-      resultItem.setAttribute('rel', 'noreferrer noopener');
-    }
-
-    if (settings?.openWebPage) {
-      resultItem.click();
-    }
-  } catch {
-    resultItem = document.createElement('span');
+  if (oldScanResultEl) {
+    oldScanResultEl.setAttribute('value', value);
+  } else {
+    const newScanResultEl = document.createElement('scan-result');
+    newScanResultEl.setAttribute('value', value);
+    newScanResultEl.setAttribute('role', 'alert');
+    newScanResultEl.setAttribute('aria-live', 'assertive');
+    newScanResultEl.setAttribute('aria-atomic', 'true');
+    element.appendChild(newScanResultEl);
   }
-
-  resultItem.className = 'results__item';
-  resultItem.classList.toggle('results__item--no-barcode', value === NO_BARCODE_DETECTED);
-  resultItem.textContent = value;
-
-  dialog.insertBefore(resultItem, dialog.querySelector('.results__actions'));
-
-  const clipboarCopyEl = dialog.querySelector('custom-clipboard-copy');
-  const webShareEl = dialog.querySelector('web-share');
-  const isValidValue = value !== NO_BARCODE_DETECTED;
-
-  if (clipboarCopyEl) {
-    clipboarCopyEl.disabled = !isValidValue;
-    clipboarCopyEl.hidden = !isValidValue;
-  }
-
-  if (webShareEl && isWebShareSupported()) {
-    webShareEl.disabled = !isValidValue;
-    webShareEl.hidden = !isValidValue;
-
-    if (isValidValue) {
-      webShareEl.setAttribute('share-text', value);
-    } else {
-      webShareEl.removeAttribute('share-text');
-    }
-  }
-
-  dialog.show();
 }

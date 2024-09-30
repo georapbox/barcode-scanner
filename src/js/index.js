@@ -1,13 +1,14 @@
 import '@georapbox/a-tab-group/dist/a-tab-group.js';
 import '@georapbox/web-share-element/dist/web-share-defined.js';
 import '@georapbox/files-dropzone-element/dist/files-dropzone-defined.js';
-import { isWebShareSupported } from '@georapbox/web-share-element/dist/is-web-share-supported.js';
 import '@georapbox/resize-observer-element/dist/resize-observer-defined.js';
+import '@georapbox/modal-element/dist/modal-element-defined.js';
 import { CapturePhoto } from '@georapbox/capture-photo-element/dist/capture-photo.js';
 import { NO_BARCODE_DETECTED, ACCEPTED_MIME_TYPES } from './constants.js';
 import { getHistory, setSettings } from './services/storage.js';
 import { debounce } from './utils/debounce.js';
 import { log } from './utils/log.js';
+import { isDialogElementSupported } from './utils/isDialogElementSupported.js';
 import { renderSupportedFormats } from './helpers/renderSupportedFormats.js';
 import {
   addToHistory,
@@ -22,13 +23,13 @@ import { BarcodeReader } from './helpers/BarcodeReader.js';
 import { initializeSettingsForm } from './helpers/initializeSettingsForm.js';
 import { toggleTorchButtonStatus } from './helpers/toggleTorchButtonStatus.js';
 import './components/clipboard-copy.js';
+import './components/scan-result.js';
 
 (async function () {
   const tabGroupEl = document.querySelector('a-tab-group');
-  const cameraPanel = document.getElementById('cameraPanel');
   const capturePhotoEl = document.querySelector('capture-photo');
-  const cameraResultsEl = document.getElementById('cameraResults');
-  const fileResultsEl = document.getElementById('fileResults');
+  const cameraPanel = document.getElementById('cameraPanel');
+  const filePanel = document.getElementById('filePanel');
   const scanInstructionsEl = document.getElementById('scanInstructions');
   const scanBtn = document.getElementById('scanBtn');
   const dropzoneEl = document.getElementById('dropzone');
@@ -43,6 +44,15 @@ import './components/clipboard-copy.js';
   const settingsForm = document.forms['settings-form'];
   let shouldScan = true;
   let rafId;
+
+  // By default the dialog elements are hidden for browsers that don't support the dialog element.
+  // If the dialog element is supported, we remove the hidden attribute and the dialogs' visibility
+  // is controlled by using the `showModal()` and `close()` methods.
+  if (isDialogElementSupported()) {
+    globalActionsEl.hidden = false;
+    historyDialog.hidden = false;
+    settingsDialog.hidden = false;
+  }
 
   const { barcodeReader, barcodeFormats, barcodeReaderError } = await BarcodeReader.init();
 
@@ -72,14 +82,7 @@ import './components/clipboard-copy.js';
   dropzoneEl.accept = ACCEPTED_MIME_TYPES.join(',');
   initializeSettingsForm(settingsForm);
   renderSupportedFormats(barcodeFormats);
-  renderHistoryList((await getHistory()).value || []);
-
-  if (!isWebShareSupported()) {
-    document.querySelectorAll('web-share').forEach(el => {
-      el.hidden = true;
-      el.disabled = true;
-    });
-  }
+  renderHistoryList((await getHistory())[1] || []);
 
   /**
    * Scans for barcodes.
@@ -101,7 +104,7 @@ import './components/clipboard-copy.js';
       }
 
       window.cancelAnimationFrame(rafId);
-      showResult(barcodeValue, cameraResultsEl);
+      showResult(cameraPanel, barcodeValue);
       addToHistory(barcodeValue);
       scanInstructionsEl.hidden = true;
       scanBtn.hidden = false;
@@ -125,7 +128,7 @@ import './components/clipboard-copy.js';
   function handleScanButtonClick() {
     scanBtn.hidden = true;
     scanFrameEl.hidden = false;
-    hideResult(cameraResultsEl);
+    hideResult(cameraPanel);
     scan();
   }
 
@@ -147,7 +150,7 @@ import './components/clipboard-copy.js';
           return;
         }
 
-        if (!capturePhotoEl.loading && !cameraResultsEl.querySelector('.results__item')) {
+        if (!capturePhotoEl.loading && !cameraPanel.querySelector('scan-result')) {
           scan();
         }
 
@@ -195,12 +198,12 @@ import './components/clipboard-copy.js';
             throw new Error(NO_BARCODE_DETECTED);
           }
 
-          showResult(barcodeValue, fileResultsEl);
+          showResult(filePanel, barcodeValue);
           addToHistory(barcodeValue);
           triggerScanEffects();
         } catch (err) {
           log(err);
-          showResult(NO_BARCODE_DETECTED, fileResultsEl);
+          showResult(filePanel, NO_BARCODE_DETECTED);
         }
       };
 
@@ -211,6 +214,7 @@ import './components/clipboard-copy.js';
 
       const preview = document.createElement('div');
       preview.className = 'dropzone-preview';
+      preview.setAttribute('aria-hidden', 'true');
 
       const imageWrapper = document.createElement('div');
       imageWrapper.className = 'dropzone-preview__image-wrapper';
@@ -326,20 +330,7 @@ import './components/clipboard-copy.js';
    * It is responsible for displaying the settings dialog.
    */
   function handleSettingsButtonClick() {
-    settingsDialog.showModal();
-  }
-
-  /**
-   * Handles the click event on the settings dialog.
-   *
-   * @param {MouseEvent} evt - The event object.
-   */
-  function handleSettingsDialogClick(evt) {
-    if (evt.target !== evt.currentTarget) {
-      return;
-    }
-
-    settingsDialog.close();
+    settingsDialog.open = true;
   }
 
   /**
@@ -361,7 +352,7 @@ import './components/clipboard-copy.js';
    * It is responsible for displaying the history dialog.
    */
   function handleHistoryButtonClick() {
-    historyDialog.showModal();
+    historyDialog.open = true;
   }
 
   /**
@@ -373,17 +364,11 @@ import './components/clipboard-copy.js';
   function handleHistoryDialogClick(evt) {
     const target = evt.target;
 
-    // Close the dialog if the click is on the dialog itself
-    if (target === evt.currentTarget) {
-      historyDialog.close();
-      return;
-    }
-
     // Handle delete action
     if (target.closest('[data-action="delete"]')) {
       const value = target.closest('li').dataset.value;
 
-      if (window.confirm(`Delete ${value}?`)) {
+      if (window.confirm(`Delete history item ${value}?`)) {
         removeFromHistory(value);
         return;
       }
@@ -391,7 +376,7 @@ import './components/clipboard-copy.js';
 
     // Handle empty history action
     if (target.closest('#emptyHistoryBtn')) {
-      if (window.confirm('Are you sure you want to empty history?')) {
+      if (window.confirm('Empty history? This action cannot be undone.')) {
         emptyHistory();
         return;
       }
@@ -441,7 +426,7 @@ import './components/clipboard-copy.js';
         return;
       }
 
-      if (!capturePhotoEl.loading && !cameraResultsEl.querySelector('.results__item')) {
+      if (!capturePhotoEl.loading && !cameraPanel.querySelector('scan-result')) {
         scan();
       }
 
@@ -483,7 +468,6 @@ import './components/clipboard-copy.js';
   dropzoneEl.addEventListener('files-dropzone-drop', handleFileDrop);
   resizeObserverEl.addEventListener('resize-observer:resize', handleCapturePhotoResize);
   settingsBtn.addEventListener('click', handleSettingsButtonClick);
-  settingsDialog.addEventListener('click', handleSettingsDialogClick);
   settingsForm.addEventListener('change', handleSettingsFormChange);
   historyBtn.addEventListener('click', handleHistoryButtonClick);
   historyDialog.addEventListener('click', handleHistoryDialogClick);

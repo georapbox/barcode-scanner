@@ -25,7 +25,7 @@
   --empty-history-button-color: #ffffff;
 
   /* Other variables */
-  --body-max-width: 75rem;
+  --body-max-width: 64rem;
   --border-radius: 6px;
   --animation-duration: 0.1s;
   --container-max-width: 37.5rem;
@@ -76,12 +76,12 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-body:has(.popover-dialog[open]) {
-  overflow-y: hidden;
-}
-
 [hidden] {
   display: none !important;
+}
+
+:not(:defined) {
+  display: none;
 }
 
 a {
@@ -153,29 +153,11 @@ h1 {
   font-weight: 300;
 }
 
-dialog {
-  background-color: var(--dialog-background);
-  color: var(--text-main);
-  border: none;
-  border-radius: var(--border-radius);
-  border-color: var(--border);
-  padding: 10px 30px;
-}
-
-dialog::backdrop {
-  background: #0000009c;
-  backdrop-filter: blur(4px);
-}
-
 .noscript {
-  position: fixed;
-  top: 0;
-  left: 0;
-  display: block;
   width: 100%;
-  padding: 0.5rem 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: var(--border-radius);
   text-align: center;
-  font-size: 0.9rem;
   color: #842029;
   background-color: #f8d7da;
 }
@@ -255,55 +237,6 @@ dialog::backdrop {
 
 .scan-button kbd {
   font-size: 0.8rem;
-}
-
-.results {
-  position: relative;
-  width: 100%;
-  border: 1px solid var(--focus);
-  border-radius: 6px;
-  margin: 1.5rem 0 0 0;
-  padding: 1rem;
-  background-color: var(--background-alt);
-}
-
-.results__item {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  text-align: center;
-  word-wrap: break-word;
-  word-break: break-word;
-}
-
-.results__item--no-barcode {
-  color: var(--error-color);
-}
-
-.results__actions {
-  display: flex;
-  align-items: center;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
-}
-
-.results web-share button,
-.results custom-clipboard-copy::part(button) {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 0.25rem;
-  margin: 0.75rem 0 0 0;
-  padding: 0.25rem;
-  background-color: transparent;
-  border: 0;
-  border-radius: var(--border-radius);
-  color: inherit;
-  line-height: 1;
-  font-family: inherit;
-  font-size: 0.9rem;
-  cursor: pointer;
 }
 
 .scan-instructions {
@@ -544,34 +477,23 @@ capture-photo::part(facing-mode-button) {
   display: none;
 }
 
-.popover-dialog > header:first-child {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin: 0;
-  padding: 0.5rem 0.75rem;
-  font-weight: 500;
-}
-
-.popover-dialog > header:first-child button {
-  padding: 0.25rem;
-  margin: 0;
-  background-color: transparent !important;
-  line-height: 1;
-  color: var(--text-main);
-}
-
 .popover-dialog {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  left: auto;
-  padding: 0;
-  margin: 0;
+  --me-background-color: var(--dialog-background);
+  --me-border-radius: var(--border-radius);
+  --me-border-style: none;
+  --me-width: fit-content;
+  --me-header-spacing: 0.75rem;
+  --me-body-spacing: 0;
+  --me-footer-spacing: 0.75rem;
+  --me-backdrop-filter: blur(4px);
 }
 
-.popover-dialog :not(header) {
+.popover-dialog::part(body) {
   font-size: 0.9rem;
+}
+
+.popover-dialog::part(footer) {
+  text-align: center;
 }
 
 .popover-dialog ul {
@@ -593,48 +515,8 @@ capture-photo::part(facing-mode-button) {
   border-bottom: 0;
 }
 
-/* Modal animations */
-@media (prefers-reduced-motion: no-preference) {
-  .popover-dialog::backdrop {
-    opacity: 0;
-  }
-
-  .popover-dialog[open]::backdrop {
-    opacity: 1;
-  }
-
-  .popover-dialog,
-  .popover-dialog::backdrop {
-    transition: transform 0.3s, opacity 0.3s, display 0.3s allow-discrete, overlay 0.3s allow-discrete;
-  }
-
-  /* 1. IS-OPEN STATE */
-  .popover-dialog[open] {
-    transform: translateY(0);
-    opacity: 1;
-  }
-
-  /* 2. EXIT STATE */
-  .popover-dialog {
-    transform: translateY(-16px);
-    opacity: 0;
-  }
-
-  /* 0. BEFORE-OPEN STATE */
-  @starting-style {
-    .popover-dialog[open] {
-      transform: translateY(-16px);
-      opacity: 0;
-    }
-
-    .popover-dialog[open]::backdrop {
-      opacity: 0;
-    }
-  }
-}
-
 .popover-dialog--history ul {
-  max-width: 500px;
+  max-width: 31.25rem;
 }
 
 .popover-dialog--history ul li {
@@ -701,17 +583,12 @@ capture-photo::part(facing-mode-button) {
 }
 
 .empty-history-button {
-  width: calc(100% - 1.5rem);
-  margin: 0.75rem 0 0.75rem 0.75rem;
-  background-color: var(--error-color) !important;
+  width: 100%;
+  background-color: var(--error-color);
   color: var(--empty-history-button-color);
 }
 
 /* Tab group */
-a-tab-group:not(:defined) {
-  display: none;
-}
-
 a-tab-group::part(tabs) {
   border-radius: var(--border-radius);
   padding: 0;
