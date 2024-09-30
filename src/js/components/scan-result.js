@@ -147,7 +147,7 @@ class ScanResult extends HTMLElement {
     }
 
     try {
-      const { value: settings } = await getSettings();
+      const [, settings] = await getSettings();
 
       new URL(value);
       resultItem = document.createElement('a');

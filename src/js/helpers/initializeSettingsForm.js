@@ -7,7 +7,7 @@ import { getSettings } from '../services/storage.js';
  * @param {HTMLFormElement} form - The settings form to initialize.
  */
 export async function initializeSettingsForm(form) {
-  const { value: settings = {} } = await getSettings();
+  const [, settings = {}] = await getSettings();
 
   Object.entries(settings).forEach(([key, value]) => {
     const settingInput = form.querySelector(`[name="${key}"]`);

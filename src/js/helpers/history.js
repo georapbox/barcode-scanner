@@ -14,7 +14,7 @@ export function renderHistoryList(data) {
 
   const emptyHistoryBtn = document.getElementById('emptyHistoryBtn');
 
-  historyList.innerHTML = '';
+  historyList.replaceChildren();
 
   if (!Array.isArray(data) || data.length === 0) {
     historyList.innerHTML = '<li>There are no saved items in history.</li>';
@@ -80,18 +80,18 @@ export function renderHistoryList(data) {
  * @param {string} item - Item to add to history
  */
 export async function addToHistory(item) {
-  const { value: settings } = await getSettings();
+  const [, settings] = await getSettings();
 
   if (!item || !settings?.addToHistory) {
     return;
   }
 
-  const { value: history = [], error: getHistoryError } = await getHistory();
+  const [getHistoryError, history = []] = await getHistory();
 
-  if (!getHistoryError && !history.find(h => h === item)) {
+  if (!getHistoryError && Array.isArray(history) && !history.find(h => h === item)) {
     const data = [...history, item];
 
-    const { error: setHistoryError } = await setHistory(data);
+    const [setHistoryError] = await setHistory(data);
 
     if (!setHistoryError) {
       renderHistoryList(data);
@@ -109,11 +109,11 @@ export async function removeFromHistory(item) {
     return;
   }
 
-  const { value: history = [], error: getHistoryError } = await getHistory();
+  const [getHistoryError, history = []] = await getHistory();
 
-  if (!getHistoryError) {
+  if (!getHistoryError && Array.isArray(history)) {
     const data = history.filter(el => el !== item);
-    const { error: setHistoryError } = await setHistory(data);
+    const [setHistoryError] = await setHistory(data);
 
     if (!setHistoryError) {
       renderHistoryList(data);
@@ -125,7 +125,7 @@ export async function removeFromHistory(item) {
  * Removes all items from the history.
  */
 export async function emptyHistory() {
-  const { error: setHistoryError } = await setHistory([]);
+  const [setHistoryError] = await setHistory([]);
 
   if (!setHistoryError) {
     renderHistoryList([]);

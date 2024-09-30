@@ -6,7 +6,7 @@ import { vibrate } from '../utils/vibrate.js';
  * Triggers the scan effects like beep and vibrate.
  */
 export async function triggerScanEffects() {
-  const { value: settings } = await getSettings();
+  const [, settings] = await getSettings();
 
   if (!settings) {
     return;

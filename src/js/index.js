@@ -82,7 +82,7 @@ import './components/scan-result.js';
   dropzoneEl.accept = ACCEPTED_MIME_TYPES.join(',');
   initializeSettingsForm(settingsForm);
   renderSupportedFormats(barcodeFormats);
-  renderHistoryList((await getHistory()).value || []);
+  renderHistoryList((await getHistory())[1] || []);
 
   /**
    * Scans for barcodes.
