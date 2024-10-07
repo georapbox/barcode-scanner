@@ -219,13 +219,19 @@
     <span slot="header">Settings</span>
     <form name="settings-form" autocomplete="off">
       <fieldset name="barcode-found-settings">
-        <legend>When barcode is found...</legend>
+        <legend>When barcode is detected...</legend>
         <ul>
-          <li><label><input type="checkbox" name="beep"> Beep</label></li>
-          <li><label><input type="checkbox" name="vibrate"> Vibrate (Android)</label></li>
           <li><label><input type="checkbox" name="openWebPage"> Open web pages automatically</label></li>
           <li><label><input type="checkbox" name="openWebPageSameTab"> Open web pages in the same tab</label></li>
           <li><label><input type="checkbox" name="addToHistory"> Add to history</label></li>
+        </ul>
+      </fieldset>
+
+      <fieldset>
+        <legend>Effects</legend>
+        <ul>
+          <li><label><input type="checkbox" name="beep"> Beep</label></li>
+          <li><label><input type="checkbox" name="vibrate"> Vibrate (Android)</label></li>
         </ul>
       </fieldset>
     </form>
