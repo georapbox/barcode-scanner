@@ -45,12 +45,12 @@
   },
   "homepage": "https://github.com/georapbox/barcode-scanner#readme",
   "devDependencies": {
-    "@eslint/js": "~9.11.1",
+    "@eslint/js": "~9.12.0",
     "@parcel/packager-raw-url": "~2.12.0",
     "@parcel/transformer-webmanifest": "~2.12.0",
-    "eslint": "~9.11.1",
+    "eslint": "~9.12.0",
     "gh-pages": "~6.1.1",
-    "globals": "~15.9.0",
+    "globals": "~15.10.0",
     "npm-run-all": "~4.1.5",
     "parcel": "~2.12.0",
     "prettier": "~3.3.3",
@@ -66,7 +66,7 @@
     "@georapbox/modal-element": "~1.8.0",
     "@georapbox/resize-observer-element": "~2.0.1",
     "@georapbox/web-share-element": "~3.1.1",
-    "barcode-detector": "~2.2.8",
+    "barcode-detector": "~2.2.10",
     "idb-keyval": "~6.2.1"
   },
   "browserslist": "> 0.5%, last 2 versions, not dead"

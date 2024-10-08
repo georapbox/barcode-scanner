@@ -354,6 +354,7 @@ body > footer {
   max-width: var(--container-max-width);
   margin: 1rem auto 0 auto;
   text-align: center;
+  text-wrap: balance;
   padding: 0 0.75rem;
   font-size: 0.75rem;
   color: var(--text-muted);

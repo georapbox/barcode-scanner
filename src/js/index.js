@@ -204,6 +204,7 @@ import './components/scan-result.js';
         } catch (err) {
           log(err);
           showResult(filePanel, NO_BARCODE_DETECTED);
+          triggerScanEffects({ success: false });
         }
       };
 
