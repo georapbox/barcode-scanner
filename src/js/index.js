@@ -3,7 +3,8 @@ import '@georapbox/web-share-element/dist/web-share-defined.js';
 import '@georapbox/files-dropzone-element/dist/files-dropzone-defined.js';
 import '@georapbox/resize-observer-element/dist/resize-observer-defined.js';
 import '@georapbox/modal-element/dist/modal-element-defined.js';
-import { CapturePhoto } from '@georapbox/capture-photo-element/dist/capture-photo.js';
+// import { CapturePhoto } from '@georapbox/capture-photo-element/dist/capture-photo.js';
+import { CapturePhoto } from './components/capture-photo.js';
 import { NO_BARCODE_DETECTED, ACCEPTED_MIME_TYPES } from './constants.js';
 import { getHistory, setSettings } from './services/storage.js';
 import { debounce } from './utils/debounce.js';
@@ -35,6 +36,7 @@ import './components/scan-result.js';
   const dropzoneEl = document.getElementById('dropzone');
   const resizeObserverEl = document.querySelector('resize-observer');
   const scanFrameEl = document.getElementById('scanFrame');
+  const facingModeButton = document.getElementById('facingModeButton');
   const torchButton = document.getElementById('torchButton');
   const globalActionsEl = document.getElementById('globalActions');
   const historyBtn = document.getElementById('historyBtn');
@@ -42,6 +44,7 @@ import './components/scan-result.js';
   const settingsBtn = document.getElementById('settingsBtn');
   const settingsDialog = document.getElementById('settingsDialog');
   const settingsForm = document.forms['settings-form'];
+  const cameraSelect = document.getElementById('cameraSelect');
   let shouldScan = true;
   let rafId;
 
@@ -258,7 +261,7 @@ import './components/scan-result.js';
    *
    * @param {CustomEvent} evt - The event object.
    */
-  function handleCapturePhotoVideoPlay(evt) {
+  async function handleCapturePhotoVideoPlay(evt) {
     scanFrameEl.hidden = false;
     resizeScanFrame(evt.detail.video, scanFrameEl);
     scan();
@@ -266,6 +269,10 @@ import './components/scan-result.js';
     const trackSettings = evt.target.getTrackSettings();
     const trackCapabilities = evt.target.getTrackCapabilities();
     const zoomLevelEl = document.getElementById('zoomLevel');
+
+    if ('facingMode' in trackSettings) {
+      facingModeButton.hidden = false;
+    }
 
     if (trackCapabilities?.torch) {
       torchButton.hidden = false;
@@ -301,6 +308,19 @@ import './components/scan-result.js';
       };
 
       zoomControls.addEventListener('click', handleZoomControlsClick);
+    }
+
+    const videoInputDevices = await CapturePhoto.getVideoDevices();
+
+    videoInputDevices.forEach((device, index) => {
+      const option = document.createElement('option');
+      option.value = device.deviceId;
+      option.textContent = device.label || `Camera ${index + 1}`;
+      cameraSelect.appendChild(option);
+    });
+
+    if (videoInputDevices.length > 1) {
+      cameraSelect.hidden = false;
     }
   }
 
@@ -382,6 +402,15 @@ import './components/scan-result.js';
         return;
       }
     }
+  }
+
+  /**
+   * Handles the click event on the facing mode button.
+   * It is responsible for toggling the camera facing mode.
+   */
+  function handleFacingModeButtonClick() {
+    const facingMode = capturePhotoEl.facingMode === 'user' ? 'environment' : 'user';
+    capturePhotoEl.facingMode = facingMode;
   }
 
   /**
@@ -472,7 +501,15 @@ import './components/scan-result.js';
   settingsForm.addEventListener('change', handleSettingsFormChange);
   historyBtn.addEventListener('click', handleHistoryButtonClick);
   historyDialog.addEventListener('click', handleHistoryDialogClick);
+  facingModeButton.addEventListener('click', handleFacingModeButtonClick);
   torchButton.addEventListener('click', handleTorchButtonClick);
   document.addEventListener('visibilitychange', handleDocumentVisibilityChange);
   document.addEventListener('keydown', handleDocumentKeyDown);
+
+  cameraSelect.addEventListener('change', evt => {
+    const videoDeviceId = evt.target.value;
+    // capturePhotoEl.cameraId = videoDeviceId;
+    capturePhotoEl.stopVideoStream();
+    capturePhotoEl.startVideoStream(videoDeviceId);
+  });
 })();

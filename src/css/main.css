@@ -10,6 +10,7 @@
   --background-body: #ffffff;
   --background-alt: #f7f7f7;
   --background: #efefef;
+  --background-input: #ffffff;
   --text-main: #363636;
   --text-muted: #70777f;
   --links: var(--accent);
@@ -30,19 +31,21 @@
   --animation-duration: 0.1s;
   --container-max-width: 37.5rem;
   --capture-border-width: 3px;
-  --track-control-button-dimensions: 2.25rem;
+  --select-arrow: url("data:image/svg+xml;charset=utf-8,%3C?xml version='1.0' encoding='utf-8'?%3E %3Csvg version='1.1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' height='62.5' width='116.9' fill='%23161f27'%3E %3Cpath d='M115.3,1.6 C113.7,0 111.1,0 109.5,1.6 L58.5,52.7 L7.4,1.6 C5.8,0 3.2,0 1.6,1.6 C0,3.2 0,5.8 1.6,7.4 L55.5,61.3 C56.3,62.1 57.3,62.5 58.4,62.5 C59.4,62.5 60.5,62.1 61.3,61.3 L115.2,7.4 C116.9,5.8 116.9,3.2 115.3,1.6Z'/%3E %3C/svg%3E");
 
   accent-color: var(--accent);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
+    /* Color variables */
     --accent-h: 206;
     --accent-s: 100%;
     --accent-l: 73%;
     --background-body: #212529;
     --background-alt: #343a40;
     --background: var(--background-alt);
+    --background-input: var(--background);
     --text-main: #dbdbdb;
     --text-muted: #a9b1ba;
     --links: var(--accent);
@@ -55,6 +58,9 @@
     --dropzone-background-dragover: #161718;
     --dropzone-background-hover: #161718;
     --empty-history-button-color: #000000;
+
+    /* Other variables */
+    --select-arrow: url("data:image/svg+xml;charset=utf-8,%3C?xml version='1.0' encoding='utf-8'?%3E %3Csvg version='1.1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' height='62.5' width='116.9' fill='%23ffffff'%3E %3Cpath d='M115.3,1.6 C113.7,0 111.1,0 109.5,1.6 L58.5,52.7 L7.4,1.6 C5.8,0 3.2,0 1.6,1.6 C0,3.2 0,5.8 1.6,7.4 L55.5,61.3 C56.3,62.1 57.3,62.5 58.4,62.5 C59.4,62.5 60.5,62.1 61.3,61.3 L115.2,7.4 C116.9,5.8 116.9,3.2 115.3,1.6Z'/%3E %3C/svg%3E");
   }
 }
 
@@ -151,6 +157,19 @@ h1 {
   margin: 0.75rem 0;
   font-size: 1.6rem;
   font-weight: 300;
+}
+
+select {
+  padding: 0.75rem 2.25rem 0.75rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--border-radius);
+  background: var(--background-input) var(--select-arrow) calc(100% - 12px) 50% / 12px no-repeat;
+  color: var(--form-text);
+  font-family: inherit;
+  font-size: inherit;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
 }
 
 .noscript {
@@ -360,6 +379,11 @@ body > footer {
   color: var(--text-muted);
 }
 
+.camera-select {
+  width: 100%;
+  margin-block-end: 0.5rem;
+}
+
 capture-photo {
   position: relative;
   display: flex;
@@ -383,53 +407,38 @@ capture-photo[loading]::part(video) {
   background-repeat: no-repeat;
 }
 
-capture-photo::part(facing-mode-button) {
-  display: flex;
-  justify-content: center;
-  align-items: center;
+capture-photo [slot="actions"] {
   position: absolute;
-  bottom: 0.25rem;
-  left: 0.25rem;
-  width: var(--track-control-button-dimensions);
-  height: var(--track-control-button-dimensions);
-  padding: 0;
-  border: 0;
-  border-radius: calc(var(--border-radius) / 2);
-  background-color: var(--background);
-  color: var(--text-main);
-  cursor: pointer;
-  -webkit-appearance: none;
-  appearance: none;
-  transition: background-color 0.15s ease-in-out;
-  font-size: 1rem;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  padding: 0.25rem;
 }
 
 .zoom-controls {
-  position: absolute;
-  bottom: 0.25rem;
-  right: 0.25rem;
   display: flex;
 }
 
+.facing-mode-button,
 .torch-button,
 .zoom-controls button,
 .zoom-controls label {
-  display: flex;
+  display: inline-flex;
   justify-content: center;
   align-items: center;
   margin: 0;
-  width: var(--track-control-button-dimensions);
-  height: var(--track-control-button-dimensions);
+  width: 2.25rem;
+  height: 2.25rem;
   padding: 0;
   border-radius: 0;
   background-color: var(--background);
   color: var(--text-main);
 }
 
+.facing-mode-button,
 .torch-button {
-  position: absolute;
-  bottom: 0.25rem;
-  left: calc(var(--track-control-button-dimensions) + 0.5rem);
   border-radius: calc(var(--border-radius) / 2);
 }
 
