@@ -21,5 +21,5 @@ export async function triggerScanEffects(options = {}) {
     : { duration: 300, frequency: 200, volume: 0.05, type: 'sawtooth' };
 
   settings.beep && beep(beepConfig);
-  settings.vibrate && vibrate(success ? 100 : 300);
+  settings.vibrate && vibrate(success ? 100 : 200);
 }
