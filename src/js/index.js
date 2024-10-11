@@ -313,8 +313,8 @@ import './components/scan-result.js';
         cameraSelect.appendChild(option);
       });
 
-      cameraSelect.hidden = false;
       if (videoInputDevices.length > 1) {
+        cameraSelect.hidden = false;
       }
     }
   }
