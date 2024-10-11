@@ -1,3 +1,5 @@
+export const EXPERIMENTAL_FLAG = 'experimental';
+
 export const NO_BARCODE_DETECTED = 'No barcode detected';
 
 export const ACCEPTED_MIME_TYPES = [

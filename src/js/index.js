@@ -3,8 +3,7 @@ import '@georapbox/web-share-element/dist/web-share-defined.js';
 import '@georapbox/files-dropzone-element/dist/files-dropzone-defined.js';
 import '@georapbox/resize-observer-element/dist/resize-observer-defined.js';
 import '@georapbox/modal-element/dist/modal-element-defined.js';
-import { CapturePhoto } from '@georapbox/capture-photo-element/dist/capture-photo.js';
-import { NO_BARCODE_DETECTED, ACCEPTED_MIME_TYPES } from './constants.js';
+import { EXPERIMENTAL_FLAG, NO_BARCODE_DETECTED, ACCEPTED_MIME_TYPES } from './constants.js';
 import { getHistory, setSettings } from './services/storage.js';
 import { debounce } from './utils/debounce.js';
 import { log } from './utils/log.js';
@@ -22,12 +21,14 @@ import { resizeScanFrame } from './helpers/resizeScanFrame.js';
 import { BarcodeReader } from './helpers/BarcodeReader.js';
 import { initializeSettingsForm } from './helpers/initializeSettingsForm.js';
 import { toggleTorchButtonStatus } from './helpers/toggleTorchButtonStatus.js';
+import { VideoCapture } from './components/video-capture.js';
 import './components/clipboard-copy.js';
 import './components/scan-result.js';
 
 (async function () {
+  const hasExperimentalFlag = new URLSearchParams(window.location.search).has(EXPERIMENTAL_FLAG);
   const tabGroupEl = document.querySelector('a-tab-group');
-  const capturePhotoEl = document.querySelector('capture-photo');
+  const videoCaptureEl = document.querySelector('video-capture');
   const cameraPanel = document.getElementById('cameraPanel');
   const filePanel = document.getElementById('filePanel');
   const scanInstructionsEl = document.getElementById('scanInstructions');
@@ -35,6 +36,7 @@ import './components/scan-result.js';
   const dropzoneEl = document.getElementById('dropzone');
   const resizeObserverEl = document.querySelector('resize-observer');
   const scanFrameEl = document.getElementById('scanFrame');
+  const facingModeButton = document.getElementById('facingModeButton');
   const torchButton = document.getElementById('torchButton');
   const globalActionsEl = document.getElementById('globalActions');
   const historyBtn = document.getElementById('historyBtn');
@@ -42,6 +44,7 @@ import './components/scan-result.js';
   const settingsBtn = document.getElementById('settingsBtn');
   const settingsDialog = document.getElementById('settingsDialog');
   const settingsForm = document.forms['settings-form'];
+  const cameraSelect = document.getElementById('cameraSelect');
   let shouldScan = true;
   let rafId;
 
@@ -67,17 +70,17 @@ import './components/scan-result.js';
     return; // Stop the script execution as BarcodeDetector API is not supported.
   }
 
-  capturePhotoEl.addEventListener('capture-photo:video-play', handleCapturePhotoVideoPlay, {
+  videoCaptureEl.addEventListener('video-capture:video-play', handleVideoCapturePlay, {
     once: true
   });
 
-  capturePhotoEl.addEventListener('capture-photo:error', handleCapturePhotoError, {
+  videoCaptureEl.addEventListener('video-capture:error', handleVideoCaptureError, {
     once: true
   });
 
-  CapturePhoto.defineCustomElement();
+  VideoCapture.defineCustomElement();
 
-  const capturePhotoVideoEl = capturePhotoEl?.shadowRoot?.querySelector('video');
+  const videoCaptureVideoEl = videoCaptureEl?.shadowRoot?.querySelector('video');
 
   dropzoneEl.accept = ACCEPTED_MIME_TYPES.join(',');
   initializeSettingsForm(settingsForm);
@@ -96,7 +99,7 @@ import './components/scan-result.js';
     scanInstructionsEl.hidden = false;
 
     try {
-      const barcode = await barcodeReader.detect(capturePhotoVideoEl);
+      const barcode = await barcodeReader.detect(videoCaptureVideoEl);
       const barcodeValue = barcode?.rawValue ?? '';
 
       if (!barcodeValue) {
@@ -140,35 +143,28 @@ import './components/scan-result.js';
    */
   function handleTabShow(evt) {
     const tabId = evt.detail.tabId;
-    const capturePhotoEl = document.querySelector('capture-photo'); // Get the latest instance of capture-photo element to ensure we don't use the cached one.
+    const videoCaptureEl = document.querySelector('video-capture'); // Get the latest instance of video-capture element to ensure we don't use the cached one.
 
-    switch (tabId) {
-      case 'cameraTab':
-        shouldScan = true;
+    if (tabId === 'cameraTab') {
+      shouldScan = true;
 
-        if (!capturePhotoEl) {
-          return;
-        }
+      if (!videoCaptureEl) {
+        return;
+      }
 
-        if (!capturePhotoEl.loading && !cameraPanel.querySelector('scan-result')) {
-          scan();
-        }
+      if (!videoCaptureEl.loading && !cameraPanel.querySelector('scan-result')) {
+        scan();
+      }
 
-        if (typeof capturePhotoEl.startVideoStream === 'function') {
-          capturePhotoEl.startVideoStream();
-        }
+      if (typeof videoCaptureEl.startVideoStream === 'function') {
+        videoCaptureEl.startVideoStream();
+      }
+    } else if (tabId === 'fileTab') {
+      shouldScan = false;
 
-        break;
-      case 'fileTab':
-        shouldScan = false;
-
-        if (capturePhotoEl != null && typeof capturePhotoEl.stopVideoStream === 'function') {
-          capturePhotoEl.stopVideoStream();
-        }
-
-        break;
-      default:
-        break;
+      if (videoCaptureEl != null && typeof videoCaptureEl.stopVideoStream === 'function') {
+        videoCaptureEl.stopVideoStream();
+      }
     }
   }
 
@@ -244,21 +240,21 @@ import './components/scan-result.js';
   }
 
   /**
-   * Handles the resize event on the capture-photo element.
+   * Handles the resize event on the video-capture element.
    * It is responsible for resizing the scan frame based on the video element.
    */
-  function handleCapturePhotoResize() {
-    resizeScanFrame(capturePhotoEl.shadowRoot.querySelector('video'), scanFrameEl);
+  function handleVideoCaptureResize() {
+    resizeScanFrame(videoCaptureEl.shadowRoot.querySelector('video'), scanFrameEl);
   }
 
   /**
-   * Handles the video play event on the capture-photo element.
+   * Handles the video play event on the video-capture element.
    * It is responsible for displaying the scan frame and starting the scan process.
    * It also handles the zoom controls if the browser supports it.
    *
    * @param {CustomEvent} evt - The event object.
    */
-  function handleCapturePhotoVideoPlay(evt) {
+  async function handleVideoCapturePlay(evt) {
     scanFrameEl.hidden = false;
     resizeScanFrame(evt.detail.video, scanFrameEl);
     scan();
@@ -267,10 +263,14 @@ import './components/scan-result.js';
     const trackCapabilities = evt.target.getTrackCapabilities();
     const zoomLevelEl = document.getElementById('zoomLevel');
 
+    if ('facingMode' in trackSettings) {
+      facingModeButton.hidden = false;
+    }
+
     if (trackCapabilities?.torch) {
       torchButton.hidden = false;
 
-      if (capturePhotoEl.hasAttribute('torch')) {
+      if (videoCaptureEl.hasAttribute('torch')) {
         toggleTorchButtonStatus({ el: torchButton, isTorchOn: true });
       }
     }
@@ -297,20 +297,35 @@ import './components/scan-result.js';
         }
 
         zoomLevelEl.textContent = currentZoom;
-        capturePhotoEl.zoom = currentZoom;
+        videoCaptureEl.zoom = currentZoom;
       };
 
       zoomControls.addEventListener('click', handleZoomControlsClick);
     }
+
+    if (hasExperimentalFlag) {
+      const videoInputDevices = await VideoCapture.getVideoInputDevices();
+
+      videoInputDevices.forEach((device, index) => {
+        const option = document.createElement('option');
+        option.value = device.deviceId;
+        option.textContent = device.label || `Camera ${index + 1}`;
+        cameraSelect.appendChild(option);
+      });
+
+      cameraSelect.hidden = false;
+      if (videoInputDevices.length > 1) {
+      }
+    }
   }
 
   /**
-   * Handles the error event on the capture-photo element.
+   * Handles the error event on the video-capture element.
    * It is responsible for displaying an error message if the camera cannot be accessed or permission is denied.
    *
    * @param {CustomEvent} evt - The event object.
    */
-  function handleCapturePhotoError(evt) {
+  function handleVideoCaptureError(evt) {
     const error = evt.detail.error;
 
     if (error.name === 'NotFoundError') {
@@ -385,18 +400,46 @@ import './components/scan-result.js';
   }
 
   /**
+   * Handles the click event on the facing mode button.
+   * It is responsible for toggling the camera facing mode.
+   */
+  function handleFacingModeButtonClick() {
+    const facingMode = videoCaptureEl.facingMode === 'user' ? 'environment' : 'user';
+
+    videoCaptureEl.facingMode = facingMode;
+
+    if (typeof videoCaptureEl.restartVideoStream === 'function') {
+      videoCaptureEl.restartVideoStream(cameraSelect?.value || undefined);
+    }
+  }
+
+  /**
    * Handles the click event on the torch button.
    * It is responsible for toggling the torch on and off.
    *
    * @param {MouseEvent} evt - The event object.
    */
   function handleTorchButtonClick(evt) {
-    capturePhotoEl.torch = !capturePhotoEl.torch;
+    videoCaptureEl.torch = !videoCaptureEl.torch;
 
     toggleTorchButtonStatus({
       el: evt.currentTarget,
-      isTorchOn: capturePhotoEl.hasAttribute('torch')
+      isTorchOn: videoCaptureEl.hasAttribute('torch')
     });
+  }
+
+  /**
+   * Handles the change event on the camera select element.
+   * It is responsible for restarting the video stream with the selected video input device id.
+   *
+   * @param {Event} evt - The event object.
+   */
+  function handleCameraSelectChange(evt) {
+    const videoDeviceId = evt.target.value || undefined;
+
+    if (typeof videoCaptureEl.restartVideoStream === 'function') {
+      videoCaptureEl.restartVideoStream(videoDeviceId);
+    }
   }
 
   /**
@@ -414,25 +457,25 @@ import './components/scan-result.js';
     if (document.visibilityState === 'hidden') {
       shouldScan = false;
 
-      if (capturePhotoEl != null && typeof capturePhotoEl.stopVideoStream === 'function') {
-        capturePhotoEl.stopVideoStream();
+      if (videoCaptureEl != null && typeof videoCaptureEl.stopVideoStream === 'function') {
+        videoCaptureEl.stopVideoStream();
       }
     } else {
       shouldScan = true;
 
-      // Get the latest instance of capture-photo element to ensure we don't use the cached one.
-      const capturePhotoEl = document.querySelector('capture-photo');
+      // Get the latest instance of video-capture element to ensure we don't use the cached one.
+      const videoCaptureEl = document.querySelector('video-capture');
 
-      if (!capturePhotoEl) {
+      if (!videoCaptureEl) {
         return;
       }
 
-      if (!capturePhotoEl.loading && !cameraPanel.querySelector('scan-result')) {
+      if (!videoCaptureEl.loading && !cameraPanel.querySelector('scan-result')) {
         scan();
       }
 
-      if (typeof capturePhotoEl.startVideoStream === 'function') {
-        capturePhotoEl.startVideoStream();
+      if (typeof videoCaptureEl.startVideoStream === 'function') {
+        videoCaptureEl.startVideoStream();
       }
     }
   }
@@ -467,12 +510,14 @@ import './components/scan-result.js';
   scanBtn.addEventListener('click', handleScanButtonClick);
   tabGroupEl.addEventListener('a-tab-show', debounce(handleTabShow, 250));
   dropzoneEl.addEventListener('files-dropzone-drop', handleFileDrop);
-  resizeObserverEl.addEventListener('resize-observer:resize', handleCapturePhotoResize);
+  resizeObserverEl.addEventListener('resize-observer:resize', handleVideoCaptureResize);
   settingsBtn.addEventListener('click', handleSettingsButtonClick);
   settingsForm.addEventListener('change', handleSettingsFormChange);
   historyBtn.addEventListener('click', handleHistoryButtonClick);
   historyDialog.addEventListener('click', handleHistoryDialogClick);
+  facingModeButton.addEventListener('click', handleFacingModeButtonClick);
   torchButton.addEventListener('click', handleTorchButtonClick);
+  hasExperimentalFlag && cameraSelect.addEventListener('change', handleCameraSelectChange);
   document.addEventListener('visibilitychange', handleDocumentVisibilityChange);
   document.addEventListener('keydown', handleDocumentKeyDown);
 })();

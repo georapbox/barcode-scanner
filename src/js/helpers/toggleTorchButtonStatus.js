@@ -12,7 +12,6 @@ export function toggleTorchButtonStatus(options = {}) {
     isTorchOn: false
   };
   const { el, isTorchOn } = { ...defaults, ...options };
-  console.log(el, isTorchOn);
   const iconPaths = el.querySelectorAll('svg path');
 
   if (iconPaths.length !== 2) {
