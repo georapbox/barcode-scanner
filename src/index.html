@@ -93,20 +93,18 @@
 
       <a-tab-panel id="cameraPanel">
         <select id="cameraSelect" class="camera-select" aria-label="Select camera" hidden>
-          <option value="">Default camera</option>
+          <option value="">System default camera</option>
         </select>
 
         <div class="scan-frame-container">
           <resize-observer>
-            <capture-photo facing-mode="environment" no-image auto-play>
+            <video-capture facing-mode="environment" auto-play>
               <button type="button" id="scanBtn" class="scan-button" hidden>
                 <svg xmlns="http://www.w3.org/2000/svg" width="2.75em" height="2.75em" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
                   <path d="M1.5 1a.5.5 0 0 0-.5.5v3a.5.5 0 0 1-1 0v-3A1.5 1.5 0 0 1 1.5 0h3a.5.5 0 0 1 0 1h-3zM11 .5a.5.5 0 0 1 .5-.5h3A1.5 1.5 0 0 1 16 1.5v3a.5.5 0 0 1-1 0v-3a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 1-.5-.5zM.5 11a.5.5 0 0 1 .5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 1 0 1h-3A1.5 1.5 0 0 1 0 14.5v-3a.5.5 0 0 1 .5-.5zm15 0a.5.5 0 0 1 .5.5v3a1.5 1.5 0 0 1-1.5 1.5h-3a.5.5 0 0 1 0-1h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 1 .5-.5zM3 4.5a.5.5 0 0 1 1 0v7a.5.5 0 0 1-1 0v-7zm2 0a.5.5 0 0 1 1 0v7a.5.5 0 0 1-1 0v-7zm2 0a.5.5 0 0 1 1 0v7a.5.5 0 0 1-1 0v-7zm2 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-7zm3 0a.5.5 0 0 1 1 0v7a.5.5 0 0 1-1 0v-7z"/>
                 </svg>
                 <span>Click to scan another barcode or press the <kbd>Esc</kbd> key.</span>
               </button>
-
-              <span slot="capture-button" hidden></span>
 
               <div slot="actions">
                 <div>
@@ -146,7 +144,7 @@
                   </button>
                 </div>
               </div>
-            </capture-photo>
+            </video-capture>
           </resize-observer>
 
           <div id="scanFrame" class="scan-frame" hidden>
