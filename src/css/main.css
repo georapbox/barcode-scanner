@@ -610,10 +610,6 @@ a-tab-group::part(tabs) {
   padding: 0;
 }
 
-a-tab-group::part(panels) {
-  padding: 0.5rem 0 0 0;
-}
-
 a-tab {
   display: flex;
   flex: 1;
