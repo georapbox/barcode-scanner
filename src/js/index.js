@@ -112,6 +112,7 @@ import './components/scan-result.js';
       scanInstructionsEl.hidden = true;
       scanBtn.hidden = false;
       scanFrameEl.hidden = true;
+      cameraSelect.disabled = true;
       triggerScanEffects();
       return;
     } catch {
@@ -131,6 +132,7 @@ import './components/scan-result.js';
   function handleScanButtonClick() {
     scanBtn.hidden = true;
     scanFrameEl.hidden = false;
+    cameraSelect.disabled = false;
     hideResult(cameraPanel);
     scan();
   }
