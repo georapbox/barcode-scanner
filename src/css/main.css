@@ -24,6 +24,7 @@
   --dropzone-background-dragover: var(--background);
   --dropzone-background-hover: var(--background);
   --empty-history-button-color: #ffffff;
+  --camera-actions-background: #ffffff;
 
   /* Other variables */
   --body-max-width: 64rem;
@@ -60,6 +61,7 @@
     --dropzone-background-dragover: #161718;
     --dropzone-background-hover: #161718;
     --empty-history-button-color: #000000;
+    --camera-actions-background: var(--background);
 
     /* Other variables */
     --select-arrow: var(--select-arrow-dark);
@@ -162,16 +164,21 @@ h1 {
 }
 
 select {
-  padding: 0.75rem 2.25rem 0.75rem 0.75rem;
+  padding-block: 0.75rem;
+  padding-inline: 0.75rem 2.25rem;
   border: 1px solid var(--border);
   border-radius: var(--border-radius);
-  background: var(--background-input) var(--select-arrow) calc(100% - 12px) 50% / 12px no-repeat;
+  background: var(--background-input) var(--select-arrow) calc(100% - 0.75rem) 50% / 0.75rem no-repeat;
   color: var(--form-text);
   font-family: inherit;
   font-size: inherit;
   cursor: pointer;
   -webkit-appearance: none;
   appearance: none;
+}
+
+:dir(rtl) select {
+  background-position: calc(0.75rem) 50%;
 }
 
 select:disabled {
@@ -296,11 +303,6 @@ select:disabled {
   height: 100%;
 }
 
-select[name="scanMethod"] {
-  width: 100%;
-  margin: 0 0 1.5rem 0;
-}
-
 input[type="file"]::-webkit-file-upload-button {
   color: var(--background);
   background-color: var(--accent);
@@ -415,20 +417,28 @@ video-capture [slot="actions"] {
   width: 100%;
   display: flex;
   justify-content: space-between;
-  padding: 0.25rem;
+  gap: 0.375rem;
+  padding: 0.375rem;
+}
+
+video-capture[loading] [slot="actions"] {
+  display: none;
 }
 
 .camera-select {
   width: 100%;
-  margin-block-end: 0.5rem;
-  padding-block: 0.6rem;
+  padding-block: 0.5rem;
+  border-radius: calc(var(--border-radius) / 2);
+  background-color: var(--camera-actions-background);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-transform: capitalize;
 }
 
 .zoom-controls {
   display: flex;
 }
 
-.facing-mode-button,
 .torch-button,
 .zoom-controls button,
 .zoom-controls label {
@@ -436,36 +446,42 @@ video-capture [slot="actions"] {
   justify-content: center;
   align-items: center;
   margin: 0;
-  width: 2.25rem;
-  height: 2.25rem;
-  padding: 0;
+  padding-block: 0.5rem;
   border: none;
   border-radius: 0;
-  background-color: var(--background);
+  background-color: var(--camera-actions-background);
   backdrop-filter: blur(2px);
   backdrop-filter: blur(2px);
   color: var(--text-main);
 }
 
-.facing-mode-button,
 .torch-button {
+  border: 1px solid var(--border);
   border-radius: calc(var(--border-radius) / 2);
 }
 
+.zoom-controls button {
+  border: 1px solid var(--border);
+}
+
 .zoom-controls button[data-action="zoom-in"] {
-  border-top-right-radius: calc(var(--border-radius) / 2);
-  border-bottom-right-radius: calc(var(--border-radius) / 2);
+  border-start-end-radius: calc(var(--border-radius) / 2);
+  border-end-end-radius: calc(var(--border-radius) / 2);
+  border-inline-start: none;
 }
 
 .zoom-controls button[data-action="zoom-out"] {
-  border-top-left-radius: calc(var(--border-radius) / 2);
-  border-bottom-left-radius: calc(var(--border-radius) / 2);
+  border-start-start-radius: calc(var(--border-radius) / 2);
+  border-end-start-radius: calc(var(--border-radius) / 2);
+  border-inline-end: none;
 }
 
 .zoom-controls label {
   width: 1.5625rem;
-  font-size: 0.9rem;
+  border-block: 1px solid var(--border);
+  border-inline: none;
   overflow: hidden;
+  font-size: 0.9rem;
   font-family: Arial, Helvetica, sans-serif;
 }
 
@@ -579,7 +595,8 @@ video-capture [slot="actions"] {
 }
 
 .popover-dialog--settings ul li input[type="checkbox"] {
-  margin: 0.15rem 0.5rem 0 0;
+  margin-block: 0.15rem 0;
+  margin-inline: 0 0.5rem;
 }
 
 .popover-dialog--settings ul li label {
