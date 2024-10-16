@@ -164,7 +164,8 @@ import './components/scan-result.js';
       }
 
       if (typeof videoCaptureEl.startVideoStream === 'function') {
-        videoCaptureEl.startVideoStream();
+        const videoDeviceId = cameraSelect?.value || undefined;
+        videoCaptureEl.startVideoStream(videoDeviceId);
       }
     } else if (tabId === 'fileTab') {
       shouldScan = false;
@@ -427,11 +428,12 @@ import './components/scan-result.js';
    * @param {Event} evt - The event object.
    */
   function handleCameraSelectChange(evt) {
-    const videoDeviceId = evt.target.value || undefined;
-
-    if (typeof videoCaptureEl.restartVideoStream === 'function') {
-      videoCaptureEl.restartVideoStream(videoDeviceId);
+    if (typeof videoCaptureEl.restartVideoStream !== 'function') {
+      return;
     }
+
+    const videoDeviceId = evt.target.value || undefined;
+    videoCaptureEl.restartVideoStream(videoDeviceId);
   }
 
   /**
@@ -467,7 +469,8 @@ import './components/scan-result.js';
       }
 
       if (typeof videoCaptureEl.startVideoStream === 'function') {
-        videoCaptureEl.startVideoStream();
+        const videoDeviceId = cameraSelect?.value || undefined;
+        videoCaptureEl.startVideoStream(videoDeviceId);
       }
     }
   }
