@@ -36,7 +36,6 @@ import './components/scan-result.js';
   const dropzoneEl = document.getElementById('dropzone');
   const resizeObserverEl = document.querySelector('resize-observer');
   const scanFrameEl = document.getElementById('scanFrame');
-  const facingModeButton = document.getElementById('facingModeButton');
   const torchButton = document.getElementById('torchButton');
   const globalActionsEl = document.getElementById('globalActions');
   const historyBtn = document.getElementById('historyBtn');
@@ -52,9 +51,9 @@ import './components/scan-result.js';
   // If the dialog element is supported, we remove the hidden attribute and the dialogs' visibility
   // is controlled by using the `showModal()` and `close()` methods.
   if (isDialogElementSupported()) {
-    globalActionsEl.hidden = false;
-    historyDialog.hidden = false;
-    settingsDialog.hidden = false;
+    globalActionsEl?.removeAttribute('hidden');
+    historyDialog?.removeAttribute('hidden');
+    settingsDialog?.removeAttribute('hidden');
   }
 
   const { barcodeReader, barcodeFormats, barcodeReaderError } = await BarcodeReader.init();
@@ -63,9 +62,9 @@ import './components/scan-result.js';
     const alertEl = document.getElementById('barcodeReaderError');
 
     shouldScan = false;
-    globalActionsEl.hidden = true;
-    tabGroupEl.hidden = true;
-    alertEl.hidden = false;
+    globalActionsEl?.setAttribute('hidden', '');
+    tabGroupEl?.setAttribute('hidden', '');
+    alertEl?.removeAttribute('hidden');
     alertEl.textContent = barcodeReaderError?.message;
     return; // Stop the script execution as BarcodeDetector API is not supported.
   }
@@ -80,7 +79,9 @@ import './components/scan-result.js';
 
   VideoCapture.defineCustomElement();
 
-  const videoCaptureVideoEl = videoCaptureEl?.shadowRoot?.querySelector('video');
+  const videoCaptureShadowRoot = videoCaptureEl?.shadowRoot;
+  const videoCaptureVideoEl = videoCaptureShadowRoot?.querySelector('video');
+  const videoCaptureActionsEl = videoCaptureShadowRoot?.querySelector('[part="actions-container"]');
 
   dropzoneEl.accept = ACCEPTED_MIME_TYPES.join(',');
   initializeSettingsForm(settingsForm);
@@ -96,7 +97,7 @@ import './components/scan-result.js';
   async function scan() {
     log('Scanning...');
 
-    scanInstructionsEl.hidden = false;
+    scanInstructionsEl?.removeAttribute('hidden');
 
     try {
       const barcode = await barcodeReader.detect(videoCaptureVideoEl);
@@ -109,10 +110,10 @@ import './components/scan-result.js';
       window.cancelAnimationFrame(rafId);
       showResult(cameraPanel, barcodeValue);
       addToHistory(barcodeValue);
-      scanInstructionsEl.hidden = true;
-      scanBtn.hidden = false;
-      scanFrameEl.hidden = true;
-      cameraSelect.disabled = true;
+      scanInstructionsEl?.setAttribute('hidden', '');
+      scanBtn?.removeAttribute('hidden');
+      scanFrameEl?.setAttribute('hidden', '');
+      videoCaptureActionsEl?.setAttribute('hidden', '');
       triggerScanEffects();
       return;
     } catch {
@@ -130,9 +131,9 @@ import './components/scan-result.js';
    * It is responsible for clearing previous results and starting the scan process again.
    */
   function handleScanButtonClick() {
-    scanBtn.hidden = true;
-    scanFrameEl.hidden = false;
-    cameraSelect.disabled = false;
+    scanBtn?.setAttribute('hidden', '');
+    scanFrameEl?.removeAttribute('hidden');
+    videoCaptureActionsEl?.removeAttribute('hidden');
     hideResult(cameraPanel);
     scan();
   }
@@ -154,12 +155,17 @@ import './components/scan-result.js';
         return;
       }
 
-      if (!videoCaptureEl.loading && !cameraPanel.querySelector('scan-result')) {
+      const hasResult = cameraPanel.querySelector('scan-result') != null;
+
+      if (!videoCaptureEl.loading && !hasResult) {
+        scanFrameEl?.removeAttribute('hidden');
+        videoCaptureActionsEl?.removeAttribute('hidden');
         scan();
       }
 
       if (typeof videoCaptureEl.startVideoStream === 'function') {
-        videoCaptureEl.startVideoStream();
+        const videoDeviceId = cameraSelect?.value || undefined;
+        videoCaptureEl.startVideoStream(videoDeviceId);
       }
     } else if (tabId === 'fileTab') {
       shouldScan = false;
@@ -167,6 +173,9 @@ import './components/scan-result.js';
       if (videoCaptureEl != null && typeof videoCaptureEl.stopVideoStream === 'function') {
         videoCaptureEl.stopVideoStream();
       }
+
+      scanFrameEl?.setAttribute('hidden', '');
+      videoCaptureActionsEl?.setAttribute('hidden', '');
     }
   }
 
@@ -257,7 +266,7 @@ import './components/scan-result.js';
    * @param {CustomEvent} evt - The event object.
    */
   async function handleVideoCapturePlay(evt) {
-    scanFrameEl.hidden = false;
+    scanFrameEl?.removeAttribute('hidden');
     resizeScanFrame(evt.detail.video, scanFrameEl);
     scan();
 
@@ -265,12 +274,8 @@ import './components/scan-result.js';
     const trackCapabilities = evt.target.getTrackCapabilities();
     const zoomLevelEl = document.getElementById('zoomLevel');
 
-    if ('facingMode' in trackSettings) {
-      facingModeButton.hidden = false;
-    }
-
     if (trackCapabilities?.torch) {
-      torchButton.hidden = false;
+      torchButton?.removeAttribute('hidden');
 
       if (videoCaptureEl.hasAttribute('torch')) {
         toggleTorchButtonStatus({ el: torchButton, isTorchOn: true });
@@ -283,7 +288,7 @@ import './components/scan-result.js';
       const maxZoom = trackCapabilities?.zoom?.max || 10;
       let currentZoom = trackSettings?.zoom || 1;
 
-      zoomControls.hidden = false;
+      zoomControls?.removeAttribute('hidden');
       zoomLevelEl.textContent = currentZoom;
 
       const handleZoomControlsClick = evt => {
@@ -316,7 +321,7 @@ import './components/scan-result.js';
       });
 
       if (videoInputDevices.length > 1) {
-        cameraSelect.hidden = false;
+        cameraSelect?.removeAttribute('hidden');
       }
     }
   }
@@ -402,20 +407,6 @@ import './components/scan-result.js';
   }
 
   /**
-   * Handles the click event on the facing mode button.
-   * It is responsible for toggling the camera facing mode.
-   */
-  function handleFacingModeButtonClick() {
-    const facingMode = videoCaptureEl.facingMode === 'user' ? 'environment' : 'user';
-
-    videoCaptureEl.facingMode = facingMode;
-
-    if (typeof videoCaptureEl.restartVideoStream === 'function') {
-      videoCaptureEl.restartVideoStream(cameraSelect?.value || undefined);
-    }
-  }
-
-  /**
    * Handles the click event on the torch button.
    * It is responsible for toggling the torch on and off.
    *
@@ -437,11 +428,12 @@ import './components/scan-result.js';
    * @param {Event} evt - The event object.
    */
   function handleCameraSelectChange(evt) {
-    const videoDeviceId = evt.target.value || undefined;
-
-    if (typeof videoCaptureEl.restartVideoStream === 'function') {
-      videoCaptureEl.restartVideoStream(videoDeviceId);
+    if (typeof videoCaptureEl.restartVideoStream !== 'function') {
+      return;
     }
+
+    const videoDeviceId = evt.target.value || undefined;
+    videoCaptureEl.restartVideoStream(videoDeviceId);
   }
 
   /**
@@ -477,7 +469,8 @@ import './components/scan-result.js';
       }
 
       if (typeof videoCaptureEl.startVideoStream === 'function') {
-        videoCaptureEl.startVideoStream();
+        const videoDeviceId = cameraSelect?.value || undefined;
+        videoCaptureEl.startVideoStream(videoDeviceId);
       }
     }
   }
@@ -517,7 +510,6 @@ import './components/scan-result.js';
   settingsForm.addEventListener('change', handleSettingsFormChange);
   historyBtn.addEventListener('click', handleHistoryButtonClick);
   historyDialog.addEventListener('click', handleHistoryDialogClick);
-  facingModeButton.addEventListener('click', handleFacingModeButtonClick);
   torchButton.addEventListener('click', handleTorchButtonClick);
   hasExperimentalFlag && cameraSelect.addEventListener('change', handleCameraSelectChange);
   document.addEventListener('visibilitychange', handleDocumentVisibilityChange);
