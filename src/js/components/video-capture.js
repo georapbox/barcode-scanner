@@ -119,7 +119,13 @@ class VideoCapture extends HTMLElement {
   }
 
   get facingMode() {
-    return this.getAttribute('facing-mode') || 'user';
+    const value = this.getAttribute('facing-mode');
+
+    if (value !== 'user') {
+      return 'environment';
+    }
+
+    return value;
   }
 
   set facingMode(value) {
@@ -247,7 +253,7 @@ class VideoCapture extends HTMLElement {
     const constraints = {
       video: {
         facingMode: {
-          ideal: this.facingMode || 'user'
+          ideal: this.facingMode
         },
         pan: true,
         tilt: true,
