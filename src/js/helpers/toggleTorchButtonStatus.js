@@ -20,5 +20,5 @@ export function toggleTorchButtonStatus(options = {}) {
 
   iconPaths[0].style.display = isTorchOn ? 'none' : 'block';
   iconPaths[1].style.display = isTorchOn ? 'block' : 'none';
-  el.setAttribute('title', `Turn ${isTorchOn ? 'off' : 'on'} flash`);
+  el.setAttribute('aria-label', `Turn ${isTorchOn ? 'off' : 'on'} flash`);
 }
