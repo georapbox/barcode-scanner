@@ -3,7 +3,7 @@ import '@georapbox/web-share-element/dist/web-share-defined.js';
 import '@georapbox/files-dropzone-element/dist/files-dropzone-defined.js';
 import '@georapbox/resize-observer-element/dist/resize-observer-defined.js';
 import '@georapbox/modal-element/dist/modal-element-defined.js';
-import { EXPERIMENTAL_FLAG, NO_BARCODE_DETECTED, ACCEPTED_MIME_TYPES } from './constants.js';
+import { NO_BARCODE_DETECTED, ACCEPTED_MIME_TYPES } from './constants.js';
 import { getHistory, setSettings } from './services/storage.js';
 import { debounce } from './utils/debounce.js';
 import { log } from './utils/log.js';
@@ -26,7 +26,6 @@ import './components/clipboard-copy.js';
 import './components/scan-result.js';
 
 (async function () {
-  const hasExperimentalFlag = new URLSearchParams(window.location.search).has(EXPERIMENTAL_FLAG);
   const tabGroupEl = document.querySelector('a-tab-group');
   const videoCaptureEl = document.querySelector('video-capture');
   const cameraPanel = document.getElementById('cameraPanel');
@@ -310,19 +309,17 @@ import './components/scan-result.js';
       zoomControls.addEventListener('click', handleZoomControlsClick);
     }
 
-    if (hasExperimentalFlag) {
-      const videoInputDevices = await VideoCapture.getVideoInputDevices();
+    const videoInputDevices = await VideoCapture.getVideoInputDevices();
 
-      videoInputDevices.forEach((device, index) => {
-        const option = document.createElement('option');
-        option.value = device.deviceId;
-        option.textContent = device.label || `Camera ${index + 1}`;
-        cameraSelect.appendChild(option);
-      });
+    videoInputDevices.forEach((device, index) => {
+      const option = document.createElement('option');
+      option.value = device.deviceId;
+      option.textContent = device.label || `Camera ${index + 1}`;
+      cameraSelect.appendChild(option);
+    });
 
-      if (videoInputDevices.length > 1) {
-        cameraSelect?.removeAttribute('hidden');
-      }
+    if (videoInputDevices.length > 1) {
+      cameraSelect?.removeAttribute('hidden');
     }
   }
 
@@ -511,7 +508,7 @@ import './components/scan-result.js';
   historyBtn.addEventListener('click', handleHistoryButtonClick);
   historyDialog.addEventListener('click', handleHistoryDialogClick);
   torchButton.addEventListener('click', handleTorchButtonClick);
-  hasExperimentalFlag && cameraSelect.addEventListener('change', handleCameraSelectChange);
+  cameraSelect.addEventListener('change', handleCameraSelectChange);
   document.addEventListener('visibilitychange', handleDocumentVisibilityChange);
   document.addEventListener('keydown', handleDocumentKeyDown);
 })();
