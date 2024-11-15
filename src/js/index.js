@@ -4,11 +4,10 @@ import '@georapbox/files-dropzone-element/dist/files-dropzone-defined.js';
 import '@georapbox/resize-observer-element/dist/resize-observer-defined.js';
 import '@georapbox/modal-element/dist/modal-element-defined.js';
 import { NO_BARCODE_DETECTED, ACCEPTED_MIME_TYPES } from './constants.js';
-import { getHistory, setSettings } from './services/storage.js';
+import { getHistory, getFormats, setSettings, setFormats } from './services/storage.js';
 import { debounce } from './utils/debounce.js';
 import { log } from './utils/log.js';
 import { isDialogElementSupported } from './utils/isDialogElementSupported.js';
-import { renderSupportedFormats } from './helpers/renderSupportedFormats.js';
 import {
   addToHistory,
   removeFromHistory,
@@ -24,10 +23,12 @@ import { toggleTorchButtonStatus } from './helpers/toggleTorchButtonStatus.js';
 import { VideoCapture } from './components/video-capture.js';
 import './components/clipboard-copy.js';
 import './components/scan-result.js';
+import './components/barcode-formats.js';
 
 (async function () {
   const tabGroupEl = document.querySelector('a-tab-group');
   const videoCaptureEl = document.querySelector('video-capture');
+  const barcodeFormatsEl = document.querySelector('barcode-formats');
   const cameraPanel = document.getElementById('cameraPanel');
   const filePanel = document.getElementById('filePanel');
   const scanInstructionsEl = document.getElementById('scanInstructions');
@@ -55,7 +56,7 @@ import './components/scan-result.js';
     settingsDialog?.removeAttribute('hidden');
   }
 
-  const { barcodeReader, barcodeFormats, barcodeReaderError } = await BarcodeReader.init();
+  const { barcodeReaderError } = await BarcodeReader.setup();
 
   if (barcodeReaderError) {
     const alertEl = document.getElementById('barcodeReaderError');
@@ -67,6 +68,11 @@ import './components/scan-result.js';
     alertEl.textContent = barcodeReaderError?.message;
     return; // Stop the script execution as BarcodeDetector API is not supported.
   }
+
+  const supportedBarcodeFormats = await BarcodeReader.getSupportedFormats();
+  const [, barcodeFormatsFromStorage] = await getFormats();
+  const intitialFormats = barcodeFormatsFromStorage || supportedBarcodeFormats;
+  let barcodeReader = await BarcodeReader.create(intitialFormats);
 
   videoCaptureEl.addEventListener('video-capture:video-play', handleVideoCapturePlay, {
     once: true
@@ -84,7 +90,7 @@ import './components/scan-result.js';
 
   dropzoneEl.accept = ACCEPTED_MIME_TYPES.join(',');
   initializeSettingsForm(settingsForm);
-  renderSupportedFormats(barcodeFormats);
+  barcodeFormatsEl.setAttribute('formats', supportedBarcodeFormats.join(','));
   renderHistoryList((await getHistory())[1] || []);
 
   /**
@@ -434,6 +440,18 @@ import './components/scan-result.js';
   }
 
   /**
+   * Handles the change event on the barcode formats element.
+   *
+   * @param {Event} evt - The event object.
+   */
+  async function handleFormatsChange(evt) {
+    const formats = evt.detail.formats || [];
+    console.log('Formats changed:', formats);
+    barcodeReader = await BarcodeReader.create(formats);
+    setFormats(formats);
+  }
+
+  /**
    * Handles the visibility change event on the document.
    * It is responsible for stopping the scan process when the document is not visible.
    */
@@ -509,6 +527,7 @@ import './components/scan-result.js';
   historyDialog.addEventListener('click', handleHistoryDialogClick);
   torchButton.addEventListener('click', handleTorchButtonClick);
   cameraSelect.addEventListener('change', handleCameraSelectChange);
+  barcodeFormatsEl.addEventListener('barcode-formats-change', debounce(handleFormatsChange, 500));
   document.addEventListener('visibilitychange', handleDocumentVisibilityChange);
   document.addEventListener('keydown', handleDocumentKeyDown);
 })();
