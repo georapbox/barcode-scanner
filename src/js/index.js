@@ -4,16 +4,10 @@ import '@georapbox/files-dropzone-element/dist/files-dropzone-defined.js';
 import '@georapbox/resize-observer-element/dist/resize-observer-defined.js';
 import '@georapbox/modal-element/dist/modal-element-defined.js';
 import { NO_BARCODE_DETECTED, ACCEPTED_MIME_TYPES } from './constants.js';
-import { getHistory, getSettings, setSettings } from './services/storage.js';
+import { getSettings, setSettings } from './services/storage.js';
 import { debounce } from './utils/debounce.js';
 import { log } from './utils/log.js';
 import { isDialogElementSupported } from './utils/isDialogElementSupported.js';
-import {
-  addToHistory,
-  removeFromHistory,
-  emptyHistory,
-  renderHistoryList
-} from './helpers/history.js';
 import { hideResult, showResult } from './helpers/results.js';
 import { triggerScanEffects } from './helpers/triggerScanEffects.js';
 import { resizeScanFrame } from './helpers/resizeScanFrame.js';
@@ -23,11 +17,13 @@ import { VideoCapture } from './components/video-capture.js';
 import './components/clipboard-copy.js';
 import './components/scan-result.js';
 import './components/bs-settings.js';
+import './components/bs-history.js';
 
 (async function () {
   const tabGroupEl = document.querySelector('a-tab-group');
   const videoCaptureEl = document.querySelector('video-capture');
   const bsSettingsEl = document.querySelector('bs-settings');
+  const bsHistoryEl = document.querySelector('bs-history');
   const cameraPanel = document.getElementById('cameraPanel');
   const filePanel = document.getElementById('filePanel');
   const scanInstructionsEl = document.getElementById('scanInstructions');
@@ -43,6 +39,7 @@ import './components/bs-settings.js';
   const settingsDialog = document.getElementById('settingsDialog');
   const settingsForm = document.getElementById('settingsForm');
   const cameraSelect = document.getElementById('cameraSelect');
+  const emptyHistoryBtn = document.getElementById('emptyHistoryBtn');
   let shouldScan = true;
   let rafId;
 
@@ -90,7 +87,6 @@ import './components/bs-settings.js';
 
   dropzoneEl.accept = ACCEPTED_MIME_TYPES.join(',');
   bsSettingsEl.supportedFormats = supportedBarcodeFormats;
-  renderHistoryList((await getHistory())[1] || []);
 
   /**
    * Scans for barcodes.
@@ -113,7 +109,7 @@ import './components/bs-settings.js';
 
       window.cancelAnimationFrame(rafId);
       showResult(cameraPanel, barcodeValue);
-      addToHistory(barcodeValue);
+      bsHistoryEl?.add(barcodeValue);
       scanInstructionsEl?.setAttribute('hidden', '');
       scanBtn?.removeAttribute('hidden');
       scanFrameEl?.setAttribute('hidden', '');
@@ -210,7 +206,7 @@ import './components/bs-settings.js';
           }
 
           showResult(filePanel, barcodeValue);
-          addToHistory(barcodeValue);
+          bsHistoryEl?.add(barcodeValue);
           triggerScanEffects();
         } catch (err) {
           log(err);
@@ -390,31 +386,14 @@ import './components/bs-settings.js';
   }
 
   /**
-   * Handles the click event on the history dialog.
-   * It is responsible for closing the dialog, deleting an item from the history, or emptying the history.
-   *
-   * @param {MouseEvent} evt - The event object.
+   * Handles the click event on the empty history button.
    */
-  function handleHistoryDialogClick(evt) {
-    const target = evt.target;
-
-    // Handle delete action
-    if (target.closest('[data-action="delete"]')) {
-      const value = target.closest('li').dataset.value;
-
-      if (window.confirm(`Delete history item ${value}?`)) {
-        removeFromHistory(value);
-        return;
-      }
+  function handleEmptyHistory() {
+    if (!window.confirm('Empty history? This action cannot be undone.')) {
+      return;
     }
 
-    // Handle empty history action
-    if (target.closest('#emptyHistoryBtn')) {
-      if (window.confirm('Empty history? This action cannot be undone.')) {
-        emptyHistory();
-        return;
-      }
-    }
+    bsHistoryEl?.empty();
   }
 
   /**
@@ -520,7 +499,7 @@ import './components/bs-settings.js';
   settingsBtn.addEventListener('click', handleSettingsButtonClick);
   settingsForm.addEventListener('change', debounce(handleSettingsFormChange, 500));
   historyBtn.addEventListener('click', handleHistoryButtonClick);
-  historyDialog.addEventListener('click', handleHistoryDialogClick);
+  emptyHistoryBtn.addEventListener('click', handleEmptyHistory);
   torchButton.addEventListener('click', handleTorchButtonClick);
   cameraSelect.addEventListener('change', handleCameraSelectChange);
   document.addEventListener('visibilitychange', handleDocumentVisibilityChange);

@@ -532,53 +532,6 @@ video-capture[loading] [slot="actions"] {
   text-decoration: none;
 }
 
-.history-dialog ul {
-  max-width: 31.25rem;
-}
-
-.history-dialog ul li {
-  justify-content: space-between;
-  gap: 1rem;
-  padding: 0.5rem 0.75rem;
-  word-break: break-all;
-  border-bottom: 1px solid var(--border);
-}
-
-.history-dialog ul li:last-of-type {
-  border-bottom: none;
-}
-
-.history-dialog__actions {
-  display: flex;
-  gap: 0.25rem;
-}
-
-.history-dialog__actions button,
-.history-dialog__actions custom-clipboard-copy::part(button) {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 0.25rem;
-  padding: 0.25rem 0.5rem;
-  margin: 0;
-  border: 0;
-  border-radius: var(--border-radius);
-  background-color: transparent !important;
-  line-height: 1;
-  font-size: 1rem;
-  color: var(--text-main);
-  cursor: pointer;
-}
-
-.history-dialog__actions custom-clipboard-copy::part(button--success) {
-  color: var(--success-color);
-}
-
-.history-dialog__actions .history-dialog__delete-action {
-  color: var(--error-color);
-  margin-right: -0.5rem;
-}
-
 .history-dialog button[slot="footer"] {
   width: 100%;
   background-color: var(--error-color);

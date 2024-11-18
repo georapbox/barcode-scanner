@@ -202,8 +202,9 @@
 
   <modal-element id="historyDialog" class="popover-dialog history-dialog" placement="top-end" hidden>
     <span slot="header">History</span>
-    <ul id="historyList"></ul>
-    <button slot="footer" type="button" class="empty-history-button" id="emptyHistoryBtn" hidden>Empty history</button>
+    <bs-history></bs-history>
+    <!-- TODO: Consider using a slot for the emoty history button -->
+    <button slot="footer" type="button" id="emptyHistoryBtn" hidden>Empty history</button>
   </modal-element>
 
   <modal-element id="settingsDialog" class="popover-dialog settings-dialog" placement="top-end" hidden>

@@ -45,9 +45,6 @@ class BarcodeReader {
   static async getSupportedFormats() {
     const nativeSupportedFormats = await window.BarcodeDetector.getSupportedFormats();
     return WHITELISTED_FORMATS.filter(format => nativeSupportedFormats.includes(format));
-    // return nativeSupportedFormats;
-
-    // return nativeSupportedFormats.filter(format => WHITELISTED_FORMATS.includes(format));
   }
 
   /**
