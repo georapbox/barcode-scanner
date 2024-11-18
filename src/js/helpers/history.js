@@ -42,7 +42,7 @@ export function renderHistoryList(data) {
       historyItem.setAttribute('id', `historyItem-${index}`);
 
       const actionsEl = document.createElement('div');
-      actionsEl.className = 'history-modal__actions';
+      actionsEl.className = 'history-dialog__actions';
 
       const copyBtn = document.createElement('custom-clipboard-copy');
       copyBtn.setAttribute('id', `copyHistoryItem-${index}`);
@@ -54,7 +54,7 @@ export function renderHistoryList(data) {
 
       const removeBtn = document.createElement('button');
       removeBtn.type = 'button';
-      removeBtn.className = 'history-modal__delete-action';
+      removeBtn.className = 'history-dialog__delete-action';
       removeBtn.setAttribute('data-action', 'delete');
       removeBtn.setAttribute('id', `removeHistoryItem-${index}`);
       removeBtn.setAttribute('aria-label', 'Remove from history');

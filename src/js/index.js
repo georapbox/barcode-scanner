@@ -4,7 +4,7 @@ import '@georapbox/files-dropzone-element/dist/files-dropzone-defined.js';
 import '@georapbox/resize-observer-element/dist/resize-observer-defined.js';
 import '@georapbox/modal-element/dist/modal-element-defined.js';
 import { NO_BARCODE_DETECTED, ACCEPTED_MIME_TYPES } from './constants.js';
-import { getHistory, getFormats, setSettings, setFormats } from './services/storage.js';
+import { getHistory, getSettings, setSettings } from './services/storage.js';
 import { debounce } from './utils/debounce.js';
 import { log } from './utils/log.js';
 import { isDialogElementSupported } from './utils/isDialogElementSupported.js';
@@ -18,17 +18,16 @@ import { hideResult, showResult } from './helpers/results.js';
 import { triggerScanEffects } from './helpers/triggerScanEffects.js';
 import { resizeScanFrame } from './helpers/resizeScanFrame.js';
 import { BarcodeReader } from './helpers/BarcodeReader.js';
-import { initializeSettingsForm } from './helpers/initializeSettingsForm.js';
 import { toggleTorchButtonStatus } from './helpers/toggleTorchButtonStatus.js';
 import { VideoCapture } from './components/video-capture.js';
 import './components/clipboard-copy.js';
 import './components/scan-result.js';
-import './components/barcode-formats.js';
+import './components/bs-settings.js';
 
 (async function () {
   const tabGroupEl = document.querySelector('a-tab-group');
   const videoCaptureEl = document.querySelector('video-capture');
-  const barcodeFormatsEl = document.querySelector('barcode-formats');
+  const bsSettingsEl = document.querySelector('bs-settings');
   const cameraPanel = document.getElementById('cameraPanel');
   const filePanel = document.getElementById('filePanel');
   const scanInstructionsEl = document.getElementById('scanInstructions');
@@ -42,7 +41,7 @@ import './components/barcode-formats.js';
   const historyDialog = document.getElementById('historyDialog');
   const settingsBtn = document.getElementById('settingsBtn');
   const settingsDialog = document.getElementById('settingsDialog');
-  const settingsForm = document.forms['settings-form'];
+  const settingsForm = document.getElementById('settingsForm');
   const cameraSelect = document.getElementById('cameraSelect');
   let shouldScan = true;
   let rafId;
@@ -70,7 +69,8 @@ import './components/barcode-formats.js';
   }
 
   const supportedBarcodeFormats = await BarcodeReader.getSupportedFormats();
-  const [, barcodeFormatsFromStorage] = await getFormats();
+  const [, settings] = await getSettings();
+  const barcodeFormatsFromStorage = settings?.formats;
   const intitialFormats = barcodeFormatsFromStorage || supportedBarcodeFormats;
   let barcodeReader = await BarcodeReader.create(intitialFormats);
 
@@ -89,8 +89,7 @@ import './components/barcode-formats.js';
   const videoCaptureActionsEl = videoCaptureShadowRoot?.querySelector('[part="actions-container"]');
 
   dropzoneEl.accept = ACCEPTED_MIME_TYPES.join(',');
-  initializeSettingsForm(settingsForm);
-  barcodeFormatsEl.setAttribute('formats', supportedBarcodeFormats.join(','));
+  bsSettingsEl.supportedFormats = supportedBarcodeFormats;
   renderHistoryList((await getHistory())[1] || []);
 
   /**
@@ -365,12 +364,21 @@ import './components/barcode-formats.js';
    *
    * @param {Event} evt - The event object.
    */
-  function handleSettingsFormChange(evt) {
-    const settings = {};
-    const checkboxes = evt.currentTarget.querySelectorAll('input[type="checkbox"]');
+  async function handleSettingsFormChange(evt) {
+    evt.preventDefault();
 
-    checkboxes.forEach(item => (settings[item.name] = item.checked));
+    const settings = {};
+    const formData = new FormData(settingsForm);
+    const generalSettings = formData.getAll('general-settings');
+    const formatsSettings = formData.getAll('formats-settings');
+
+    generalSettings.forEach(value => (settings[value] = true));
+    settings.formats = formatsSettings;
     setSettings(settings);
+
+    if (evt.target.name === 'formats-settings') {
+      barcodeReader = await BarcodeReader.create(formatsSettings);
+    }
   }
 
   /**
@@ -437,18 +445,6 @@ import './components/barcode-formats.js';
 
     const videoDeviceId = evt.target.value || undefined;
     videoCaptureEl.restartVideoStream(videoDeviceId);
-  }
-
-  /**
-   * Handles the change event on the barcode formats element.
-   *
-   * @param {Event} evt - The event object.
-   */
-  async function handleFormatsChange(evt) {
-    const formats = evt.detail.formats || [];
-    console.log('Formats changed:', formats);
-    barcodeReader = await BarcodeReader.create(formats);
-    setFormats(formats);
   }
 
   /**
@@ -522,12 +518,11 @@ import './components/barcode-formats.js';
   dropzoneEl.addEventListener('files-dropzone-drop', handleFileDrop);
   resizeObserverEl.addEventListener('resize-observer:resize', handleVideoCaptureResize);
   settingsBtn.addEventListener('click', handleSettingsButtonClick);
-  settingsForm.addEventListener('change', handleSettingsFormChange);
+  settingsForm.addEventListener('change', debounce(handleSettingsFormChange, 500));
   historyBtn.addEventListener('click', handleHistoryButtonClick);
   historyDialog.addEventListener('click', handleHistoryDialogClick);
   torchButton.addEventListener('click', handleTorchButtonClick);
   cameraSelect.addEventListener('change', handleCameraSelectChange);
-  barcodeFormatsEl.addEventListener('barcode-formats-change', debounce(handleFormatsChange, 500));
   document.addEventListener('visibilitychange', handleDocumentVisibilityChange);
   document.addEventListener('keydown', handleDocumentKeyDown);
 })();
