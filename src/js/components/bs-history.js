@@ -2,8 +2,16 @@ import { getHistory, setHistory, getSettings } from '../services/storage.js';
 
 const styles = /* css */ `
   :host {
+    --empty-history-button-color: #ffffff;
+
     display: block;
     box-sizing: border-box;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :host {
+      --empty-history-button-color: #000000;
+    }
   }
 
   :host *,
@@ -81,6 +89,24 @@ const styles = /* css */ `
     color: var(--error-color);
     margin-right: -0.5rem;
   }
+
+  footer {
+    position: sticky;
+    bottom: 0;
+    padding: 0.75rem;
+    background-color: var(--dialog-background);
+  }
+
+  footer > button {
+    width: 100%;
+    padding: 0.625rem;
+    border: 0;
+    border-radius: var(--border-radius);
+    background-color: var(--error-color);
+    color: var(--empty-history-button-color);
+    font-size: 1rem;
+    cursor: pointer;
+  }
 `;
 
 const template = document.createElement('template');
@@ -88,10 +114,14 @@ const template = document.createElement('template');
 template.innerHTML = /* html */ `
   <style>${styles}</style>
   <ul id="historyList"></ul>
+  <footer>
+    <button type="button" id="emptyHistoryBtn">Empty history</button>
+  </footer>
 `;
 
 class BSHistory extends HTMLElement {
   #historyListEl = null;
+  #emptyHistoryBtn = null;
 
   constructor() {
     super();
@@ -104,14 +134,17 @@ class BSHistory extends HTMLElement {
 
   async connectedCallback() {
     this.#historyListEl = this.shadowRoot?.getElementById('historyList');
+    this.#emptyHistoryBtn = this.shadowRoot?.getElementById('emptyHistoryBtn');
 
     this.#render((await getHistory())[1] || []);
 
     this.#historyListEl?.addEventListener('click', this.#handleHistoryListClick);
+    this.#emptyHistoryBtn?.addEventListener('click', this.#handleEmptyHistoryClick);
   }
 
   disconnectedCallback() {
     this.#historyListEl?.removeEventListener('click', this.#handleHistoryListClick);
+    this.#emptyHistoryBtn?.removeEventListener('click', this.#handleEmptyHistoryClick);
   }
 
   /**
@@ -183,15 +216,13 @@ class BSHistory extends HTMLElement {
       return;
     }
 
-    const emptyHistoryBtn = document.getElementById('emptyHistoryBtn'); // TODO: Find better way to get this element
-
     this.#historyListEl.replaceChildren();
 
     if (!Array.isArray(data) || data.length === 0) {
       this.#historyListEl.innerHTML = '<li>There are no saved items in history.</li>';
-      emptyHistoryBtn?.setAttribute('hidden', '');
+      this.#emptyHistoryBtn?.setAttribute('hidden', '');
     } else {
-      emptyHistoryBtn?.removeAttribute('hidden');
+      this.#emptyHistoryBtn?.removeAttribute('hidden');
 
       data.forEach((item, index) => {
         const li = document.createElement('li');
@@ -255,14 +286,21 @@ class BSHistory extends HTMLElement {
   #handleHistoryListClick = evt => {
     const target = evt.target;
 
-    // Handle delete action
     if (target.closest('[data-action="delete"]')) {
       const value = target.closest('li').dataset.value;
 
       if (window.confirm(`Delete history item ${value}?`)) {
         this.remove(value);
-        return;
       }
+    }
+  };
+
+  /**
+   * Handles the click event on the empty history button.
+   */
+  #handleEmptyHistoryClick = () => {
+    if (window.confirm('Empty history? This action cannot be undone.')) {
+      this.empty();
     }
   };
 

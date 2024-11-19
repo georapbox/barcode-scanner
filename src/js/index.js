@@ -39,7 +39,6 @@ import './components/bs-history.js';
   const settingsDialog = document.getElementById('settingsDialog');
   const settingsForm = document.getElementById('settingsForm');
   const cameraSelect = document.getElementById('cameraSelect');
-  const emptyHistoryBtn = document.getElementById('emptyHistoryBtn');
   let shouldScan = true;
   let rafId;
 
@@ -386,17 +385,6 @@ import './components/bs-history.js';
   }
 
   /**
-   * Handles the click event on the empty history button.
-   */
-  function handleEmptyHistory() {
-    if (!window.confirm('Empty history? This action cannot be undone.')) {
-      return;
-    }
-
-    bsHistoryEl?.empty();
-  }
-
-  /**
    * Handles the click event on the torch button.
    * It is responsible for toggling the torch on and off.
    *
@@ -499,7 +487,6 @@ import './components/bs-history.js';
   settingsBtn.addEventListener('click', handleSettingsButtonClick);
   settingsForm.addEventListener('change', debounce(handleSettingsFormChange, 500));
   historyBtn.addEventListener('click', handleHistoryButtonClick);
-  emptyHistoryBtn.addEventListener('click', handleEmptyHistory);
   torchButton.addEventListener('click', handleTorchButtonClick);
   cameraSelect.addEventListener('change', handleCameraSelectChange);
   document.addEventListener('visibilitychange', handleDocumentVisibilityChange);
