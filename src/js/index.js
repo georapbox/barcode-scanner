@@ -8,14 +8,14 @@ import { getSettings, setSettings } from './services/storage.js';
 import { debounce } from './utils/debounce.js';
 import { log } from './utils/log.js';
 import { isDialogElementSupported } from './utils/isDialogElementSupported.js';
-import { hideResult, showResult } from './helpers/results.js';
+import { hideResult, showResult } from './helpers/result.js';
 import { triggerScanEffects } from './helpers/triggerScanEffects.js';
 import { resizeScanFrame } from './helpers/resizeScanFrame.js';
 import { BarcodeReader } from './helpers/BarcodeReader.js';
 import { toggleTorchButtonStatus } from './helpers/toggleTorchButtonStatus.js';
 import { VideoCapture } from './components/video-capture.js';
 import './components/clipboard-copy.js';
-import './components/scan-result.js';
+import './components/bs-result.js';
 import './components/bs-settings.js';
 import './components/bs-history.js';
 
@@ -154,7 +154,7 @@ import './components/bs-history.js';
         return;
       }
 
-      const hasResult = cameraPanel.querySelector('scan-result') != null;
+      const hasResult = cameraPanel.querySelector('bs-result') != null;
 
       if (!videoCaptureEl.loading && !hasResult) {
         scanFrameEl?.removeAttribute('hidden');
@@ -442,7 +442,7 @@ import './components/bs-history.js';
         return;
       }
 
-      if (!videoCaptureEl.loading && !cameraPanel.querySelector('scan-result')) {
+      if (!videoCaptureEl.loading && !cameraPanel.querySelector('bs-result')) {
         scan();
       }
 
