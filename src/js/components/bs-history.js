@@ -1,3 +1,4 @@
+import { uuid } from '../utils/uuid.js';
 import { getHistory, setHistory, getSettings } from '../services/storage.js';
 
 const styles = /* css */ `
@@ -107,6 +108,14 @@ const styles = /* css */ `
     font-size: 1rem;
     cursor: pointer;
   }
+
+  ul:empty + footer > button {
+    display: none;
+  }
+
+  ul:not(:empty) + footer > div {
+    display: none;
+  }
 `;
 
 const template = document.createElement('template');
@@ -115,6 +124,7 @@ template.innerHTML = /* html */ `
   <style>${styles}</style>
   <ul id="historyList"></ul>
   <footer>
+    <div>There are no saved items in history.</div>
     <button type="button" id="emptyHistoryBtn">Empty history</button>
   </footer>
 `;
@@ -136,7 +146,7 @@ class BSHistory extends HTMLElement {
     this.#historyListEl = this.shadowRoot?.getElementById('historyList');
     this.#emptyHistoryBtn = this.shadowRoot?.getElementById('emptyHistoryBtn');
 
-    this.#render((await getHistory())[1] || []);
+    this.#renderHistoryList((await getHistory())[1] || []);
 
     this.#historyListEl?.addEventListener('click', this.#handleHistoryListClick);
     this.#emptyHistoryBtn?.addEventListener('click', this.#handleEmptyHistoryClick);
@@ -168,7 +178,7 @@ class BSHistory extends HTMLElement {
       const [setHistoryError] = await setHistory(data);
 
       if (!setHistoryError) {
-        this.#render(data);
+        this.#historyListEl.appendChild(this.#createHistoryItemElement(item));
       }
     }
   }
@@ -190,7 +200,11 @@ class BSHistory extends HTMLElement {
       const [setHistoryError] = await setHistory(data);
 
       if (!setHistoryError) {
-        this.#render(data);
+        const historyItem = this.#historyListEl.querySelector(`li[data-value="${item}"]`);
+
+        if (historyItem) {
+          historyItem.remove();
+        }
       }
     }
   }
@@ -202,80 +216,87 @@ class BSHistory extends HTMLElement {
     const [setHistoryError] = await setHistory([]);
 
     if (!setHistoryError) {
-      this.#render([]);
+      this.#historyListEl.replaceChildren();
     }
   }
 
   /**
    * Renders the history list. If there are no items in history, it will show a message.
    *
-   * @param {Array<string>} data - Hidsoty data as an array of strings
+   * @param {Array<string>} data - History data as an array of strings
    */
-  #render(data) {
+  #renderHistoryList(data) {
     if (!this.#historyListEl) {
       return;
     }
 
     this.#historyListEl.replaceChildren();
 
-    if (!Array.isArray(data) || data.length === 0) {
-      this.#historyListEl.innerHTML = '<li>There are no saved items in history.</li>';
-      this.#emptyHistoryBtn?.setAttribute('hidden', '');
-    } else {
-      this.#emptyHistoryBtn?.removeAttribute('hidden');
+    const fragment = document.createDocumentFragment();
 
-      data.forEach((item, index) => {
-        const li = document.createElement('li');
-        li.setAttribute('data-value', item);
+    data.forEach(item => {
+      fragment.appendChild(this.#createHistoryItemElement(item));
+    });
 
-        let historyItem;
+    this.#historyListEl.appendChild(fragment);
+  }
 
-        try {
-          new URL(item);
-          historyItem = document.createElement('a');
-          historyItem.href = item;
-          historyItem.setAttribute('target', '_blank');
-          historyItem.setAttribute('rel', 'noreferrer noopener');
-        } catch {
-          historyItem = document.createElement('span');
-        }
+  /**
+   * Creates a history item element.
+   * If the item is a URL, it will be an anchor element, otherwise a span element.
+   *
+   * @param {string} item - The history item to create an element for
+   * @returns {HTMLLIElement} The history item element
+   */
+  #createHistoryItemElement(item) {
+    const itemId = uuid();
+    const li = document.createElement('li');
+    li.setAttribute('data-value', item);
 
-        historyItem.textContent = item;
-        historyItem.setAttribute('id', `historyItem-${index}`);
+    let historyItem;
 
-        const actionsEl = document.createElement('div');
-        actionsEl.className = 'actions';
-
-        const copyBtn = document.createElement('custom-clipboard-copy');
-        copyBtn.setAttribute('id', `copyHistoryItem-${index}`);
-        copyBtn.setAttribute('aria-label', 'Copy to clipboard');
-        copyBtn.setAttribute('aria-labelledby', `copyHistoryItem-${index} historyItem-${index}`);
-        copyBtn.setAttribute('only-icon', '');
-        copyBtn.setAttribute('value', item);
-        actionsEl.appendChild(copyBtn);
-
-        const removeBtn = document.createElement('button');
-        removeBtn.type = 'button';
-        removeBtn.className = 'delete-action';
-        removeBtn.setAttribute('data-action', 'delete');
-        removeBtn.setAttribute('id', `removeHistoryItem-${index}`);
-        removeBtn.setAttribute('aria-label', 'Remove from history');
-        removeBtn.setAttribute(
-          'aria-labelledby',
-          `removeHistoryItem-${index} historyItem-${index}`
-        );
-        removeBtn.innerHTML = /* html */ `
-          <svg xmlns="http://www.w3.org/2000/svg" width="1.125em" height="1.125em" fill="currentColor" viewBox="0 0 16 16">
-            <path d="M11 1.5v1h3.5a.5.5 0 0 1 0 1h-.538l-.853 10.66A2 2 0 0 1 11.115 16h-6.23a2 2 0 0 1-1.994-1.84L2.038 3.5H1.5a.5.5 0 0 1 0-1H5v-1A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5Zm-5 0v1h4v-1a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5ZM4.5 5.029l.5 8.5a.5.5 0 1 0 .998-.06l-.5-8.5a.5.5 0 1 0-.998.06Zm6.53-.528a.5.5 0 0 0-.528.47l-.5 8.5a.5.5 0 0 0 .998.058l.5-8.5a.5.5 0 0 0-.47-.528ZM8 4.5a.5.5 0 0 0-.5.5v8.5a.5.5 0 0 0 1 0V5a.5.5 0 0 0-.5-.5Z"/>
-          </svg>
-        `;
-        actionsEl.appendChild(removeBtn);
-
-        li.appendChild(historyItem);
-        li.appendChild(actionsEl);
-        this.#historyListEl.appendChild(li);
-      });
+    try {
+      new URL(item);
+      historyItem = document.createElement('a');
+      historyItem.href = item;
+      historyItem.setAttribute('target', '_blank');
+      historyItem.setAttribute('rel', 'noreferrer noopener');
+    } catch {
+      historyItem = document.createElement('span');
     }
+
+    historyItem.textContent = item;
+    historyItem.setAttribute('id', `historyItem-${itemId}`);
+
+    const actionsEl = document.createElement('div');
+    actionsEl.className = 'actions';
+
+    const copyBtn = document.createElement('custom-clipboard-copy');
+    copyBtn.setAttribute('id', `copyHistoryItem-${itemId}`);
+    copyBtn.setAttribute('aria-label', 'Copy to clipboard');
+    copyBtn.setAttribute('aria-labelledby', `copyHistoryItem-${itemId} historyItem-${itemId}`);
+    copyBtn.setAttribute('only-icon', '');
+    copyBtn.setAttribute('value', item);
+    actionsEl.appendChild(copyBtn);
+
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.className = 'delete-action';
+    removeBtn.setAttribute('data-action', 'delete');
+    removeBtn.setAttribute('id', `removeHistoryItem-${itemId}`);
+    removeBtn.setAttribute('aria-label', 'Remove from history');
+    removeBtn.setAttribute('aria-labelledby', `removeHistoryItem-${itemId} historyItem-${itemId}`);
+    removeBtn.innerHTML = /* html */ `
+      <svg xmlns="http://www.w3.org/2000/svg" width="1.125em" height="1.125em" fill="currentColor" viewBox="0 0 16 16">
+        <path d="M11 1.5v1h3.5a.5.5 0 0 1 0 1h-.538l-.853 10.66A2 2 0 0 1 11.115 16h-6.23a2 2 0 0 1-1.994-1.84L2.038 3.5H1.5a.5.5 0 0 1 0-1H5v-1A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5Zm-5 0v1h4v-1a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5ZM4.5 5.029l.5 8.5a.5.5 0 1 0 .998-.06l-.5-8.5a.5.5 0 1 0-.998.06Zm6.53-.528a.5.5 0 0 0-.528.47l-.5 8.5a.5.5 0 0 0 .998.058l.5-8.5a.5.5 0 0 0-.47-.528ZM8 4.5a.5.5 0 0 0-.5.5v8.5a.5.5 0 0 0 1 0V5a.5.5 0 0 0-.5-.5Z"/>
+      </svg>
+    `;
+    actionsEl.appendChild(removeBtn);
+
+    li.appendChild(historyItem);
+    li.appendChild(actionsEl);
+
+    return li;
   }
 
   /**
