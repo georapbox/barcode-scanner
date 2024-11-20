@@ -3,6 +3,6 @@
  *
  * @returns {boolean} - Returns true if the dialog element is supported.
  */
-export const isDialogElementSupported = () => {
+export function isDialogElementSupported() {
   return typeof HTMLDialogElement === 'function';
-};
+}

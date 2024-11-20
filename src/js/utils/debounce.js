@@ -17,7 +17,7 @@
  *
  * window.addEventListener('resize', debouncedHandler, false);
  */
-const debounce = (fn, wait = 0, immediate = false) => {
+export function debounce(fn, wait = 0, immediate = false) {
   let timerId = null;
 
   if (typeof fn !== 'function') {
@@ -38,6 +38,4 @@ const debounce = (fn, wait = 0, immediate = false) => {
       }
     }, wait);
   };
-};
-
-export { debounce };
+}

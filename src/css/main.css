@@ -495,7 +495,7 @@ video-capture[loading] [slot="actions"] {
   line-height: 1;
   padding: 8px;
   margin: 0;
-  font-size: 0.9rem;
+  font-size: 1rem;
 }
 
 .global-actions button span {
@@ -647,6 +647,10 @@ a-tab[selected]::part(base) {
 
   video-capture {
     max-width: var(--container-max-width);
+  }
+
+  .global-actions button {
+    font-size: 0.9rem;
   }
 
   .global-actions button span {

@@ -28,7 +28,7 @@
  * clamp(120, 100, 0); // The order of lower and upper bounds is reversed (100 > 0)
  * // => 100
  */
-export const clamp = (value, lower, upper) => {
+export function clamp(value, lower, upper) {
   if (Number.isNaN(lower)) {
     lower = 0;
   }
@@ -38,4 +38,4 @@ export const clamp = (value, lower, upper) => {
   }
 
   return Math.min(Math.max(value, Math.min(lower, upper)), Math.max(lower, upper));
-};
+}
