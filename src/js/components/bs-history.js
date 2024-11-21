@@ -86,6 +86,10 @@ const styles = /* css */ `
     color: var(--success-color);
   }
 
+  .actions custom-clipboard-copy::part(button--error) {
+    color: var(--error-color);
+  }
+
   .actions .delete-action {
     color: var(--error-color);
     margin-right: -0.5rem;
