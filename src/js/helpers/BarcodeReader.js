@@ -43,7 +43,7 @@ class BarcodeReader {
    * @returns {Promise<Array<string>>} - Supported barcode formats
    */
   static async getSupportedFormats() {
-    const nativeSupportedFormats = await window.BarcodeDetector.getSupportedFormats();
+    const nativeSupportedFormats = (await window.BarcodeDetector.getSupportedFormats()) || [];
     return WHITELISTED_FORMATS.filter(format => nativeSupportedFormats.includes(format));
   }
 

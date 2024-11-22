@@ -66,8 +66,7 @@ import './components/bs-history.js';
 
   const supportedBarcodeFormats = await BarcodeReader.getSupportedFormats();
   const [, settings] = await getSettings();
-  const barcodeFormatsFromStorage = settings?.formats;
-  const intitialFormats = barcodeFormatsFromStorage || supportedBarcodeFormats;
+  const intitialFormats = settings?.formats || supportedBarcodeFormats;
   let barcodeReader = await BarcodeReader.create(intitialFormats);
 
   videoCaptureEl.addEventListener('video-capture:video-play', handleVideoCapturePlay, {
