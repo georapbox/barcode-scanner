@@ -1,5 +1,22 @@
 import { log } from '../utils/log.js';
 
+// https://developer.mozilla.org/en-US/docs/Web/API/Barcode_Detection_API#supported_barcode_formats
+const WHITELISTED_FORMATS = [
+  'aztec',
+  'code_128',
+  'code_39',
+  'code_93',
+  'codabar',
+  'data_matrix',
+  'ean_13',
+  'ean_8',
+  'itf',
+  'pdf417',
+  'qr_code',
+  'upc_a',
+  'upc_e'
+];
+
 /**
  * BarcodeReader class to detect barcodes from images or videos.
  *
@@ -11,8 +28,8 @@ class BarcodeReader {
       try {
         await import('barcode-detector');
         log('Using BarcodeDetector polyfill.');
-      } catch {
-        throw new Error('BarcodeDetector API is not supported by your browser.');
+      } catch (error) {
+        throw new Error('BarcodeDetector API is not supported by your browser.', { cause: error });
       }
     } else {
       log('Using the native BarcodeDetector API.');
@@ -26,34 +43,33 @@ class BarcodeReader {
    * @returns {Promise<Array<string>>} - Supported barcode formats
    */
   static async getSupportedFormats() {
-    return await window.BarcodeDetector.getSupportedFormats();
+    const nativeSupportedFormats = (await window.BarcodeDetector.getSupportedFormats()) || [];
+    return WHITELISTED_FORMATS.filter(format => nativeSupportedFormats.includes(format));
   }
 
   /**
    * Create a new BarcodeReader instance.
    *
+   * @param {Array<string>} supportedFormats - Supported barcode formats
    * @returns {Promise<BarcodeReader>} - New BarcodeReader instance
    */
-  static async create() {
-    const formats = await window.BarcodeDetector.getSupportedFormats();
+  static async create(supportedFormats) {
+    const isValidFormats = Array.isArray(supportedFormats) && supportedFormats.length > 0;
+    const formats = isValidFormats ? supportedFormats : await BarcodeReader.getSupportedFormats();
     return new BarcodeReader(formats);
   }
 
   /**
-   * Initialize the BarcodeReader.
+   * Sets up BarcodeReader by polyfilling the BarcodeDetector API if needed.
    *
-   * @returns {Promise<{ barcodeReader: BarcodeReader, barcodeFormats: Array<string>, barcodeReaderError: Error }>} - BarcodeReader instance, supported formats, and error
+   * @returns {Promise<{ barcodeReaderError: Error }>} - BarcodeReader setup result
    */
-  static async init() {
+  static async setup() {
     try {
       await BarcodeReader.polyfill();
-      const barcodeReader = await BarcodeReader.create();
-      const barcodeFormats = await BarcodeReader.getSupportedFormats();
-      return { barcodeReader, barcodeFormats, barcodeReaderError: null };
+      return { barcodeReaderError: null };
     } catch (error) {
       return {
-        barcodeReader: null,
-        barcodeFormats: [],
         barcodeReaderError: error
       };
     }
@@ -83,7 +99,14 @@ class BarcodeReader {
     const results = await this.barcodeReader.detect(source);
 
     if (Array.isArray(results) && results.length > 0) {
-      return results[0];
+      const firstResult = results[0];
+
+      log({
+        rawValue: firstResult.rawValue,
+        format: firstResult.format
+      });
+
+      return firstResult;
     } else {
       throw new Error('Could not detect barcode from provided source.');
     }

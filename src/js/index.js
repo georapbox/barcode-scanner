@@ -4,30 +4,26 @@ import '@georapbox/files-dropzone-element/dist/files-dropzone-defined.js';
 import '@georapbox/resize-observer-element/dist/resize-observer-defined.js';
 import '@georapbox/modal-element/dist/modal-element-defined.js';
 import { NO_BARCODE_DETECTED, ACCEPTED_MIME_TYPES } from './constants.js';
-import { getHistory, setSettings } from './services/storage.js';
+import { getSettings, setSettings } from './services/storage.js';
 import { debounce } from './utils/debounce.js';
 import { log } from './utils/log.js';
 import { isDialogElementSupported } from './utils/isDialogElementSupported.js';
-import { renderSupportedFormats } from './helpers/renderSupportedFormats.js';
-import {
-  addToHistory,
-  removeFromHistory,
-  emptyHistory,
-  renderHistoryList
-} from './helpers/history.js';
-import { hideResult, showResult } from './helpers/results.js';
+import { hideResult, showResult } from './helpers/result.js';
 import { triggerScanEffects } from './helpers/triggerScanEffects.js';
 import { resizeScanFrame } from './helpers/resizeScanFrame.js';
 import { BarcodeReader } from './helpers/BarcodeReader.js';
-import { initializeSettingsForm } from './helpers/initializeSettingsForm.js';
 import { toggleTorchButtonStatus } from './helpers/toggleTorchButtonStatus.js';
 import { VideoCapture } from './components/video-capture.js';
 import './components/clipboard-copy.js';
-import './components/scan-result.js';
+import './components/bs-result.js';
+import './components/bs-settings.js';
+import './components/bs-history.js';
 
 (async function () {
   const tabGroupEl = document.querySelector('a-tab-group');
   const videoCaptureEl = document.querySelector('video-capture');
+  const bsSettingsEl = document.querySelector('bs-settings');
+  const bsHistoryEl = document.querySelector('bs-history');
   const cameraPanel = document.getElementById('cameraPanel');
   const filePanel = document.getElementById('filePanel');
   const scanInstructionsEl = document.getElementById('scanInstructions');
@@ -41,7 +37,7 @@ import './components/scan-result.js';
   const historyDialog = document.getElementById('historyDialog');
   const settingsBtn = document.getElementById('settingsBtn');
   const settingsDialog = document.getElementById('settingsDialog');
-  const settingsForm = document.forms['settings-form'];
+  const settingsForm = document.getElementById('settingsForm');
   const cameraSelect = document.getElementById('cameraSelect');
   let shouldScan = true;
   let rafId;
@@ -55,7 +51,7 @@ import './components/scan-result.js';
     settingsDialog?.removeAttribute('hidden');
   }
 
-  const { barcodeReader, barcodeFormats, barcodeReaderError } = await BarcodeReader.init();
+  const { barcodeReaderError } = await BarcodeReader.setup();
 
   if (barcodeReaderError) {
     const alertEl = document.getElementById('barcodeReaderError');
@@ -67,6 +63,11 @@ import './components/scan-result.js';
     alertEl.textContent = barcodeReaderError?.message;
     return; // Stop the script execution as BarcodeDetector API is not supported.
   }
+
+  const supportedBarcodeFormats = await BarcodeReader.getSupportedFormats();
+  const [, settings] = await getSettings();
+  const intitialFormats = settings?.formats || supportedBarcodeFormats;
+  let barcodeReader = await BarcodeReader.create(intitialFormats);
 
   videoCaptureEl.addEventListener('video-capture:video-play', handleVideoCapturePlay, {
     once: true
@@ -83,9 +84,7 @@ import './components/scan-result.js';
   const videoCaptureActionsEl = videoCaptureShadowRoot?.querySelector('[part="actions-container"]');
 
   dropzoneEl.accept = ACCEPTED_MIME_TYPES.join(',');
-  initializeSettingsForm(settingsForm);
-  renderSupportedFormats(barcodeFormats);
-  renderHistoryList((await getHistory())[1] || []);
+  bsSettingsEl.supportedFormats = supportedBarcodeFormats;
 
   /**
    * Scans for barcodes.
@@ -108,7 +107,7 @@ import './components/scan-result.js';
 
       window.cancelAnimationFrame(rafId);
       showResult(cameraPanel, barcodeValue);
-      addToHistory(barcodeValue);
+      bsHistoryEl?.add(barcodeValue);
       scanInstructionsEl?.setAttribute('hidden', '');
       scanBtn?.removeAttribute('hidden');
       scanFrameEl?.setAttribute('hidden', '');
@@ -154,7 +153,7 @@ import './components/scan-result.js';
         return;
       }
 
-      const hasResult = cameraPanel.querySelector('scan-result') != null;
+      const hasResult = cameraPanel.querySelector('bs-result') != null;
 
       if (!videoCaptureEl.loading && !hasResult) {
         scanFrameEl?.removeAttribute('hidden');
@@ -205,7 +204,7 @@ import './components/scan-result.js';
           }
 
           showResult(filePanel, barcodeValue);
-          addToHistory(barcodeValue);
+          bsHistoryEl?.add(barcodeValue);
           triggerScanEffects();
         } catch (err) {
           log(err);
@@ -359,12 +358,21 @@ import './components/scan-result.js';
    *
    * @param {Event} evt - The event object.
    */
-  function handleSettingsFormChange(evt) {
-    const settings = {};
-    const checkboxes = evt.currentTarget.querySelectorAll('input[type="checkbox"]');
+  async function handleSettingsFormChange(evt) {
+    evt.preventDefault();
 
-    checkboxes.forEach(item => (settings[item.name] = item.checked));
+    const settings = {};
+    const formData = new FormData(settingsForm);
+    const generalSettings = formData.getAll('general-settings');
+    const formatsSettings = formData.getAll('formats-settings');
+
+    generalSettings.forEach(value => (settings[value] = true));
+    settings.formats = formatsSettings;
     setSettings(settings);
+
+    if (evt.target.name === 'formats-settings') {
+      barcodeReader = await BarcodeReader.create(formatsSettings);
+    }
   }
 
   /**
@@ -373,34 +381,6 @@ import './components/scan-result.js';
    */
   function handleHistoryButtonClick() {
     historyDialog.open = true;
-  }
-
-  /**
-   * Handles the click event on the history dialog.
-   * It is responsible for closing the dialog, deleting an item from the history, or emptying the history.
-   *
-   * @param {MouseEvent} evt - The event object.
-   */
-  function handleHistoryDialogClick(evt) {
-    const target = evt.target;
-
-    // Handle delete action
-    if (target.closest('[data-action="delete"]')) {
-      const value = target.closest('li').dataset.value;
-
-      if (window.confirm(`Delete history item ${value}?`)) {
-        removeFromHistory(value);
-        return;
-      }
-    }
-
-    // Handle empty history action
-    if (target.closest('#emptyHistoryBtn')) {
-      if (window.confirm('Empty history? This action cannot be undone.')) {
-        emptyHistory();
-        return;
-      }
-    }
   }
 
   /**
@@ -461,7 +441,7 @@ import './components/scan-result.js';
         return;
       }
 
-      if (!videoCaptureEl.loading && !cameraPanel.querySelector('scan-result')) {
+      if (!videoCaptureEl.loading && !cameraPanel.querySelector('bs-result')) {
         scan();
       }
 
@@ -504,9 +484,8 @@ import './components/scan-result.js';
   dropzoneEl.addEventListener('files-dropzone-drop', handleFileDrop);
   resizeObserverEl.addEventListener('resize-observer:resize', handleVideoCaptureResize);
   settingsBtn.addEventListener('click', handleSettingsButtonClick);
-  settingsForm.addEventListener('change', handleSettingsFormChange);
+  settingsForm.addEventListener('change', debounce(handleSettingsFormChange, 500));
   historyBtn.addEventListener('click', handleHistoryButtonClick);
-  historyDialog.addEventListener('click', handleHistoryDialogClick);
   torchButton.addEventListener('click', handleTorchButtonClick);
   cameraSelect.addEventListener('change', handleCameraSelectChange);
   document.addEventListener('visibilitychange', handleDocumentVisibilityChange);

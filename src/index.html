@@ -23,15 +23,16 @@
   <div class="global-actions" id="globalActions" hidden>
     <button id="historyBtn" aria-label="History">
       <svg xmlns="http://www.w3.org/2000/svg" width="1.125em" height="1.125em" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
-        <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/>
-        <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/>
+        <path d="M8.515 1.019A7 7 0 0 0 8 1V0a8 8 0 0 1 .589.022zm2.004.45a7 7 0 0 0-.985-.299l.219-.976q.576.129 1.126.342zm1.37.71a7 7 0 0 0-.439-.27l.493-.87a8 8 0 0 1 .979.654l-.615.789a7 7 0 0 0-.418-.302zm1.834 1.79a7 7 0 0 0-.653-.796l.724-.69q.406.429.747.91zm.744 1.352a7 7 0 0 0-.214-.468l.893-.45a8 8 0 0 1 .45 1.088l-.95.313a7 7 0 0 0-.179-.483m.53 2.507a7 7 0 0 0-.1-1.025l.985-.17q.1.58.116 1.17zm-.131 1.538q.05-.254.081-.51l.993.123a8 8 0 0 1-.23 1.155l-.964-.267q.069-.247.12-.501m-.952 2.379q.276-.436.486-.908l.914.405q-.24.54-.555 1.038zm-.964 1.205q.183-.183.35-.378l.758.653a8 8 0 0 1-.401.432z"/>
+        <path d="M8 1a7 7 0 1 0 4.95 11.95l.707.707A8.001 8.001 0 1 1 8 0z"/>
+        <path d="M7.5 3a.5.5 0 0 1 .5.5v5.21l3.248 1.856a.5.5 0 0 1-.496.868l-3.5-2A.5.5 0 0 1 7 9V3.5a.5.5 0 0 1 .5-.5"/>
       </svg>
       <span>History</span>
     </button>
 
     <button id="settingsBtn" aria-label="Settings">
       <svg xmlns="http://www.w3.org/2000/svg" width="1.125em" height="1.125em" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
-        <path fill-rule="evenodd" d="M10.5 1a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-1 0V4H1.5a.5.5 0 0 1 0-1H10V1.5a.5.5 0 0 1 .5-.5ZM12 3.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5Zm-6.5 2A.5.5 0 0 1 6 6v1.5h8.5a.5.5 0 0 1 0 1H6V10a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5ZM1 8a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2A.5.5 0 0 1 1 8Zm9.5 2a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-1 0V13H1.5a.5.5 0 0 1 0-1H10v-1.5a.5.5 0 0 1 .5-.5Zm1.5 2.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5Z"/>
+        <path fill-rule="evenodd" d="M11.5 2a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3M9.05 3a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0V3zM4.5 7a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3M2.05 8a2.5 2.5 0 0 1 4.9 0H16v1H6.95a2.5 2.5 0 0 1-4.9 0H0V8zm9.45 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3m-2.45 1a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0v-1z"/>
       </svg>
       <span>Settings</span>
     </button>
@@ -65,16 +66,6 @@
     </svg>
 
     <h1>Barcode/QR code Scanner</h1>
-
-    <div class="source-code">
-      <svg xmlns="http://www.w3.org/2000/svg" width="1.25em" height="1.25em" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
-        <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
-      </svg>
-
-      <span>
-        Source code on <a href="https://github.com/georapbox/barcode-scanner" class="text-underline" target="_blank" rel="noreferrer noopener">Github</a>
-      </span>
-    </div>
   </header>
 
   <div class="container">
@@ -194,40 +185,59 @@
     </a-tab-group>
   </div>
 
-  <p class="supported-formats" id="supportedFormats"></p>
-
   <footer>
+    <div class="source-code">
+      <svg xmlns="http://www.w3.org/2000/svg" width="1.25em" height="1.25em" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+        <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+      </svg>
+
+      <span>
+        Source code on <a href="https://github.com/georapbox/barcode-scanner" class="text-underline" target="_blank" rel="noreferrer noopener">Github</a>
+      </span>
+    </div>
+
     <p>
       Licensed under <a href="https://github.com/georapbox/barcode-scanner/blob/main/LICENSE" target="_blank" rel="noopener">The MIT License (MIT)</a>
     </p>
   </footer>
 
-  <modal-element id="historyDialog" class="popover-dialog popover-dialog--history" placement="top-end" hidden>
+  <modal-element id="historyDialog" class="popover-dialog history-dialog" placement="top-end" hidden>
     <span slot="header">History</span>
-    <ul id="historyList"></ul>
-    <button slot="footer" type="button" class="empty-history-button" id="emptyHistoryBtn" hidden>Empty history</button>
+    <bs-history></bs-history>
   </modal-element>
 
-  <modal-element id="settingsDialog" class="popover-dialog popover-dialog--settings" placement="top-end" hidden>
+  <modal-element id="settingsDialog" class="popover-dialog settings-dialog" placement="top-end" hidden>
     <span slot="header">Settings</span>
-    <form name="settings-form" autocomplete="off">
-      <fieldset name="barcode-found-settings">
-        <legend>When barcode is detected...</legend>
-        <ul>
-          <li><label><input type="checkbox" name="openWebPage">Open web pages automatically</label></li>
-          <li><label><input type="checkbox" name="openWebPageSameTab">Open web pages in the same tab</label></li>
-          <li><label><input type="checkbox" name="addToHistory">Add to history</label></li>
-        </ul>
-      </fieldset>
 
-      <fieldset>
-        <legend>Effects</legend>
-        <ul>
-          <li><label><input type="checkbox" name="beep">Beep</label></li>
-          <li><label><input type="checkbox" name="vibrate">Vibrate (Android)</label></li>
-        </ul>
-      </fieldset>
-    </form>
+    <bs-settings>
+      <form id="settingsForm" autocomplete="off">
+        <fieldset>
+          <legend>When barcode is detected...</legend>
+          <ul>
+            <li><label><input type="checkbox" name="general-settings" value="openWebPage">Open web pages automatically</label></li>
+            <li><label><input type="checkbox" name="general-settings" value="openWebPageSameTab">Open web pages in the same tab</label></li>
+            <li><label><input type="checkbox" name="general-settings" value="addToHistory">Add to history</label></li>
+          </ul>
+        </fieldset>
+
+        <fieldset>
+          <legend>Effects</legend>
+          <ul>
+            <li><label><input type="checkbox" name="general-settings" value="beep">Beep</label></li>
+            <li><label><input type="checkbox" name="general-settings" value="vibrate">Vibrate (Android)</label></li>
+          </ul>
+        </fieldset>
+
+        <fieldset name="bs-formats">
+          <legend>
+            Supported formats
+            <br>
+            <small class="text-muted fw-normal">If none is checked, all formats will be supported.</small>
+          </legend>
+          <ul id="formatsList" class="formats-list"></ul>
+        </fieldset>
+      </form>
+    </bs-settings>
   </modal-element>
 
   <script src="./js/register-service-worker.js" type="module"></script>

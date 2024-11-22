@@ -96,7 +96,7 @@ template.innerHTML = /* html */ `
   </div>
 `;
 
-class ScanResult extends HTMLElement {
+class BSResult extends HTMLElement {
   constructor() {
     super();
 
@@ -211,11 +211,11 @@ class ScanResult extends HTMLElement {
     }
   }
 
-  static defineCustomElement(elementName = 'scan-result') {
+  static defineCustomElement(elementName = 'bs-result') {
     if (typeof window !== 'undefined' && !window.customElements.get(elementName)) {
-      window.customElements.define(elementName, ScanResult);
+      window.customElements.define(elementName, BSResult);
     }
   }
 }
 
-ScanResult.defineCustomElement();
+BSResult.defineCustomElement();
