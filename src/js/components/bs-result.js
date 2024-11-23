@@ -37,11 +37,6 @@ const styles = /* css */ `
 
   a.result__item {
     color: var(--links);
-    text-decoration: none;
-  }
-
-  a.result__item:hover {
-    text-decoration: underline;
   }
 
   .result__item--no-barcode {

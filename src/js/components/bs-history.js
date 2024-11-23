@@ -41,10 +41,8 @@ const styles = /* css */ `
     align-items: center;
     gap: 1rem;
     padding: 0.5rem 0.75rem;
-    word-break: break-all;
     border-bottom: 1px solid var(--border);
     color: var(--text-main);
-    text-decoration: none;
   }
 
   ul li:last-of-type {
@@ -52,12 +50,15 @@ const styles = /* css */ `
   }
 
   ul li a {
-    text-decoration: none;
     color: var(--links);
   }
 
-  ul li a:hover {
-    text-decoration: underline;
+  ul li a,
+  ul li span {
+    display: inline-block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .actions {

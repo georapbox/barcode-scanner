@@ -93,12 +93,7 @@ body {
 }
 
 a {
-  text-decoration: none;
   color: var(--links);
-}
-
-a:hover {
-  text-decoration: underline;
 }
 
 a > code,
