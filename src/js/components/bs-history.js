@@ -28,7 +28,7 @@ const styles = /* css */ `
   }
 
   ul {
-    max-width: 31.25rem;
+    max-width: 36.25rem;
     margin: 0;
     padding: 0;
     list-style: none;
@@ -55,10 +55,17 @@ const styles = /* css */ `
 
   ul li a,
   ul li span {
-    display: inline-block;
+    word-break: break-all;
+  }
+
+  @supports (-webkit-line-clamp: 1) and (display: -webkit-box) and (-webkit-box-orient: vertical) {
+    ul li a,
+    ul li span {
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
     overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    }
   }
 
   .actions {
