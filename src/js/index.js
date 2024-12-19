@@ -220,7 +220,6 @@ import './components/bs-history.js';
 
       const preview = document.createElement('div');
       preview.className = 'dropzone-preview';
-      preview.setAttribute('aria-hidden', 'true');
 
       const imageWrapper = document.createElement('div');
       imageWrapper.className = 'dropzone-preview__image-wrapper';
