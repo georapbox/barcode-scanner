@@ -271,7 +271,9 @@ import './components/bs-history.js';
     const trackCapabilities = evt.target.getTrackCapabilities();
     const zoomLevelEl = document.getElementById('zoomLevel');
 
+    // Torch CTA
     if (trackCapabilities?.torch) {
+      torchButton?.addEventListener('click', handleTorchButtonClick);
       torchButton?.removeAttribute('hidden');
 
       if (videoCaptureEl.hasAttribute('torch')) {
@@ -279,14 +281,12 @@ import './components/bs-history.js';
       }
     }
 
+    // Zoom controls
     if (trackSettings?.zoom && trackCapabilities?.zoom) {
       const zoomControls = document.getElementById('zoomControls');
       const minZoom = trackCapabilities?.zoom?.min || 0;
       const maxZoom = trackCapabilities?.zoom?.max || 10;
       let currentZoom = trackSettings?.zoom || 1;
-
-      zoomControls?.removeAttribute('hidden');
-      zoomLevelEl.textContent = currentZoom;
 
       const handleZoomControlsClick = evt => {
         const zoomInBtn = evt.target.closest('[data-action="zoom-in"]');
@@ -300,13 +300,16 @@ import './components/bs-history.js';
           currentZoom -= 0.5;
         }
 
-        zoomLevelEl.textContent = currentZoom;
+        zoomLevelEl.textContent = currentZoom.toFixed(1);
         videoCaptureEl.zoom = currentZoom;
       };
 
-      zoomControls.addEventListener('click', handleZoomControlsClick);
+      zoomControls?.addEventListener('click', handleZoomControlsClick);
+      zoomControls?.removeAttribute('hidden');
+      zoomLevelEl.textContent = currentZoom.toFixed(1);
     }
 
+    // Camera select
     const videoInputDevices = await VideoCapture.getVideoInputDevices();
 
     videoInputDevices.forEach((device, index) => {
@@ -317,6 +320,7 @@ import './components/bs-history.js';
     });
 
     if (videoInputDevices.length > 1) {
+      cameraSelect?.addEventListener('change', handleCameraSelectChange);
       cameraSelect?.removeAttribute('hidden');
     }
   }
@@ -485,8 +489,6 @@ import './components/bs-history.js';
   settingsBtn.addEventListener('click', handleSettingsButtonClick);
   settingsForm.addEventListener('change', debounce(handleSettingsFormChange, 500));
   historyBtn.addEventListener('click', handleHistoryButtonClick);
-  torchButton.addEventListener('click', handleTorchButtonClick);
-  cameraSelect.addEventListener('change', handleCameraSelectChange);
   document.addEventListener('visibilitychange', handleDocumentVisibilityChange);
   document.addEventListener('keydown', handleDocumentKeyDown);
 })();
