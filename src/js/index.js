@@ -8,7 +8,7 @@ import { getSettings, setSettings } from './services/storage.js';
 import { debounce } from './utils/debounce.js';
 import { log } from './utils/log.js';
 import { isDialogElementSupported } from './utils/isDialogElementSupported.js';
-import { hideResult, showResult } from './helpers/result.js';
+import { showResult } from './helpers/result.js';
 import { triggerScanEffects } from './helpers/triggerScanEffects.js';
 import { resizeScanFrame } from './helpers/resizeScanFrame.js';
 import { BarcodeReader } from './helpers/BarcodeReader.js';
@@ -25,7 +25,9 @@ import './components/bs-history.js';
   const bsSettingsEl = document.querySelector('bs-settings');
   const bsHistoryEl = document.querySelector('bs-history');
   const cameraPanel = document.getElementById('cameraPanel');
+  const cameraResultsEl = cameraPanel.querySelector('.results');
   const filePanel = document.getElementById('filePanel');
+  const fileResultsEl = filePanel.querySelector('.results');
   const scanInstructionsEl = document.getElementById('scanInstructions');
   const scanBtn = document.getElementById('scanBtn');
   const dropzoneEl = document.getElementById('dropzone');
@@ -105,15 +107,22 @@ import './components/bs-history.js';
         throw new Error(NO_BARCODE_DETECTED);
       }
 
-      window.cancelAnimationFrame(rafId);
-      showResult(cameraPanel, barcodeValue);
+      showResult(cameraResultsEl, barcodeValue);
+
+      const [, settings] = await getSettings();
+      const continuousScanning = settings?.continuousScanning;
+
       bsHistoryEl?.add(barcodeValue);
-      scanInstructionsEl?.setAttribute('hidden', '');
-      scanBtn?.removeAttribute('hidden');
-      scanFrameEl?.setAttribute('hidden', '');
-      videoCaptureActionsEl?.setAttribute('hidden', '');
-      triggerScanEffects();
-      return;
+
+      if (!continuousScanning) {
+        window.cancelAnimationFrame(rafId);
+        scanInstructionsEl?.setAttribute('hidden', '');
+        scanBtn?.removeAttribute('hidden');
+        scanFrameEl?.setAttribute('hidden', '');
+        videoCaptureActionsEl?.setAttribute('hidden', '');
+        triggerScanEffects();
+        return;
+      }
     } catch {
       // If no barcode is detected, the error is caught here.
       // We can ignore the error and continue scanning.
@@ -132,7 +141,7 @@ import './components/bs-history.js';
     scanBtn?.setAttribute('hidden', '');
     scanFrameEl?.removeAttribute('hidden');
     videoCaptureActionsEl?.removeAttribute('hidden');
-    hideResult(cameraPanel);
+    // hideResult(cameraPanel);
     scan();
   }
 
@@ -153,9 +162,7 @@ import './components/bs-history.js';
         return;
       }
 
-      const hasResult = cameraPanel.querySelector('bs-result') != null;
-
-      if (!videoCaptureEl.loading && !hasResult) {
+      if (!videoCaptureEl.loading && scanBtn.hasAttribute('hidden')) {
         scanFrameEl?.removeAttribute('hidden');
         videoCaptureActionsEl?.removeAttribute('hidden');
         scan();
@@ -203,12 +210,13 @@ import './components/bs-history.js';
             throw new Error(NO_BARCODE_DETECTED);
           }
 
-          showResult(filePanel, barcodeValue);
+          showResult(fileResultsEl, barcodeValue);
           bsHistoryEl?.add(barcodeValue);
           triggerScanEffects();
         } catch (err) {
           log(err);
-          showResult(filePanel, NO_BARCODE_DETECTED);
+          // FIXME: Remove and replace with a toast message.
+          showResult(fileResultsEl, NO_BARCODE_DETECTED);
           triggerScanEffects({ success: false });
         }
       };
@@ -444,7 +452,7 @@ import './components/bs-history.js';
         return;
       }
 
-      if (!videoCaptureEl.loading && !cameraPanel.querySelector('bs-result')) {
+      if (!videoCaptureEl.loading && scanBtn.hasAttribute('hidden')) {
         scan();
       }
 

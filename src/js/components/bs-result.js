@@ -20,14 +20,13 @@ const styles = /* css */ `
   }
 
   .result {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
     position: relative;
     width: 100%;
-    border: 1px solid var(--focus);
-    border-radius: 6px;
-    margin: 1.5rem 0 0 0;
-    padding: 1rem;
-    background-color: var(--background-alt);
-    text-align: center;
+    padding: 0.5rem 0.5rem;
   }
 
   .result__item {
@@ -57,7 +56,6 @@ const styles = /* css */ `
     justify-content: center;
     align-items: center;
     gap: 0.25rem;
-    margin: 0.75rem 0 0 0;
     padding: 0.25rem;
     background-color: transparent;
     border: 0;
@@ -68,6 +66,10 @@ const styles = /* css */ `
     font-size: 0.9rem;
     cursor: pointer;
   }
+
+  .result custom-clipboard-copy::part(button--success) {
+    color: var(--success-color);
+  }
 `;
 
 const template = document.createElement('template');
@@ -75,16 +77,15 @@ const template = document.createElement('template');
 template.innerHTML = /* html */ `
   <style>${styles}</style>
 
-  <div class="result">
+  <div class="result" part="result">
     <div class="result__actions">
-      <custom-clipboard-copy></custom-clipboard-copy>
+      <custom-clipboard-copy only-icon title="Copy"></custom-clipboard-copy>
 
       <web-share>
-        <button slot="button" type="button">
+        <button slot="button" type="button" title="Share">
           <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
             <path d="M13.5 1a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM11 2.5a2.5 2.5 0 1 1 .603 1.628l-6.718 3.12a2.499 2.499 0 0 1 0 1.504l6.718 3.12a2.5 2.5 0 1 1-.488.876l-6.718-3.12a2.5 2.5 0 1 1 0-3.256l6.718-3.12A2.5 2.5 0 0 1 11 2.5zm-8.5 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm11 5.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3z"/>
           </svg>
-          Share
         </button>
       </web-share>
     </div>
@@ -147,7 +148,6 @@ class BSResult extends HTMLElement {
       new URL(value);
       resultItem = document.createElement('a');
       resultItem.href = value;
-      window.requestAnimationFrame(() => resultItem.focus());
 
       if (!settings?.openWebPageSameTab) {
         resultItem.setAttribute('target', '_blank');
@@ -156,6 +156,8 @@ class BSResult extends HTMLElement {
 
       if (settings?.openWebPage) {
         resultItem.click();
+      } else {
+        window.requestAnimationFrame(() => resultItem.focus());
       }
     } catch {
       resultItem = document.createElement('span');

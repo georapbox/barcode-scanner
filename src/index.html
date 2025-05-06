@@ -138,6 +138,8 @@
         <div id="scanInstructions" class="scan-instructions" hidden>
           Align barcode in the center of the frame.
         </div>
+
+        <div class="results"></div>
       </a-tab-panel>
 
       <a-tab role="heading" id="fileTab">
@@ -181,6 +183,8 @@
             Click or drop an image to scan
           </span>
         </files-dropzone>
+
+        <div class="results"></div>
       </a-tab-panel>
     </a-tab-group>
   </div>
@@ -217,6 +221,7 @@
             <li><label><input type="checkbox" name="general-settings" value="openWebPage">Open web pages automatically</label></li>
             <li><label><input type="checkbox" name="general-settings" value="openWebPageSameTab">Open web pages in the same tab</label></li>
             <li><label><input type="checkbox" name="general-settings" value="addToHistory">Add to history</label></li>
+            <li><label><input type="checkbox" name="general-settings" value="continuousScanning">Continuous scanning</label></li>
           </ul>
         </fieldset>
 

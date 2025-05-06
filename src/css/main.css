@@ -603,6 +603,23 @@ a-tab[selected]::part(base) {
   color: var(--background-body);
 }
 
+.results {
+  margin-block-start: 1.5rem;
+  background-color: var(--background);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border);
+  overflow-x: hidden;
+  max-height: 18.75rem;
+}
+
+.results:empty {
+  display: none !important;
+}
+
+.results bs-result:nth-child(odd)::part(result) {
+  background-color: var(--background-body);
+}
+
 /* Utils */
 .visually-hidden {
   position: absolute !important;

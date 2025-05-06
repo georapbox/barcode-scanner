@@ -22,16 +22,20 @@ export async function showResult(element, value) {
     return;
   }
 
-  const oldResultEl = element.querySelector('bs-result');
+  const oldResultEls = element.querySelectorAll('bs-result');
 
-  if (oldResultEl) {
-    oldResultEl.setAttribute('value', value);
-  } else {
-    const newResultEl = document.createElement('bs-result');
-    newResultEl.setAttribute('value', value);
-    newResultEl.setAttribute('role', 'alert');
-    newResultEl.setAttribute('aria-live', 'assertive');
-    newResultEl.setAttribute('aria-atomic', 'true');
-    element.appendChild(newResultEl);
+  if (
+    oldResultEls.length > 0 &&
+    Array.from(oldResultEls).some(el => el.getAttribute('value') === value)
+  ) {
+    return;
   }
+
+  const newResultEl = document.createElement('bs-result');
+  newResultEl.setAttribute('value', value);
+  newResultEl.setAttribute('role', 'alert');
+  newResultEl.setAttribute('aria-live', 'assertive');
+  newResultEl.setAttribute('aria-atomic', 'true');
+  element.appendChild(newResultEl);
+  newResultEl.scrollIntoView();
 }
