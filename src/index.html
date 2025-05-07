@@ -69,9 +69,9 @@
   </header>
 
   <div class="container">
-    <div class="alert alert-danger" id="barcodeReaderError" hidden>
+    <alert-element variant="danger" id="barcodeReaderError">
       An error occurred while initializing BarcodeReader.
-    </div>
+    </alert-element>
 
     <a-tab-group no-scroll-controls no-tab-cycling>
       <a-tab role="heading" id="cameraTab">
@@ -221,7 +221,7 @@
             <li><label><input type="checkbox" name="general-settings" value="openWebPage">Open web pages automatically</label></li>
             <li><label><input type="checkbox" name="general-settings" value="openWebPageSameTab">Open web pages in the same tab</label></li>
             <li><label><input type="checkbox" name="general-settings" value="addToHistory">Add to history</label></li>
-            <li><label><input type="checkbox" name="general-settings" value="continuousScanning">Continuous scanning</label></li>
+            <li><label><input type="checkbox" name="general-settings" value="continueScanning">Continue scanning</label></li>
           </ul>
         </fieldset>
 

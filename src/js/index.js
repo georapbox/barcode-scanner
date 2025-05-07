@@ -8,16 +8,18 @@ import { getSettings, setSettings } from './services/storage.js';
 import { debounce } from './utils/debounce.js';
 import { log } from './utils/log.js';
 import { isDialogElementSupported } from './utils/isDialogElementSupported.js';
-import { showResult } from './helpers/result.js';
+import { createResult } from './helpers/result.js';
 import { triggerScanEffects } from './helpers/triggerScanEffects.js';
 import { resizeScanFrame } from './helpers/resizeScanFrame.js';
 import { BarcodeReader } from './helpers/BarcodeReader.js';
 import { toggleTorchButtonStatus } from './helpers/toggleTorchButtonStatus.js';
+import { toastify } from './helpers/toastify.js';
 import { VideoCapture } from './components/video-capture.js';
 import './components/clipboard-copy.js';
 import './components/bs-result.js';
 import './components/bs-settings.js';
 import './components/bs-history.js';
+import './components/alert-element.js';
 
 (async function () {
   const tabGroupEl = document.querySelector('a-tab-group');
@@ -62,8 +64,8 @@ import './components/bs-history.js';
     shouldScan = false;
     globalActionsEl?.setAttribute('hidden', '');
     tabGroupEl?.setAttribute('hidden', '');
-    alertEl?.removeAttribute('hidden');
-    alertEl.textContent = barcodeReaderError?.message;
+    alertEl?.setAttribute('open', '');
+    alertEl.textContent = barcodeReaderError?.message || 'Unknown BarcodeReader error';
     return; // Stop the script execution as BarcodeDetector API is not supported.
   }
 
@@ -115,17 +117,16 @@ import './components/bs-history.js';
         throw new Error(NO_BARCODE_DETECTED);
       }
 
-      showResult(cameraResultsEl, barcodeValue);
+      createResult(cameraResultsEl, barcodeValue);
 
       bsHistoryEl?.add(barcodeValue);
       triggerScanEffects();
 
-      if (!settings?.continuousScanning) {
+      if (!settings?.continueScanning) {
         if (scanTimeoutId) {
           clearTimeout(scanTimeoutId);
           scanTimeoutId = null;
         }
-        // scanInstructionsEl?.setAttribute('hidden', '');
         scanBtn?.removeAttribute('hidden');
         scanFrameEl?.setAttribute('hidden', '');
         videoCaptureActionsEl?.setAttribute('hidden', '');
@@ -218,13 +219,17 @@ import './components/bs-history.js';
             throw new Error(NO_BARCODE_DETECTED);
           }
 
-          showResult(fileResultsEl, barcodeValue);
+          createResult(fileResultsEl, barcodeValue);
           bsHistoryEl?.add(barcodeValue);
           triggerScanEffects();
         } catch (err) {
           log(err);
           // FIXME: Remove and replace with a toast message.
-          showResult(fileResultsEl, NO_BARCODE_DETECTED);
+          // createResult(fileResultsEl, NO_BARCODE_DETECTED);
+          toastify(
+            '<div><strong>No barcode detected</strong></div><div><small>Please try again with a different image.</small></div>',
+            { variant: 'danger' }
+          );
           triggerScanEffects({ success: false });
         }
       };
@@ -360,7 +365,7 @@ import './components/bs-history.js';
         ? 'Permission to use webcam was denied or video Autoplay is disabled. Reload the page to give appropriate permissions to webcam.'
         : error.message;
 
-    cameraPanel.innerHTML = /* html */ `<div class="alert alert-danger" role="alert" style="margin: 0;">${errorMessage}</div>`;
+    cameraPanel.innerHTML = /* html */ `<alert-element variant="danger" open role="alert" style="margin: 0;">${errorMessage}</alert-element>`;
   }
 
   /**

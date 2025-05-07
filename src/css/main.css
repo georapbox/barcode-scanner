@@ -89,7 +89,7 @@ body {
 }
 
 :not(:defined):not(bs-settings) {
-  display: none;
+  display: none !important;
 }
 
 a {
@@ -180,11 +180,15 @@ select:disabled {
 
 .noscript {
   width: 100%;
-  padding: 0.75rem 1rem;
+  padding: 1rem;
+  margin: 0 auto;
   border-radius: var(--border-radius);
+  border: 1px solid var(--error-color);
+  max-width: var(--container-max-width);
+  color: var(--error-color);
+  background-color: var(--background-alt);
   text-align: center;
-  color: #842029;
-  background-color: #f8d7da;
+  text-wrap: balance;
 }
 
 .site-header {
@@ -199,35 +203,6 @@ select:disabled {
 .container {
   max-width: var(--container-max-width);
   margin: 0 auto;
-}
-
-.alert {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 1rem;
-  padding: 0.5rem 1rem;
-  margin: 0 0 1rem 0;
-  font-size: 0.95rem;
-}
-
-.alert button {
-  width: 35px;
-  min-width: 35px;
-  margin: 0;
-  padding: 0.15rem;
-  background-color: transparent;
-  z-index: 2;
-  color: inherit;
-  font-size: 1.2rem;
-  line-height: 1;
-}
-
-.alert-danger {
-  color: #842029;
-  background-color: #f8d7da;
-  border: 1px solid #f5c2c7;
-  border-radius: 0.25rem;
 }
 
 .source-code {
@@ -605,28 +580,25 @@ a-tab[selected]::part(base) {
 
 .results {
   margin-block-start: 1.5rem;
-  background-color: var(--background);
+  background-color: var(--background-alt);
   border-radius: var(--border-radius);
   border: 1px solid var(--border);
   overflow-x: hidden;
   max-height: 18.75rem;
 }
 
+@media (prefers-reduced-motion: no-preference) {
+  .results {
+    scroll-behavior: smooth;
+  }
+}
+
 .results:empty {
   display: none !important;
 }
 
-.results bs-result:nth-child(odd):not(.active)::part(result) {
-  background-color: var(--background-body);
-}
-
-.results bs-result.active::part(result) {
-  background-color: var(--focus);
-  color: var(--background-body);
-}
-
-.results bs-result.active::part(result__item) {
-  color: var(--background-body);
+.results bs-result:not(:last-child)::part(result) {
+  border-block-end: 1px solid var(--border);
 }
 
 /* Utils */

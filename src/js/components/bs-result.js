@@ -1,6 +1,7 @@
 import { isWebShareSupported } from '@georapbox/web-share-element/dist/is-web-share-supported.js';
 import { getSettings } from '../services/storage.js';
 import { NO_BARCODE_DETECTED } from '../constants.js';
+import { dateTimeFormatter } from '../utils/datetime-formatter.js';
 
 const styles = /* css */ `
   :host {
@@ -26,7 +27,7 @@ const styles = /* css */ `
     gap: 0.5rem;
     position: relative;
     width: 100%;
-    padding: 0.5rem 0.5rem;
+    padding: 0.5rem;
   }
 
   .result__item {
@@ -40,6 +41,16 @@ const styles = /* css */ `
 
   .result__item--no-barcode {
     color: var(--error-color);
+  }
+
+  .result__datetime {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-block-start: 0.25rem;
+  }
+
+  .result__datetime:empty {
+    display: none !important;
   }
 
   .result__actions {
@@ -78,6 +89,10 @@ template.innerHTML = /* html */ `
   <style>${styles}</style>
 
   <div class="result" part="result">
+    <div class="result__content">
+      <div class="result__datetime"></div>
+    </div>
+
     <div class="result__actions">
       <custom-clipboard-copy only-icon title="Copy"></custom-clipboard-copy>
 
@@ -134,7 +149,8 @@ class BSResult extends HTMLElement {
 
   async #handleValueChange(value) {
     const baseEl = this.shadowRoot.querySelector('.result');
-    const resultActionsEl = baseEl?.querySelector('.result__actions');
+    const resultContentEl = baseEl?.querySelector('.result__content');
+    const resultDatetimeEl = baseEl?.querySelector('.result__datetime');
     const oldResultItem = baseEl?.querySelector('.result__item');
     let resultItem;
 
@@ -168,7 +184,8 @@ class BSResult extends HTMLElement {
     resultItem.classList.toggle('result__item--no-barcode', value === NO_BARCODE_DETECTED);
     resultItem.textContent = value;
 
-    baseEl?.insertBefore(resultItem, resultActionsEl);
+    resultDatetimeEl.textContent = dateTimeFormatter.format(new Date());
+    resultContentEl?.insertBefore(resultItem, resultDatetimeEl);
 
     const isValidValue = value !== NO_BARCODE_DETECTED;
     const clipboarCopyEl = baseEl?.querySelector('custom-clipboard-copy');
