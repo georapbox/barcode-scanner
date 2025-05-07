@@ -616,8 +616,17 @@ a-tab[selected]::part(base) {
   display: none !important;
 }
 
-.results bs-result:nth-child(odd)::part(result) {
+.results bs-result:nth-child(odd):not(.active)::part(result) {
   background-color: var(--background-body);
+}
+
+.results bs-result.active::part(result) {
+  background-color: var(--focus);
+  color: var(--background-body);
+}
+
+.results bs-result.active::part(result__item) {
+  color: var(--background-body);
 }
 
 /* Utils */

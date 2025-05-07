@@ -22,12 +22,14 @@ export async function showResult(element, value) {
     return;
   }
 
-  const oldResultEls = element.querySelectorAll('bs-result');
+  const existingResults = element.querySelectorAll('bs-result');
+  existingResults.forEach(el => el.classList.remove('active'));
 
-  if (
-    oldResultEls.length > 0 &&
-    Array.from(oldResultEls).some(el => el.getAttribute('value') === value)
-  ) {
+  const prevResultEl = element.querySelector('bs-result[value="' + value + '"]');
+
+  if (prevResultEl) {
+    prevResultEl.classList.add('active');
+    prevResultEl.scrollIntoView();
     return;
   }
 
@@ -36,6 +38,7 @@ export async function showResult(element, value) {
   newResultEl.setAttribute('role', 'alert');
   newResultEl.setAttribute('aria-live', 'assertive');
   newResultEl.setAttribute('aria-atomic', 'true');
+  newResultEl.classList.add('active');
   element.appendChild(newResultEl);
   newResultEl.scrollIntoView();
 }

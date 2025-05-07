@@ -41,8 +41,9 @@ import './components/bs-history.js';
   const settingsDialog = document.getElementById('settingsDialog');
   const settingsForm = document.getElementById('settingsForm');
   const cameraSelect = document.getElementById('cameraSelect');
+  const SCAN_RATE_LIMIT = 1000;
+  let scanTimeoutId = null;
   let shouldScan = true;
-  let rafId;
 
   // By default the dialog elements are hidden for browsers that don't support the dialog element.
   // If the dialog element is supported, we remove the hidden attribute and the dialogs' visibility
@@ -88,6 +89,8 @@ import './components/bs-history.js';
   dropzoneEl.accept = ACCEPTED_MIME_TYPES.join(',');
   bsSettingsEl.supportedFormats = supportedBarcodeFormats;
 
+  // let lastScanTime = 0;
+
   /**
    * Scans for barcodes.
    * If a barcode is detected, it stops scanning and displays the result.
@@ -95,11 +98,16 @@ import './components/bs-history.js';
    * @returns {Promise<void>} - A Promise that resolves when the barcode is detected.
    */
   async function scan() {
+    if (!shouldScan) {
+      return;
+    }
+
     log('Scanning...');
 
     scanInstructionsEl?.removeAttribute('hidden');
 
     try {
+      const [, settings] = await getSettings();
       const barcode = await barcodeReader.detect(videoCaptureVideoEl);
       const barcodeValue = barcode?.rawValue ?? '';
 
@@ -109,18 +117,18 @@ import './components/bs-history.js';
 
       showResult(cameraResultsEl, barcodeValue);
 
-      const [, settings] = await getSettings();
-      const continuousScanning = settings?.continuousScanning;
-
       bsHistoryEl?.add(barcodeValue);
+      triggerScanEffects();
 
-      if (!continuousScanning) {
-        window.cancelAnimationFrame(rafId);
-        scanInstructionsEl?.setAttribute('hidden', '');
+      if (!settings?.continuousScanning) {
+        if (scanTimeoutId) {
+          clearTimeout(scanTimeoutId);
+          scanTimeoutId = null;
+        }
+        // scanInstructionsEl?.setAttribute('hidden', '');
         scanBtn?.removeAttribute('hidden');
         scanFrameEl?.setAttribute('hidden', '');
         videoCaptureActionsEl?.setAttribute('hidden', '');
-        triggerScanEffects();
         return;
       }
     } catch {
@@ -129,7 +137,7 @@ import './components/bs-history.js';
     }
 
     if (shouldScan) {
-      rafId = window.requestAnimationFrame(() => scan());
+      scanTimeoutId = setTimeout(() => scan(), SCAN_RATE_LIMIT);
     }
   }
 

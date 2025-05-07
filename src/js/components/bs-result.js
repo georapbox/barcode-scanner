@@ -164,6 +164,7 @@ class BSResult extends HTMLElement {
     }
 
     resultItem.className = 'result__item';
+    resultItem.part = 'result__item';
     resultItem.classList.toggle('result__item--no-barcode', value === NO_BARCODE_DETECTED);
     resultItem.textContent = value;
 
