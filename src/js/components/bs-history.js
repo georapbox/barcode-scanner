@@ -95,11 +95,11 @@ const styles = /* css */ `
   }
 
   .actions custom-clipboard-copy::part(button--error) {
-    color: var(--error-color);
+    color: var(--danger-color);
   }
 
   .actions .delete-action {
-    color: var(--error-color);
+    color: var(--danger-color);
     margin-right: -0.5rem;
   }
 
@@ -115,7 +115,7 @@ const styles = /* css */ `
     padding: 0.625rem;
     border: 0;
     border-radius: var(--border-radius);
-    background-color: var(--error-color);
+    background-color: var(--danger-color);
     color: var(--empty-history-button-color);
     font-size: 1rem;
     cursor: pointer;
@@ -190,7 +190,10 @@ class BSHistory extends HTMLElement {
       const [setHistoryError] = await setHistory(data);
 
       if (!setHistoryError) {
-        this.#historyListEl.appendChild(this.#createHistoryItemElement(item));
+        this.#historyListEl.insertBefore(
+          this.#createHistoryItemElement(item),
+          this.#historyListEl.firstElementChild
+        );
       }
     }
   }
@@ -243,13 +246,8 @@ class BSHistory extends HTMLElement {
     }
 
     this.#historyListEl.replaceChildren();
-
     const fragment = document.createDocumentFragment();
-
-    data.forEach(item => {
-      fragment.appendChild(this.#createHistoryItemElement(item));
-    });
-
+    [...data].reverse().forEach(item => fragment.appendChild(this.#createHistoryItemElement(item)));
     this.#historyListEl.appendChild(fragment);
   }
 

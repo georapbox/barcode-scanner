@@ -3,7 +3,7 @@ const toastStack = Object.assign(document.createElement('div'), {
   style: `
     position: fixed;
     top: 0;
-    left: 0;
+    inset-inline-start: 0;
     z-index: 1000;
     width: 28rem;
     max-width: 100%;
@@ -17,21 +17,16 @@ const styles = /* css */ `
     box-sizing: border-box;
 
     --alert-bg-color: #ffffff;
-    --alert-info-color: #0584c7;
-    --alert-success-color: #16a34a;
-    --alert-neutral-color: #52525b;
-    --alert-warning-color: #d87708;
-    --alert-danger-color: #dc2626;
+    --alert-info-color: var(--info-color);
+    --alert-success-color: var(--success-color);
+    --alert-neutral-color: var(--neutral-color);
+    --alert-warning-color: var(--warning-color);
+    --alert-danger-color: var(--danger-color);
   }
 
   @media (prefers-color-scheme: dark) {
     :host {
       --alert-bg-color: var(--background-alt);
-      --alert-info-color: #27bbfc;
-      --alert-success-color: #3ae075;
-      --alert-neutral-color: #8e8e9a;
-      --alert-warning-color: #ffbd11;
-      --alert-danger-color: #fe5c5c;
     }
   }
 
@@ -61,7 +56,7 @@ const styles = /* css */ `
     margin-block-end: 1rem;
   }
 
-  .base::after {
+  .base::before {
     content: '';
     position: absolute;
     top: 0;
@@ -73,23 +68,23 @@ const styles = /* css */ `
     border-top-right-radius: 0.25rem;
   }
 
-  :host([variant='info']) .base::after {
+  :host([variant='info']) .base::before {
     background-color: var(--alert-info-color);
   }
 
-  :host([variant='success']) .base::after {
+  :host([variant='success']) .base::before {
     background-color: var(--alert-success-color);
   }
 
-  :host([variant='neutral']) .base::after {
+  :host([variant='neutral']) .base::before {
     background-color: var(--alert-neutral-color);
   }
 
-  :host([variant='warning']) .base::after {
+  :host([variant='warning']) .base::before {
     background-color: var(--alert-warning-color);
   }
 
-  :host([variant='danger']) .base::after {
+  :host([variant='danger']) .base::before {
     background-color: var(--alert-danger-color);
   }
 
@@ -108,6 +103,10 @@ const styles = /* css */ `
     border: none;
     color: inherit;
     cursor: pointer;
+  }
+
+  .close-button:focus-visible {
+    outline-color: var(--accent);
   }
 
   :host(:not([closable])) .close-button {

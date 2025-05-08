@@ -65,7 +65,7 @@ import './components/alert-element.js';
     globalActionsEl?.setAttribute('hidden', '');
     tabGroupEl?.setAttribute('hidden', '');
     alertEl?.setAttribute('open', '');
-    alertEl.textContent = barcodeReaderError?.message || 'Unknown BarcodeReader error';
+    alertEl.textContent = barcodeReaderError?.message || 'Unknown barcode reader error';
     return; // Stop the script execution as BarcodeDetector API is not supported.
   }
 
@@ -362,10 +362,12 @@ import './components/alert-element.js';
 
     const errorMessage =
       error.name === 'NotAllowedError'
-        ? 'Permission to use webcam was denied or video Autoplay is disabled. Reload the page to give appropriate permissions to webcam.'
+        ? /* html */ `<strong>Error accessing camera</strong><br>Permission to use webcam was denied or video Autoplay is disabled. Reload the page to give appropriate permissions to webcam.`
         : error.message;
 
-    cameraPanel.innerHTML = /* html */ `<alert-element variant="danger" open role="alert" style="margin: 0;">${errorMessage}</alert-element>`;
+    cameraPanel.innerHTML = /* html */ `
+      <alert-element variant="danger" open role="alert" style="margin: 0;">${errorMessage}</alert-element>
+    `;
   }
 
   /**

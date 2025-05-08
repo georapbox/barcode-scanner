@@ -40,7 +40,7 @@ const styles = /* css */ `
   }
 
   .result__item--no-barcode {
-    color: var(--error-color);
+    color: var(--danger-color);
   }
 
   .result__datetime {
@@ -80,6 +80,10 @@ const styles = /* css */ `
 
   .result custom-clipboard-copy::part(button--success) {
     color: var(--success-color);
+  }
+
+  .result custom-clipboard-copy::part(button--error) {
+    color: var(--danger-color);
   }
 `;
 

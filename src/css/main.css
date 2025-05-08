@@ -16,8 +16,11 @@
   --links: var(--accent);
   --focus: var(--accent);
   --border: #b9b8b8;
-  --error-color: #dc3545;
-  --success-color: #28a745;
+  --info-color: #0584c7;
+  --success-color: #16a34a;
+  --neutral-color: #52525b;
+  --warning-color: #d87708;
+  --danger-color: #dc2626;
   --dialog-background: #ffffff;
   --scan-frame-color: rgba(255, 255, 255, 0.9);
   --dropzone-background: var(--background-alt);
@@ -53,8 +56,11 @@
     --links: var(--accent);
     --focus: var(--accent);
     --border: #495057;
-    --error-color: #ff808d;
-    --success-color: #75b798;
+    --info-color: #27bbfc;
+    --success-color: #3ae075;
+    --neutral-color: #8e8e9a;
+    --warning-color: #ffbd11;
+    --danger-color: #fe5c5c;
     --dialog-background: var(--background-alt);
     --dropzone-background: #1a1c1e;
     --dropzone-background-dragover: #161718;
@@ -74,7 +80,6 @@
 
 body {
   font-family: var(--font-family);
-  line-height: 1.4;
   max-width: var(--body-max-width);
   padding: 0 0.75rem;
   margin: 1.25rem auto;
@@ -82,6 +87,7 @@ body {
   color: var(--text-main);
   background: var(--background-body);
   text-rendering: optimizeLegibility;
+  line-height: 1.5;
 }
 
 [hidden] {
@@ -179,16 +185,31 @@ select:disabled {
 }
 
 .noscript {
+  position: relative;
   width: 100%;
   padding: 1rem;
   margin: 0 auto;
   border-radius: var(--border-radius);
-  border: 1px solid var(--error-color);
+  border: 1px solid var(--border);
+  border-top: 0;
   max-width: var(--container-max-width);
-  color: var(--error-color);
+  /* color: var(--danger-color); */
   background-color: var(--background-alt);
   text-align: center;
   text-wrap: balance;
+}
+
+.noscript::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background-color: var(--danger-color);
+  border-top-left-radius: 0.25rem;
+  border-top-right-radius: 0.25rem;
+
 }
 
 .site-header {
@@ -501,6 +522,10 @@ video-capture[loading] [slot="actions"] {
   align-items: center;
   color: var(--text-main);
   text-decoration: none;
+}
+
+.history-dialog {
+  --me-width: 20rem;
 }
 
 .settings-dialog ul li {
