@@ -3,7 +3,7 @@ import '@georapbox/web-share-element/dist/web-share-defined.js';
 import '@georapbox/files-dropzone-element/dist/files-dropzone-defined.js';
 import '@georapbox/resize-observer-element/dist/resize-observer-defined.js';
 import '@georapbox/modal-element/dist/modal-element-defined.js';
-import { NO_BARCODE_DETECTED, ACCEPTED_MIME_TYPES } from './constants.js';
+import { ACCEPTED_MIME_TYPES } from './constants.js';
 import { getSettings, setSettings } from './services/storage.js';
 import { debounce } from './utils/debounce.js';
 import { log } from './utils/log.js';
@@ -114,7 +114,7 @@ import './components/alert-element.js';
       const barcodeValue = barcode?.rawValue ?? '';
 
       if (!barcodeValue) {
-        throw new Error(NO_BARCODE_DETECTED);
+        throw new Error('No barcode detected');
       }
 
       createResult(cameraResultsEl, barcodeValue);
@@ -216,7 +216,7 @@ import './components/alert-element.js';
           const barcodeValue = barcode?.rawValue ?? '';
 
           if (!barcodeValue) {
-            throw new Error(NO_BARCODE_DETECTED);
+            throw new Error('No barcode detected');
           }
 
           createResult(fileResultsEl, barcodeValue);
@@ -224,12 +224,12 @@ import './components/alert-element.js';
           triggerScanEffects();
         } catch (err) {
           log(err);
-          // FIXME: Remove and replace with a toast message.
-          // createResult(fileResultsEl, NO_BARCODE_DETECTED);
+
           toastify(
             '<div><strong>No barcode detected</strong></div><div><small>Please try again with a different image.</small></div>',
             { variant: 'danger' }
           );
+
           triggerScanEffects({ success: false });
         }
       };
@@ -360,13 +360,14 @@ import './components/alert-element.js';
       return;
     }
 
-    const errorMessage =
-      error.name === 'NotAllowedError'
-        ? /* html */ `<strong>Error accessing camera</strong><br>Permission to use webcam was denied or video Autoplay is disabled. Reload the page to give appropriate permissions to webcam.`
-        : error.message;
-
     cameraPanel.innerHTML = /* html */ `
-      <alert-element variant="danger" open role="alert" style="margin: 0;">${errorMessage}</alert-element>
+      <alert-element variant="danger" open role="alert" style="margin: 0;">
+        ${
+          error.name === 'NotAllowedError'
+            ? /* html */ `<strong>Error accessing camera</strong><br>Permission to use webcam was denied or video Autoplay is disabled. Reload the page to give appropriate permissions to webcam.`
+            : error.message
+        }
+      </alert-element>
     `;
   }
 

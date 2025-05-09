@@ -12,7 +12,8 @@ export function toastify(message, options = {}) {
   const defaults = {
     duration: 5000,
     closable: true,
-    variant: 'neutral'
+    variant: 'neutral',
+    alertStyles: ''
   };
 
   options = { ...defaults, ...options };
@@ -21,11 +22,12 @@ export function toastify(message, options = {}) {
     duration: options.duration,
     closable: options.closable,
     variant: options.variant,
-    style: 'display: block; margin-block: 1rem; margin-inline: 1rem;',
     innerHTML: message
   });
 
-  document.body.append(alert);
+  if (options.alertStyles) {
+    alert.style.cssText = options.alertStyles;
+  }
 
   return alert.toast();
 }

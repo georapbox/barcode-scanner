@@ -1,5 +1,5 @@
 const toastStack = Object.assign(document.createElement('div'), {
-  className: 'toast-stack',
+  className: 'alert-toast-stack',
   style: `
     position: fixed;
     top: 0;
@@ -9,14 +9,23 @@ const toastStack = Object.assign(document.createElement('div'), {
     max-width: 100%;
     max-height: 100%;
     overflow: auto;
+    scroll-behavior: smooth;
+    scrollbar-width: none;
   `
 });
 
 const styles = /* css */ `
   :host {
+    display: contents;
     box-sizing: border-box;
 
+    --alert-close-width: 1.375em;
+    --alert-close-height: 1.375em;
+    --alert-fg-color: var(--text-main);
     --alert-bg-color: #ffffff;
+    --alert-border-radius: 0.25rem;
+    --alert-border-color: var(--border);
+    --alert-close-focus-color: var(--accent);
     --alert-info-color: var(--info-color);
     --alert-success-color: var(--success-color);
     --alert-neutral-color: var(--neutral-color);
@@ -43,73 +52,100 @@ const styles = /* css */ `
   }
 
   :host(:not([open])) {
-    display: none;
+    display: none !important;
   }
 
-  .base {
-    position: relative;
-    padding: 1rem;
-    border: 1px solid var(--border);
-    border-top: 0;
-    border-radius: 0.25rem;
+  .alert {
+    display: flex;
+    align-items: center;
+    margin: inherit;
+    border: 1px solid var(--alert-border-color);
+    border-top-width: 3px;
+    border-radius: var(--alert-border-radius);
     background-color: var(--alert-bg-color);
-    margin-block-end: 1rem;
   }
 
-  .base::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 3px;
-    background-color: var(--alert-neutral-color);
-    border-top-left-radius: 0.25rem;
-    border-top-right-radius: 0.25rem;
+  :host([variant='info']) .alert {
+    border-top-color: var(--alert-info-color);
   }
 
-  :host([variant='info']) .base::before {
-    background-color: var(--alert-info-color);
+  :host([variant='success']) .alert {
+    border-top-color: var(--alert-success-color);
   }
 
-  :host([variant='success']) .base::before {
-    background-color: var(--alert-success-color);
+  :host([variant='neutral']) .alert {
+    border-top-color: var(--alert-neutral-color);
   }
 
-  :host([variant='neutral']) .base::before {
-    background-color: var(--alert-neutral-color);
+  :host([variant='warning']) .alert {
+    border-top-color: var(--alert-warning-color);
   }
 
-  :host([variant='warning']) .base::before {
-    background-color: var(--alert-warning-color);
+  :host([variant='danger']) .alert {
+    border-top-color: var(--alert-danger-color);
   }
 
-  :host([variant='danger']) .base::before {
-    background-color: var(--alert-danger-color);
+  .alert__icon {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    font-size: inherit;
   }
 
-  .message {
-    padding-inline-end: 3rem;
+  .alert--with-icon .alert__icon {
+    margin-inline-start: 1rem;
   }
 
-  .close-button {
-    position: absolute;
-    top: 0;
-    inset-inline-end: 0;
-    height: 100%;
-    padding-inline: 1rem;
+  slot[name='icon'] > svg {
+    display: block;
+    margin-inline-start: 3rem;
+  }
+
+  :host([variant='info']) .alert__icon {
+    color: var(--alert-info-color);
+  }
+
+  :host([variant='success']) .alert__icon {
+    color: var(--alert-success-color);
+  }
+
+  :host([variant='neutral']) .alert__icon {
+    color: var(--alert-neutral-color);
+  }
+
+  :host([variant='warning']) .alert__icon {
+    color: var(--alert-warning-color);
+  }
+
+  :host([variant='danger']) .alert__icon {
+    color: var(--alert-danger-color);
+  }
+
+  .alert__message {
+    flex: 1 1 auto;
+    padding: 1rem;
+    overflow: hidden;
+    color: var(--alert-fg-color);
+  }
+
+  .alert__close-button {
+    display: flex;
+    align-items: center;
+    margin-inline-end:  1rem;
+    padding: 0.5rem;
+    border: none;
     line-height: 0;
     background: transparent;
-    border: none;
-    color: inherit;
+    color: var(--alert-fg-color);
+    font-size: inherit;
     cursor: pointer;
   }
 
-  .close-button:focus-visible {
-    outline-color: var(--accent);
+  .alert__close-button:focus-visible {
+    outline-color: var(---alert-close-focus-color);
   }
 
-  :host(:not([closable])) .close-button {
+  :host(:not([closable])) .alert__close-button {
     display: none;
   }
 `;
@@ -118,13 +154,16 @@ const template = document.createElement('template');
 
 template.innerHTML = /* html */ `
   <style>${styles}</style>
-  <div class="base" part="base" role="alert">
-    <div class="message" part="message" aria-live="polite">
+  <div class="alert" part="base" role="alert">
+    <div class="alert__icon" part="icon">
+      <slot name="icon"></slot>
+    </div>
+    <div class="alert__message" part="message" aria-live="polite">
       <slot></slot>
     </div>
-    <button type="button" class="close-button" part="close-button" aria-label="Close">
-      <slot name="close-button">
-        <svg xmlns="http://www.w3.org/2000/svg" width="1.375em" height="1.375em" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+    <button type="button" class="alert__close-button" part="close-button" aria-label="Close">
+      <slot name="close">
+        <svg xmlns="http://www.w3.org/2000/svg" width="1.125em" height="1.125em" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
           <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/>
         </svg>
       </slot>
@@ -133,7 +172,9 @@ template.innerHTML = /* html */ `
 `;
 
 class AlertElement extends HTMLElement {
+  #baseEl = null;
   #closeBtn = null;
+  #iconSlot = null;
   #autoHideTimeout = null;
 
   constructor() {
@@ -164,10 +205,10 @@ class AlertElement extends HTMLElement {
         this.#restartAutoHide();
       } else {
         this.hide();
-        clearTimeout(this.#autoHideTimeout);
+        this.#pauseAutoHide();
 
         this.dispatchEvent(
-          new Event('alert-hide', {
+          new Event('alert-element-hide', {
             bubbles: true,
             composed: true
           })
@@ -218,17 +259,30 @@ class AlertElement extends HTMLElement {
     this.#upgradeProperty('duration');
     this.#upgradeProperty('variant');
 
+    this.#baseEl = this.shadowRoot.querySelector('.alert');
+    this.#iconSlot = this.shadowRoot.querySelector('slot[name="icon"]');
     this.#closeBtn = this.shadowRoot.querySelector('button');
+
     this.#closeBtn.addEventListener('click', this.#handleCloseBtnClick);
+    this.#iconSlot.addEventListener('slotchange', this.#handleIconSlotChange);
+    this.addEventListener('mouseenter', this.#handleMouseEnter);
+    this.addEventListener('mouseleave', this.#handleMouseLeave);
   }
 
   disconnectedCallback() {
-    clearTimeout(this.#autoHideTimeout);
+    this.#pauseAutoHide();
+    this.#iconSlot.removeEventListener('slotchange', this.#handleIconSlotChange);
     this.#closeBtn.removeEventListener('click', this.#handleCloseBtnClick);
+    this.removeEventListener('mouseenter', this.#handleMouseEnter);
+    this.removeEventListener('mouseleave', this.#handleMouseLeave);
+  }
+
+  #pauseAutoHide() {
+    clearTimeout(this.#autoHideTimeout);
   }
 
   #restartAutoHide() {
-    clearTimeout(this.#autoHideTimeout);
+    this.#pauseAutoHide();
     if (this.open && this.duration < Infinity) {
       this.#autoHideTimeout = window.setTimeout(() => this.hide(), this.duration);
     }
@@ -236,6 +290,19 @@ class AlertElement extends HTMLElement {
 
   #handleCloseBtnClick = () => {
     this.hide();
+  };
+
+  #handleMouseEnter = () => {
+    this.#pauseAutoHide();
+  };
+
+  #handleMouseLeave = () => {
+    this.#restartAutoHide();
+  };
+
+  #handleIconSlotChange = () => {
+    const hasContent = this.#iconSlot?.assignedElements()?.length > 0;
+    this.#baseEl?.classList.toggle('alert--with-icon', !!hasContent);
   };
 
   async show() {
@@ -262,9 +329,10 @@ class AlertElement extends HTMLElement {
 
       toastStack.appendChild(this);
       this.show();
+      toastStack.scrollTop = toastStack.scrollHeight;
 
       this.addEventListener(
-        'alert-hide',
+        'alert-element-hide',
         () => {
           toastStack.removeChild(this);
           resolve();

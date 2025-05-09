@@ -1,6 +1,5 @@
 import { isWebShareSupported } from '@georapbox/web-share-element/dist/is-web-share-supported.js';
 import { getSettings } from '../services/storage.js';
-import { NO_BARCODE_DETECTED } from '../constants.js';
 import { dateTimeFormatter } from '../utils/datetime-formatter.js';
 
 const styles = /* css */ `
@@ -37,10 +36,6 @@ const styles = /* css */ `
 
   a.result__item {
     color: var(--links);
-  }
-
-  .result__item--no-barcode {
-    color: var(--danger-color);
   }
 
   .result__datetime {
@@ -185,17 +180,15 @@ class BSResult extends HTMLElement {
 
     resultItem.className = 'result__item';
     resultItem.part = 'result__item';
-    resultItem.classList.toggle('result__item--no-barcode', value === NO_BARCODE_DETECTED);
     resultItem.textContent = value;
 
     resultDatetimeEl.textContent = dateTimeFormatter.format(new Date());
     resultContentEl?.insertBefore(resultItem, resultDatetimeEl);
 
-    const isValidValue = value !== NO_BARCODE_DETECTED;
     const clipboarCopyEl = baseEl?.querySelector('custom-clipboard-copy');
     const webShareEl = baseEl?.querySelector('web-share');
 
-    if (clipboarCopyEl && isValidValue) {
+    if (clipboarCopyEl) {
       clipboarCopyEl.setAttribute('value', value);
       clipboarCopyEl.hidden = false;
     } else {
@@ -203,7 +196,7 @@ class BSResult extends HTMLElement {
       clipboarCopyEl.removeAttribute('value');
     }
 
-    if (webShareEl && isWebShareSupported() && isValidValue) {
+    if (webShareEl && isWebShareSupported()) {
       webShareEl.setAttribute('share-text', value);
       webShareEl.hidden = false;
     } else {
