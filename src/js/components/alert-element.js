@@ -3,7 +3,7 @@ const toastStack = Object.assign(document.createElement('div'), {
   style: `
     position: fixed;
     top: 0;
-    inset-inline-start: 0;
+    inset-inline-end: 0;
     z-index: 1000;
     width: 28rem;
     max-width: 100%;
