@@ -208,7 +208,7 @@ class AlertElement extends HTMLElement {
         this.#pauseAutoHide();
 
         this.dispatchEvent(
-          new Event('alert-element-hide', {
+          new Event('alert-hide', {
             bubbles: true,
             composed: true
           })
@@ -332,7 +332,7 @@ class AlertElement extends HTMLElement {
       toastStack.scrollTop = toastStack.scrollHeight;
 
       this.addEventListener(
-        'alert-element-hide',
+        'alert-hide',
         () => {
           toastStack.removeChild(this);
           resolve();

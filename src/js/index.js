@@ -361,7 +361,7 @@ import './components/alert-element.js';
     }
 
     cameraPanel.innerHTML = /* html */ `
-      <alert-element variant="danger" open role="alert" style="margin: 0;">
+      <alert-element variant="danger" open role="alert">
         ${
           error.name === 'NotAllowedError'
             ? /* html */ `<strong>Error accessing camera</strong><br>Permission to use webcam was denied or video Autoplay is disabled. Reload the page to give appropriate permissions to webcam.`
