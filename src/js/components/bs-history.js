@@ -1,5 +1,6 @@
 import { uuid } from '../utils/uuid.js';
 import { getHistory, setHistory } from '../services/storage.js';
+import { log } from '../utils/log.js';
 
 const styles = /* css */ `
   :host {
@@ -182,18 +183,22 @@ class BSHistory extends HTMLElement {
 
     const [getHistoryError, history = []] = await getHistory();
 
-    if (!getHistoryError && Array.isArray(history) && !history.find(h => h === item)) {
-      const data = [...history, item];
-
-      const [setHistoryError] = await setHistory(data);
-
-      if (!setHistoryError) {
-        this.#historyListEl.insertBefore(
-          this.#createHistoryItemElement(item),
-          this.#historyListEl.firstElementChild
-        );
-      }
+    if (getHistoryError || !Array.isArray(history) || history.find(h => h === item)) {
+      return;
     }
+
+    const data = [...history, item];
+    const [setHistoryError] = await setHistory(data);
+
+    if (setHistoryError) {
+      log('Error setting history', setHistoryError);
+      return;
+    }
+
+    this.#historyListEl?.insertBefore(
+      this.#createHistoryItemElement(item),
+      this.#historyListEl.firstElementChild
+    );
   }
 
   /**
@@ -208,18 +213,21 @@ class BSHistory extends HTMLElement {
 
     const [getHistoryError, history = []] = await getHistory();
 
-    if (!getHistoryError && Array.isArray(history)) {
-      const data = history.filter(el => el !== item);
-      const [setHistoryError] = await setHistory(data);
-
-      if (!setHistoryError) {
-        const historyItem = this.#historyListEl.querySelector(`li[data-value="${item}"]`);
-
-        if (historyItem) {
-          historyItem.remove();
-        }
-      }
+    if (getHistoryError || !Array.isArray(history)) {
+      return;
     }
+
+    const data = history.filter(el => el !== item);
+    const [setHistoryError] = await setHistory(data);
+
+    if (setHistoryError) {
+      log('Error setting history', setHistoryError);
+      return;
+    }
+
+    const historyItem = this.#historyListEl?.querySelector(`li[data-value="${item}"]`);
+
+    historyItem?.remove();
   }
 
   /**
@@ -228,9 +236,12 @@ class BSHistory extends HTMLElement {
   async empty() {
     const [setHistoryError] = await setHistory([]);
 
-    if (!setHistoryError) {
-      this.#historyListEl.replaceChildren();
+    if (setHistoryError) {
+      log('Error setting history', setHistoryError);
+      return;
     }
+
+    this.#historyListEl?.replaceChildren();
   }
 
   /**

@@ -1,3 +1,5 @@
+const COMPONENT_NAME = 'alert-element';
+
 const toastStack = Object.assign(document.createElement('div'), {
   className: 'alert-toast-stack',
   style: `
@@ -337,7 +339,7 @@ class AlertElement extends HTMLElement {
           toastStack.removeChild(this);
           resolve();
 
-          if (toastStack.querySelector('alert-element') === null) {
+          if (toastStack.querySelector(COMPONENT_NAME) === null) {
             toastStack.remove();
           }
         },
@@ -366,7 +368,7 @@ class AlertElement extends HTMLElement {
     }
   }
 
-  static defineCustomElement(elementName = 'alert-element') {
+  static defineCustomElement(elementName = COMPONENT_NAME) {
     if (typeof window !== 'undefined' && !window.customElements.get(elementName)) {
       window.customElements.define(elementName, AlertElement);
     }
