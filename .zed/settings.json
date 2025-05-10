@@ -1,0 +1,8 @@
+{
+  "languages": {
+    "JavaScript": {
+      "formatter": "prettier",
+      "format_on_save": "on"
+    }
+  }
+}
