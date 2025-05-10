@@ -595,7 +595,7 @@ a-tab[selected]::part(base) {
   border-radius: var(--border-radius);
   border: 1px solid var(--border);
   overflow-x: hidden;
-  max-height: 18.75rem;
+  max-height: 20.125rem;
   overscroll-behavior: contain;
 }
 

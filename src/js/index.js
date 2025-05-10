@@ -119,7 +119,10 @@ import './components/alert-element.js';
 
       createResult(cameraResultsEl, barcodeValue);
 
-      bsHistoryEl?.add(barcodeValue);
+      if (settings?.addToHistory) {
+        bsHistoryEl?.add(barcodeValue);
+      }
+
       triggerScanEffects();
 
       if (!settings?.continueScanning) {
@@ -199,11 +202,12 @@ import './components/alert-element.js';
    *
    * @param {File} file - The selected file.
    */
-  function handleFileSelect(file) {
+  async function handleFileSelect(file) {
     if (!file) {
       return;
     }
 
+    const [, settings] = await getSettings();
     const image = new Image();
     const reader = new FileReader();
 
@@ -220,7 +224,11 @@ import './components/alert-element.js';
           }
 
           createResult(fileResultsEl, barcodeValue);
-          bsHistoryEl?.add(barcodeValue);
+
+          if (settings?.addToHistory) {
+            bsHistoryEl?.add(barcodeValue);
+          }
+
           triggerScanEffects();
         } catch (err) {
           log(err);

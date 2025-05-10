@@ -1,5 +1,5 @@
 import { uuid } from '../utils/uuid.js';
-import { getHistory, setHistory, getSettings } from '../services/storage.js';
+import { getHistory, setHistory } from '../services/storage.js';
 
 const styles = /* css */ `
   :host {
@@ -176,9 +176,7 @@ class BSHistory extends HTMLElement {
    * @param {string} item - Item to add to history
    */
   async add(item) {
-    const [, settings] = await getSettings();
-
-    if (!item || !settings?.addToHistory) {
+    if (!item) {
       return;
     }
 
