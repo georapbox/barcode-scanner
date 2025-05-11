@@ -104,7 +104,7 @@ import './components/alert-element.js';
       return;
     }
 
-    log('Scanning...');
+    log.info('Scanning...');
 
     scanInstructionsEl?.removeAttribute('hidden');
 
@@ -231,7 +231,7 @@ import './components/alert-element.js';
 
           triggerScanEffects();
         } catch (err) {
-          log(err);
+          log.error(err);
 
           toastify(
             '<div><strong>No barcode detected</strong></div><div><small>Please try again with a different image.</small></div>',
