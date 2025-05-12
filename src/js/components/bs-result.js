@@ -80,6 +80,19 @@ const styles = /* css */ `
   .result custom-clipboard-copy::part(button--error) {
     color: var(--danger-color);
   }
+
+  .flash {
+    animation: flash 0.4s ease-out;
+  }
+
+  @keyframes flash {
+    0% {
+      background-color: #ffff99;
+    }
+    100% {
+      background-color: transparent;
+    }
+  }
 `;
 
 const template = document.createElement('template');
@@ -136,6 +149,17 @@ class BSResult extends HTMLElement {
 
   connectedCallback() {
     this.#upgradeProperty('value');
+
+    if (window.matchMedia('(prefers-reduced-motion: no-preference)').matches) {
+      const baseEl = this.shadowRoot.querySelector('.result');
+
+      if (baseEl) {
+        baseEl.classList.add('flash');
+        baseEl.addEventListener('animationend', () => baseEl.classList.remove('flash'), {
+          once: true
+        });
+      }
+    }
 
     if (!isWebShareSupported()) {
       const webShareEl = this.shadowRoot.querySelector('web-share');
