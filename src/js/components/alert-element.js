@@ -1,4 +1,6 @@
 const COMPONENT_NAME = 'alert-element';
+const EVT_ALERT_SHOW = 'alert-show';
+const EVT_ALERT_HIDE = 'alert-hide';
 
 const toastStack = Object.assign(document.createElement('div'), {
   className: 'alert-toast-stack',
@@ -148,7 +150,7 @@ const styles = /* css */ `
   }
 
   :host(:not([closable])) .alert__close-button {
-    display: none;
+    display: none !important;
   }
 `;
 
@@ -194,28 +196,7 @@ class AlertElement extends HTMLElement {
 
   attributeChangedCallback(name, oldValue, newValue) {
     if (name === 'open' && oldValue !== newValue) {
-      if (this.open) {
-        this.show();
-
-        this.dispatchEvent(
-          new Event('alert-show', {
-            bubbles: true,
-            composed: true
-          })
-        );
-
-        this.#restartAutoHide();
-      } else {
-        this.hide();
-        this.#pauseAutoHide();
-
-        this.dispatchEvent(
-          new Event('alert-hide', {
-            bubbles: true,
-            composed: true
-          })
-        );
-      }
+      this.#handleOpenAttributeChange();
     }
 
     if (name === 'duration' && oldValue !== newValue) {
@@ -279,6 +260,18 @@ class AlertElement extends HTMLElement {
     this.removeEventListener('mouseleave', this.#handleMouseLeave);
   }
 
+  #handleOpenAttributeChange() {
+    if (this.open) {
+      this.show();
+      this.dispatchEvent(new Event(EVT_ALERT_SHOW, { bubbles: true, composed: true }));
+      this.#restartAutoHide();
+    } else {
+      this.hide();
+      this.#pauseAutoHide();
+      this.dispatchEvent(new Event(EVT_ALERT_HIDE, { bubbles: true, composed: true }));
+    }
+  }
+
   #pauseAutoHide() {
     clearTimeout(this.#autoHideTimeout);
   }
@@ -291,7 +284,7 @@ class AlertElement extends HTMLElement {
   }
 
   #handleCloseBtnClick = () => {
-    this.hide();
+    this.closable && this.hide();
   };
 
   #handleMouseEnter = () => {
@@ -334,7 +327,7 @@ class AlertElement extends HTMLElement {
       toastStack.scrollTop = toastStack.scrollHeight;
 
       this.addEventListener(
-        'alert-hide',
+        EVT_ALERT_HIDE,
         () => {
           toastStack.removeChild(this);
           resolve();
