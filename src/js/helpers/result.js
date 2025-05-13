@@ -1,37 +1,26 @@
 /**
- * Removes the scanned result from the element where it is shown.
- *
- * @param {HTMLElement} element - The element to remove the result from.
- */
-export function hideResult(element) {
-  if (!element) {
-    return;
-  }
-
-  element.querySelector('bs-result')?.remove();
-}
-
-/**
  * Creates and shows the scanned result inside the given element.
  *
- * @param {HTMLElement} element - The element to show the result in.
+ * @param {HTMLElement} containerEl - The element to show the result in.
  * @param {string} value - The value to create the result with.
  */
-export async function showResult(element, value) {
-  if (!element || !value) {
+export async function createResult(containerEl, value) {
+  if (!containerEl || !value) {
     return;
   }
 
-  const oldResultEl = element.querySelector('bs-result');
+  // const prevResultEl = containerEl.querySelector('bs-result[value="' + value + '"]');
+  const prevResultEl = containerEl.querySelector(`bs-result[value="${value}"]`);
 
-  if (oldResultEl) {
-    oldResultEl.setAttribute('value', value);
-  } else {
-    const newResultEl = document.createElement('bs-result');
-    newResultEl.setAttribute('value', value);
-    newResultEl.setAttribute('role', 'alert');
-    newResultEl.setAttribute('aria-live', 'assertive');
-    newResultEl.setAttribute('aria-atomic', 'true');
-    element.appendChild(newResultEl);
+  if (prevResultEl) {
+    prevResultEl.remove();
   }
+
+  const newResultEl = document.createElement('bs-result');
+  newResultEl.setAttribute('value', value);
+  newResultEl.setAttribute('role', 'alert');
+  newResultEl.setAttribute('aria-live', 'assertive');
+  newResultEl.setAttribute('aria-atomic', 'true');
+  containerEl.insertBefore(newResultEl, containerEl.firstElementChild);
+  containerEl.scrollTop = 0;
 }

@@ -1,5 +1,5 @@
-import { uuid } from '../utils/uuid.js';
-import { getHistory, setHistory, getSettings } from '../services/storage.js';
+import { getHistory, setHistory } from '../services/storage.js';
+import { log } from '../utils/log.js';
 
 const styles = /* css */ `
   :host {
@@ -95,11 +95,11 @@ const styles = /* css */ `
   }
 
   .actions custom-clipboard-copy::part(button--error) {
-    color: var(--error-color);
+    color: var(--danger-color);
   }
 
   .actions .delete-action {
-    color: var(--error-color);
+    color: var(--danger-color);
     margin-right: -0.5rem;
   }
 
@@ -115,7 +115,7 @@ const styles = /* css */ `
     padding: 0.625rem;
     border: 0;
     border-radius: var(--border-radius);
-    background-color: var(--error-color);
+    background-color: var(--danger-color);
     color: var(--empty-history-button-color);
     font-size: 1rem;
     cursor: pointer;
@@ -176,23 +176,28 @@ class BSHistory extends HTMLElement {
    * @param {string} item - Item to add to history
    */
   async add(item) {
-    const [, settings] = await getSettings();
-
-    if (!item || !settings?.addToHistory) {
+    if (!item) {
       return;
     }
 
     const [getHistoryError, history = []] = await getHistory();
 
-    if (!getHistoryError && Array.isArray(history) && !history.find(h => h === item)) {
-      const data = [...history, item];
-
-      const [setHistoryError] = await setHistory(data);
-
-      if (!setHistoryError) {
-        this.#historyListEl.appendChild(this.#createHistoryItemElement(item));
-      }
+    if (getHistoryError || !Array.isArray(history) || history.find(h => h === item)) {
+      return;
     }
+
+    const data = [...history, item];
+    const [setHistoryError] = await setHistory(data);
+
+    if (setHistoryError) {
+      log.error('Error setting history', setHistoryError);
+      return;
+    }
+
+    this.#historyListEl?.insertBefore(
+      this.#createHistoryItemElement(item),
+      this.#historyListEl.firstElementChild
+    );
   }
 
   /**
@@ -207,18 +212,21 @@ class BSHistory extends HTMLElement {
 
     const [getHistoryError, history = []] = await getHistory();
 
-    if (!getHistoryError && Array.isArray(history)) {
-      const data = history.filter(el => el !== item);
-      const [setHistoryError] = await setHistory(data);
-
-      if (!setHistoryError) {
-        const historyItem = this.#historyListEl.querySelector(`li[data-value="${item}"]`);
-
-        if (historyItem) {
-          historyItem.remove();
-        }
-      }
+    if (getHistoryError || !Array.isArray(history)) {
+      return;
     }
+
+    const data = history.filter(el => el !== item);
+    const [setHistoryError] = await setHistory(data);
+
+    if (setHistoryError) {
+      log.error('Error setting history', setHistoryError);
+      return;
+    }
+
+    const historyItem = this.#historyListEl?.querySelector(`li[data-value="${item}"]`);
+
+    historyItem?.remove();
   }
 
   /**
@@ -227,9 +235,12 @@ class BSHistory extends HTMLElement {
   async empty() {
     const [setHistoryError] = await setHistory([]);
 
-    if (!setHistoryError) {
-      this.#historyListEl.replaceChildren();
+    if (setHistoryError) {
+      log.error('Error setting history', setHistoryError);
+      return;
     }
+
+    this.#historyListEl?.replaceChildren();
   }
 
   /**
@@ -243,13 +254,8 @@ class BSHistory extends HTMLElement {
     }
 
     this.#historyListEl.replaceChildren();
-
     const fragment = document.createDocumentFragment();
-
-    data.forEach(item => {
-      fragment.appendChild(this.#createHistoryItemElement(item));
-    });
-
+    [...data].reverse().forEach(item => fragment.appendChild(this.#createHistoryItemElement(item)));
     this.#historyListEl.appendChild(fragment);
   }
 
@@ -261,7 +267,6 @@ class BSHistory extends HTMLElement {
    * @returns {HTMLLIElement} The history item element
    */
   #createHistoryItemElement(item) {
-    const itemId = uuid();
     const li = document.createElement('li');
     li.setAttribute('data-value', item);
 
@@ -278,26 +283,22 @@ class BSHistory extends HTMLElement {
     }
 
     historyItem.textContent = item;
-    historyItem.setAttribute('id', `historyItem-${itemId}`);
 
     const actionsEl = document.createElement('div');
     actionsEl.className = 'actions';
 
-    const copyBtn = document.createElement('custom-clipboard-copy');
-    copyBtn.setAttribute('id', `copyHistoryItem-${itemId}`);
-    copyBtn.setAttribute('aria-label', 'Copy to clipboard');
-    copyBtn.setAttribute('aria-labelledby', `copyHistoryItem-${itemId} historyItem-${itemId}`);
-    copyBtn.setAttribute('only-icon', '');
-    copyBtn.setAttribute('value', item);
-    actionsEl.appendChild(copyBtn);
+    const copyEl = document.createElement('custom-clipboard-copy');
+    const copyBtn = copyEl.shadowRoot?.querySelector('button');
+    copyEl.setAttribute('only-icon', '');
+    copyEl.setAttribute('value', item);
+    copyBtn?.setAttribute('aria-label', `Copy to clipboard ${item}`);
+    actionsEl.appendChild(copyEl);
 
     const removeBtn = document.createElement('button');
     removeBtn.type = 'button';
     removeBtn.className = 'delete-action';
     removeBtn.setAttribute('data-action', 'delete');
-    removeBtn.setAttribute('id', `removeHistoryItem-${itemId}`);
-    removeBtn.setAttribute('aria-label', 'Remove from history');
-    removeBtn.setAttribute('aria-labelledby', `removeHistoryItem-${itemId} historyItem-${itemId}`);
+    removeBtn.setAttribute('aria-label', `Remove from history ${item}`);
     removeBtn.innerHTML = /* html */ `
       <svg xmlns="http://www.w3.org/2000/svg" width="1.125em" height="1.125em" fill="currentColor" viewBox="0 0 16 16">
         <path d="M11 1.5v1h3.5a.5.5 0 0 1 0 1h-.538l-.853 10.66A2 2 0 0 1 11.115 16h-6.23a2 2 0 0 1-1.994-1.84L2.038 3.5H1.5a.5.5 0 0 1 0-1H5v-1A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5Zm-5 0v1h4v-1a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5ZM4.5 5.029l.5 8.5a.5.5 0 1 0 .998-.06l-.5-8.5a.5.5 0 1 0-.998.06Zm6.53-.528a.5.5 0 0 0-.528.47l-.5 8.5a.5.5 0 0 0 .998.058l.5-8.5a.5.5 0 0 0-.47-.528ZM8 4.5a.5.5 0 0 0-.5.5v8.5a.5.5 0 0 0 1 0V5a.5.5 0 0 0-.5-.5Z"/>

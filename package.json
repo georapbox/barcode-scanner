@@ -45,15 +45,15 @@
   },
   "homepage": "https://github.com/georapbox/barcode-scanner#readme",
   "devDependencies": {
-    "@eslint/js": "~9.17.0",
-    "@parcel/packager-raw-url": "~2.13.3",
-    "@parcel/transformer-webmanifest": "~2.13.3",
-    "eslint": "~9.17.0",
-    "gh-pages": "~6.2.0",
-    "globals": "~15.14.0",
+    "@eslint/js": "~9.26.0",
+    "@parcel/packager-raw-url": "~2.15.0",
+    "@parcel/transformer-webmanifest": "~2.15.0",
+    "eslint": "~9.26.0",
+    "gh-pages": "~6.3.0",
+    "globals": "~16.1.0",
     "npm-run-all": "~4.1.5",
-    "parcel": "~2.13.3",
-    "prettier": "~3.4.2",
+    "parcel": "~2.15.0",
+    "prettier": "~3.5.3",
     "process": "~0.11.10",
     "rimraf": "~6.0.1",
     "svgo": "~3.3.2",
@@ -63,11 +63,11 @@
     "@georapbox/a-tab-group": "~2.4.1",
     "@georapbox/clipboard-copy-element": "~3.0.2",
     "@georapbox/files-dropzone-element": "~2.0.1",
-    "@georapbox/modal-element": "~1.8.0",
+    "@georapbox/modal-element": "~1.9.0",
     "@georapbox/resize-observer-element": "~2.0.1",
     "@georapbox/web-share-element": "~3.1.1",
-    "barcode-detector": "~2.3.1",
-    "idb-keyval": "~6.2.1"
+    "barcode-detector": "~3.0.4",
+    "idb-keyval": "~6.2.2"
   },
   "browserslist": "> 0.5%, last 2 versions, not dead"
 }

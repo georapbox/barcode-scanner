@@ -1,6 +1,6 @@
 import { isWebShareSupported } from '@georapbox/web-share-element/dist/is-web-share-supported.js';
 import { getSettings } from '../services/storage.js';
-import { NO_BARCODE_DETECTED } from '../constants.js';
+import { dateTimeFormatter } from '../utils/datetime-formatter.js';
 
 const styles = /* css */ `
   :host {
@@ -20,14 +20,13 @@ const styles = /* css */ `
   }
 
   .result {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
     position: relative;
     width: 100%;
-    border: 1px solid var(--focus);
-    border-radius: 6px;
-    margin: 1.5rem 0 0 0;
-    padding: 1rem;
-    background-color: var(--background-alt);
-    text-align: center;
+    padding: 0.5rem;
   }
 
   .result__item {
@@ -39,8 +38,14 @@ const styles = /* css */ `
     color: var(--links);
   }
 
-  .result__item--no-barcode {
-    color: var(--error-color);
+  .result__datetime {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-block-start: 0.25rem;
+  }
+
+  .result__datetime:empty {
+    display: none !important;
   }
 
   .result__actions {
@@ -57,7 +62,6 @@ const styles = /* css */ `
     justify-content: center;
     align-items: center;
     gap: 0.25rem;
-    margin: 0.75rem 0 0 0;
     padding: 0.25rem;
     background-color: transparent;
     border: 0;
@@ -68,6 +72,27 @@ const styles = /* css */ `
     font-size: 0.9rem;
     cursor: pointer;
   }
+
+  .result custom-clipboard-copy::part(button--success) {
+    color: var(--success-color);
+  }
+
+  .result custom-clipboard-copy::part(button--error) {
+    color: var(--danger-color);
+  }
+
+  .flash {
+    animation: flash 0.4s ease-out;
+  }
+
+  @keyframes flash {
+    0% {
+      background-color: #ffff99;
+    }
+    100% {
+      background-color: transparent;
+    }
+  }
 `;
 
 const template = document.createElement('template');
@@ -75,16 +100,19 @@ const template = document.createElement('template');
 template.innerHTML = /* html */ `
   <style>${styles}</style>
 
-  <div class="result">
+  <div class="result" part="result">
+    <div class="result__content">
+      <div class="result__datetime"></div>
+    </div>
+
     <div class="result__actions">
-      <custom-clipboard-copy></custom-clipboard-copy>
+      <custom-clipboard-copy only-icon></custom-clipboard-copy>
 
       <web-share>
         <button slot="button" type="button">
           <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
             <path d="M13.5 1a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM11 2.5a2.5 2.5 0 1 1 .603 1.628l-6.718 3.12a2.499 2.499 0 0 1 0 1.504l6.718 3.12a2.5 2.5 0 1 1-.488.876l-6.718-3.12a2.5 2.5 0 1 1 0-3.256l6.718-3.12A2.5 2.5 0 0 1 11 2.5zm-8.5 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm11 5.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3z"/>
           </svg>
-          Share
         </button>
       </web-share>
     </div>
@@ -122,6 +150,17 @@ class BSResult extends HTMLElement {
   connectedCallback() {
     this.#upgradeProperty('value');
 
+    if (window.matchMedia('(prefers-reduced-motion: no-preference)').matches) {
+      const baseEl = this.shadowRoot.querySelector('.result');
+
+      if (baseEl) {
+        baseEl.classList.add('flash');
+        baseEl.addEventListener('animationend', () => baseEl.classList.remove('flash'), {
+          once: true
+        });
+      }
+    }
+
     if (!isWebShareSupported()) {
       const webShareEl = this.shadowRoot.querySelector('web-share');
 
@@ -133,58 +172,58 @@ class BSResult extends HTMLElement {
 
   async #handleValueChange(value) {
     const baseEl = this.shadowRoot.querySelector('.result');
-    const resultActionsEl = baseEl?.querySelector('.result__actions');
-    const oldResultItem = baseEl?.querySelector('.result__item');
-    let resultItem;
+    const resultContentEl = baseEl?.querySelector('.result__content');
+    const resultDatetimeEl = baseEl?.querySelector('.result__datetime');
+    const oldResultEl = baseEl?.querySelector('.result__item');
+    let resultEl;
 
-    if (oldResultItem) {
-      oldResultItem.remove();
+    if (oldResultEl) {
+      oldResultEl?.remove();
     }
 
     try {
       const [, settings] = await getSettings();
 
       new URL(value);
-      resultItem = document.createElement('a');
-      resultItem.href = value;
-      window.requestAnimationFrame(() => resultItem.focus());
+      resultEl = document.createElement('a');
+      resultEl.href = value;
 
       if (!settings?.openWebPageSameTab) {
-        resultItem.setAttribute('target', '_blank');
-        resultItem.setAttribute('rel', 'noreferrer noopener');
+        resultEl.setAttribute('target', '_blank');
+        resultEl.setAttribute('rel', 'noreferrer noopener');
       }
 
       if (settings?.openWebPage) {
-        resultItem.click();
+        resultEl.click();
+      } else {
+        window.requestAnimationFrame(() => resultEl.focus());
       }
     } catch {
-      resultItem = document.createElement('span');
+      resultEl = document.createElement('span');
     }
 
-    resultItem.className = 'result__item';
-    resultItem.classList.toggle('result__item--no-barcode', value === NO_BARCODE_DETECTED);
-    resultItem.textContent = value;
+    resultEl.className = 'result__item';
+    resultEl.part = 'result__item';
+    resultEl.textContent = value;
 
-    baseEl?.insertBefore(resultItem, resultActionsEl);
+    resultDatetimeEl.textContent = dateTimeFormatter.format(new Date());
+    resultContentEl?.insertBefore(resultEl, resultDatetimeEl);
 
-    const isValidValue = value !== NO_BARCODE_DETECTED;
-    const clipboarCopyEl = baseEl?.querySelector('custom-clipboard-copy');
-    const webShareEl = baseEl?.querySelector('web-share');
+    const copyEl = baseEl?.querySelector('custom-clipboard-copy');
+    const shareEl = baseEl?.querySelector('web-share');
 
-    if (clipboarCopyEl && isValidValue) {
-      clipboarCopyEl.setAttribute('value', value);
-      clipboarCopyEl.hidden = false;
-    } else {
-      clipboarCopyEl.hidden = true;
-      clipboarCopyEl.removeAttribute('value');
+    if (copyEl) {
+      const copyBtn = copyEl.shadowRoot?.querySelector('button');
+      copyEl.setAttribute('value', value);
+      copyBtn?.setAttribute('aria-label', `Copy to clipboard ${value}`);
+      copyEl.hidden = false;
     }
 
-    if (webShareEl && isWebShareSupported() && isValidValue) {
-      webShareEl.setAttribute('share-text', value);
-      webShareEl.hidden = false;
-    } else {
-      webShareEl.hidden = true;
-      webShareEl.removeAttribute('share-text');
+    if (shareEl && isWebShareSupported()) {
+      const shareBtn = shareEl.querySelector('button');
+      shareEl.setAttribute('share-text', value);
+      shareEl.hidden = false;
+      shareBtn?.setAttribute('aria-label', `Share ${value}`);
     }
   }
 

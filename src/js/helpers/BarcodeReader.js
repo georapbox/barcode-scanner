@@ -27,12 +27,12 @@ class BarcodeReader {
     if (!('BarcodeDetector' in window)) {
       try {
         await import('barcode-detector');
-        log('Using BarcodeDetector polyfill.');
+        log.info('Using BarcodeDetector polyfill.');
       } catch (error) {
         throw new Error('BarcodeDetector API is not supported by your browser.', { cause: error });
       }
     } else {
-      log('Using the native BarcodeDetector API.');
+      log.info('Using the native BarcodeDetector API.');
     }
   }
 
@@ -101,7 +101,7 @@ class BarcodeReader {
     if (Array.isArray(results) && results.length > 0) {
       const firstResult = results[0];
 
-      log({
+      log.info({
         rawValue: firstResult.rawValue,
         format: firstResult.format
       });
