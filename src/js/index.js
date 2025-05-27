@@ -3,6 +3,7 @@ import '@georapbox/web-share-element/dist/web-share-defined.js';
 import '@georapbox/files-dropzone-element/dist/files-dropzone-defined.js';
 import '@georapbox/resize-observer-element/dist/resize-observer-defined.js';
 import '@georapbox/modal-element/dist/modal-element-defined.js';
+import '@georapbox/alert-element/dist/alert-element-defined.js';
 import { ACCEPTED_MIME_TYPES } from './constants.js';
 import { getSettings, setSettings } from './services/storage.js';
 import { debounce } from './utils/debounce.js';
@@ -19,7 +20,6 @@ import './components/clipboard-copy.js';
 import './components/bs-result.js';
 import './components/bs-settings.js';
 import './components/bs-history.js';
-import './components/alert-element.js';
 
 (async function () {
   const tabGroupEl = document.querySelector('a-tab-group');
@@ -65,7 +65,7 @@ import './components/alert-element.js';
     globalActionsEl?.setAttribute('hidden', '');
     tabGroupEl?.setAttribute('hidden', '');
     alertEl?.setAttribute('open', '');
-    alertEl.textContent = barcodeReaderError?.message || 'Unknown barcode reader error';
+
     return; // Stop the script execution as BarcodeDetector API is not supported.
   }
 
@@ -234,8 +234,8 @@ import './components/alert-element.js';
           log.error(err);
 
           toastify(
-            '<div><strong>No barcode detected</strong></div><div><small>Please try again with a different image.</small></div>',
-            { variant: 'danger' }
+            '<strong>No barcode detected</strong><br><small>Please try again with a different image.</small>',
+            { variant: 'danger', trustDangerousInnerHTML: true }
           );
 
           triggerScanEffects({ success: false });
@@ -368,13 +368,20 @@ import './components/alert-element.js';
       return;
     }
 
+    const errorMessage =
+      error.name === 'NotAllowedError'
+        ? `<strong>Error accessing camera</strong><br>Permission to use webcam was denied or video Autoplay is disabled. Reload the page to give appropriate permissions to webcam.`
+        : error.message;
+
     cameraPanel.innerHTML = /* html */ `
-      <alert-element variant="danger" open role="alert">
-        ${
-          error.name === 'NotAllowedError'
-            ? /* html */ `<strong>Error accessing camera</strong><br>Permission to use webcam was denied or video Autoplay is disabled. Reload the page to give appropriate permissions to webcam.`
-            : error.message
-        }
+      <alert-element variant="danger" open>
+        <span slot="icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="1.25em" height="1.25em" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+            <path d="M4.54.146A.5.5 0 0 1 4.893 0h6.214a.5.5 0 0 1 .353.146l4.394 4.394a.5.5 0 0 1 .146.353v6.214a.5.5 0 0 1-.146.353l-4.394 4.394a.5.5 0 0 1-.353.146H4.893a.5.5 0 0 1-.353-.146L.146 11.46A.5.5 0 0 1 0 11.107V4.893a.5.5 0 0 1 .146-.353zM5.1 1 1 5.1v5.8L5.1 15h5.8l4.1-4.1V5.1L10.9 1z"/>
+            <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
+          </svg>
+        </span>
+        ${errorMessage}
       </alert-element>
     `;
   }

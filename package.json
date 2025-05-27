@@ -61,6 +61,7 @@
   },
   "dependencies": {
     "@georapbox/a-tab-group": "~2.4.1",
+    "@georapbox/alert-element": "~1.0.1",
     "@georapbox/clipboard-copy-element": "~3.0.2",
     "@georapbox/files-dropzone-element": "~2.0.1",
     "@georapbox/modal-element": "~1.9.0",

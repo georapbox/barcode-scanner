@@ -27,6 +27,8 @@
   --dropzone-background-dragover: var(--background);
   --dropzone-background-hover: var(--background);
   --camera-actions-background: #ffffff;
+  --alert-background: #ffffff;
+  --alert-foreground: var(--text-main);
 
   /* Other variables */
   --body-max-width: 64rem;
@@ -66,6 +68,7 @@
     --dropzone-background-dragover: #161718;
     --dropzone-background-hover: #161718;
     --camera-actions-background: var(--background);
+    --alert-background: var(--background-alt);
 
     /* Other variables */
     --select-arrow: var(--select-arrow-dark);
@@ -588,6 +591,12 @@ a-tab[selected]::part(base) {
   color: var(--background-body);
 }
 
+/* Alerts */
+alert-element {
+  --alert-bg-color: var(--alert-background);
+  --alert-fg-color: var(--alert-foreground);
+}
+
 /* Results */
 .results {
   margin-block-start: 1.5rem;
@@ -611,11 +620,6 @@ a-tab[selected]::part(base) {
 
 .results bs-result:not(:last-child)::part(result) {
   border-block-end: 1px solid var(--border);
-}
-
-/* Toast alerts */
-.alert-toast-stack alert-element {
-  margin: 1rem;
 }
 
 /* Utils */
