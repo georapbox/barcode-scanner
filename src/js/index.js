@@ -521,6 +521,34 @@ import './components/bs-history.js';
     }
   }
 
+  /**
+   * Handles success events from the history component.
+   *
+   * @param {CustomEvent<{ type: string, message: string }>} evt - The event object.
+   */
+  function handleHistorySuccess(evt) {
+    const { type, message } = evt.detail;
+
+    if (type === 'add') {
+      toastify(message, { variant: 'success' });
+    }
+  }
+
+  /**
+   * Handles error events from the history component.
+   *
+   * @param {CustomEvent<{ type: string, message: string }>} evt - The event object.
+   */
+  function handleHistoryError(evt) {
+    const { type, message } = evt.detail;
+
+    if (type === 'remove' || type === 'empty') {
+      historyDialog?.hide();
+    }
+
+    toastify(message, { variant: 'danger' });
+  }
+
   scanBtn.addEventListener('click', handleScanButtonClick);
   tabGroupEl.addEventListener('a-tab-show', debounce(handleTabShow, 250));
   dropzoneEl.addEventListener('files-dropzone-drop', handleFileDrop);
@@ -530,4 +558,6 @@ import './components/bs-history.js';
   historyBtn.addEventListener('click', handleHistoryButtonClick);
   document.addEventListener('visibilitychange', handleDocumentVisibilityChange);
   document.addEventListener('keydown', handleDocumentKeyDown);
+  document.addEventListener('bs-history-success', handleHistorySuccess);
+  document.addEventListener('bs-history-error', handleHistoryError);
 })();
