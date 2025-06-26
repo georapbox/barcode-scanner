@@ -174,15 +174,28 @@ class BSHistory extends HTMLElement {
    * If the item is already in history, it will not be added.
    *
    * @param {string} item - Item to add to history
+   * @return {Promise<null|Error>} - Returns null if successful, or an error if there was an issue
    */
   async add(item) {
     if (!item) {
       return;
     }
 
+    const errPayload = {
+      type: 'add',
+      message: 'Error adding barcode to history'
+    };
+
     const [getHistoryError, history = []] = await getHistory();
 
-    if (getHistoryError || !Array.isArray(history) || history.find(h => h === item)) {
+    if (getHistoryError || !Array.isArray(history)) {
+      console.log('?????????????????');
+
+      this.#emitEvent('bs-history-error', errPayload);
+      return getHistoryError;
+    }
+
+    if (history.find(h => h === item)) {
       return;
     }
 
@@ -191,29 +204,44 @@ class BSHistory extends HTMLElement {
 
     if (setHistoryError) {
       log.error('Error setting history', setHistoryError);
-      return;
+      this.#emitEvent('bs-history-error', errPayload);
+      return setHistoryError;
     }
 
     this.#historyListEl?.insertBefore(
       this.#createHistoryItemElement(item),
       this.#historyListEl.firstElementChild
     );
+
+    this.#emitEvent('bs-history-success', {
+      type: 'add',
+      message: 'Barcode added to history'
+    });
+
+    return null;
   }
 
   /**
    * Removes an item from the history.
    *
    * @param {string} item - Item to remove from history
+   * @return {Promise<null|Error>} - Returns null if successful, or an error if there was an issue
    */
   async remove(item) {
     if (!item) {
       return;
     }
 
+    const errPayload = {
+      type: 'remove',
+      message: 'Error removing barcode from history'
+    };
+
     const [getHistoryError, history = []] = await getHistory();
 
     if (getHistoryError || !Array.isArray(history)) {
-      return;
+      this.#emitEvent('bs-history-error', errPayload);
+      return getHistoryError;
     }
 
     const data = history.filter(el => el !== item);
@@ -221,26 +249,49 @@ class BSHistory extends HTMLElement {
 
     if (setHistoryError) {
       log.error('Error setting history', setHistoryError);
-      return;
+      this.#emitEvent('bs-history-error', errPayload);
+      return setHistoryError;
     }
 
     const historyItem = this.#historyListEl?.querySelector(`li[data-value="${item}"]`);
 
     historyItem?.remove();
+
+    this.#emitEvent('bs-history-success', {
+      type: 'remove',
+      message: 'Barcode removed from history'
+    });
+
+    return null;
   }
 
   /**
    * Removes all items from the history.
+   *
+   * @return {Promise<null|Error>} - Returns null if successful, or an error if there was an issue
    */
   async empty() {
+    const errPayload = {
+      type: 'empty',
+      message: 'Error emptying history'
+    };
+
     const [setHistoryError] = await setHistory([]);
 
     if (setHistoryError) {
       log.error('Error setting history', setHistoryError);
-      return;
+      this.#emitEvent('bs-history-error', errPayload);
+      return setHistoryError;
     }
 
     this.#historyListEl?.replaceChildren();
+
+    this.#emitEvent('bs-history-success', {
+      type: 'empty',
+      message: 'History emptied successfully'
+    });
+
+    return null;
   }
 
   /**
@@ -317,7 +368,7 @@ class BSHistory extends HTMLElement {
    *
    * @param {Event} evt - The event object
    */
-  #handleHistoryListClick = evt => {
+  #handleHistoryListClick = async evt => {
     const target = evt.target;
 
     if (target.closest('[data-action="delete"]')) {
@@ -332,11 +383,24 @@ class BSHistory extends HTMLElement {
   /**
    * Handles the click event on the empty history button.
    */
-  #handleEmptyHistoryClick = () => {
+  #handleEmptyHistoryClick = async () => {
     if (window.confirm('Empty history? This action cannot be undone.')) {
       this.empty();
     }
   };
+
+  /**
+   * Dispatches a custom event with the given name.
+   *
+   * @param {string} eventName - The name of the event to dispatch.
+   * @param {Nullable<any>} detail - The detail object to include with the event.
+   */
+  #emitEvent(eventName, detail = null) {
+    const options = { bubbles: true, composed: true, detail };
+    const evt = new CustomEvent(eventName, options);
+
+    this.dispatchEvent(evt);
+  }
 
   static defineCustomElement(elementName = 'bs-history') {
     if (typeof window !== 'undefined' && !window.customElements.get(elementName)) {

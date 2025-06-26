@@ -28,7 +28,6 @@ const getItem = async key => {
 const setItem = async (key, data) => {
   try {
     await set(key, data);
-
     return [null];
   } catch (error) {
     return [error];

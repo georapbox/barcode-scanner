@@ -4,6 +4,8 @@ import { dateTimeFormatter } from '../utils/datetime-formatter.js';
 
 const styles = /* css */ `
   :host {
+    --color-flash: #ffff99;
+
     box-sizing: border-box;
   }
 
@@ -153,12 +155,10 @@ class BSResult extends HTMLElement {
     if (window.matchMedia('(prefers-reduced-motion: no-preference)').matches) {
       const baseEl = this.shadowRoot.querySelector('.result');
 
-      if (baseEl) {
-        baseEl.classList.add('flash');
-        baseEl.addEventListener('animationend', () => baseEl.classList.remove('flash'), {
-          once: true
-        });
-      }
+      baseEl?.animate(
+        [{ backgroundColor: 'var(--color-flash)' }, { backgroundColor: 'transparent' }],
+        { duration: 400, easing: 'ease-out' }
+      );
     }
 
     if (!isWebShareSupported()) {
