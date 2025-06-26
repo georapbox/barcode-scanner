@@ -113,7 +113,8 @@ a > strong {
 a,
 button,
 input,
-custom-clipboard-copy::part(button) {
+custom-clipboard-copy::part(button),
+alert-element::part(close):focus-visible {
   outline-color: var(--accent);
 }
 
@@ -595,6 +596,10 @@ a-tab[selected]::part(base) {
 alert-element {
   --alert-bg-color: var(--alert-background);
   --alert-fg-color: var(--alert-foreground);
+}
+
+.alert-toast-stack alert-element {
+  font-size: 0.95rem;
 }
 
 /* Results */

@@ -10,7 +10,7 @@
  */
 export function toastify(message, options = {}) {
   const defaults = {
-    duration: 5000,
+    duration: 5 * 1000,
     variant: 'neutral',
     icon: ''
   };
