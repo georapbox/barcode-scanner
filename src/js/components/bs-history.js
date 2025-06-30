@@ -189,8 +189,6 @@ class BSHistory extends HTMLElement {
     const [getHistoryError, history = []] = await getHistory();
 
     if (getHistoryError || !Array.isArray(history)) {
-      console.log('?????????????????');
-
       this.#emitEvent('bs-history-error', errPayload);
       return getHistoryError;
     }
