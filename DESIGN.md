@@ -5,7 +5,7 @@ This app is designed for users who are concerned about the cost and envionmental
 This app is designed for users of all ages, primarily directed at parents and the head of household.
 
 
-### Team and responsibilities
+### Team and responsibilities:
 
 Samuel Kwibe: Back End
 
