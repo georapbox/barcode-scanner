@@ -18,7 +18,7 @@ The project aims to address the significant issue of food waste in the U.S., whe
 
 **Jon Scott:** Back End. I am linking the API from https://api.upcdatabase.org/. This API will resolve a 12-14 digit UPC to a product that can be added to our list
 
-**Jonathan Corwin:** Design and Test
+**Jonathan Corwin:** Design and Test - I will work on presentation design.  I will also work on creating test cases and implimentation of testing.
 
 **Isaac Akhtar Zada:** Front End (I will be working on the front end to create a time counter for our app, which will track the time from when the food is purchased until it expires. Additionally, I will attempt to develop the app for iOS as well as Android.)
 
