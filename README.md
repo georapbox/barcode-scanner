@@ -22,4 +22,4 @@ The project aims to address the significant issue of food waste in the U.S., whe
 
 **Isaac Akhtar Zada:** Front End (I will be working on the front end to create a time counter for our app, which will track the time from when the food is purchased until it expires. Additionally, I will attempt to develop the app for iOS as well as Android.)
 
-**Elena Guzman:** Website design
+**Elena Guzman:** Website design - I'm going to be working on the initial landing page for the web page
