@@ -21,6 +21,8 @@ Elena Guzman: Website design
 
 Services used:
 
+[themealdb](https://www.themealdb.com/)
+
 [mongodb](https://www.mongodb.com)
 
 [georapbox/barcode-scanner: A Progressive Web Application (PWA) that scans barcodes of various formats, using the Barcode Detection API.](https://github.com/georapbox/barcode-scanner/tree/main)
