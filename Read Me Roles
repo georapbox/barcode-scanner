@@ -24,3 +24,11 @@ Services used:
 [mongodb](https://www.mongodb.com)
 
 [georapbox/barcode-scanner: A Progressive Web Application (PWA) that scans barcodes of various formats, using the Barcode Detection API.](https://github.com/georapbox/barcode-scanner/tree/main)
+
+[Express.js] server framework
+
+[React.js] front end framework
+
+[Node.js]
+
+[https://api.upcdatabase.org/] upc lookup api
