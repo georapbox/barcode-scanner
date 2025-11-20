@@ -13,6 +13,7 @@ import { createResult } from './helpers/result.js';
 import { triggerScanEffects } from './helpers/triggerScanEffects.js';
 import { resizeScanFrame } from './helpers/resizeScanFrame.js';
 import { BarcodeReader } from './helpers/BarcodeReader.js';
+import { fetchItemInfo } from './helpers/fetchItemInfo.js';
 import { toggleTorchButtonStatus } from './helpers/toggleTorchButtonStatus.js';
 import { toastify } from './helpers/toastify.js';
 import { VideoCapture } from './components/video-capture.js';
@@ -119,6 +120,21 @@ import './components/bs-history.js';
 
       createResult(cameraResultsEl, barcodeValue);
 
+      // Attempt to fetch item info for 12-14 digit numeric barcodes
+      (async () => {
+        try {
+          const info = await fetchItemInfo(barcodeValue);
+          if (info) {
+            const name = info.name || info.title || info.productName || '';
+            const desc = info.description || info.brand || '';
+            const msg = `${name || barcodeValue}${desc ? ` — ${desc}` : ''}`;
+            toastify(msg, { variant: 'success' });
+          }
+        } catch (err) {
+          // ignore lookup errors
+        }
+      })();
+
       if (settings?.addToHistory) {
         bsHistoryEl?.add(barcodeValue);
       }
@@ -224,6 +240,21 @@ import './components/bs-history.js';
           }
 
           createResult(fileResultsEl, barcodeValue);
+
+              // Try to fetch item info for file-scanned barcodes as well
+              (async () => {
+                try {
+                  const info = await fetchItemInfo(barcodeValue);
+                  if (info) {
+                    const name = info.name || info.title || info.productName || '';
+                    const desc = info.description || info.brand || '';
+                    const msg = `${name || barcodeValue}${desc ? ` — ${desc}` : ''}`;
+                    toastify(msg, { variant: 'success' });
+                  }
+                } catch (err) {
+                  // ignore lookup errors
+                }
+              })();
 
           if (settings?.addToHistory) {
             bsHistoryEl?.add(barcodeValue);
