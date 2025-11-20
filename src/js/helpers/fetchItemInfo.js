@@ -19,9 +19,22 @@ export async function fetchItemInfo(barcode) {
     log.info('Item info API URL not configured; skipping lookup.');
     return null;
   }
-  // If a proxy URL is configured, prefer calling it to avoid CORS and keep key server-side.
-  const useProxy = ITEM_INFO_PROXY_URL && ITEM_INFO_PROXY_URL.length > 0;
-  const base = trimSlash(useProxy ? ITEM_INFO_PROXY_URL : ITEM_INFO_API_URL);
+  // Determine whether to use a proxy. Preference order:
+  // 1) `ITEM_INFO_PROXY_URL` (build-time/env)
+  // 2) If running in browser on localhost, default to `http://localhost:8787` (dev proxy)
+  // 3) Otherwise call the public API directly
+  const isBrowser = typeof window !== 'undefined' && window?.location;
+  let finalProxyUrl = ITEM_INFO_PROXY_URL || '';
+
+  if (!finalProxyUrl && isBrowser) {
+    const host = window.location.hostname;
+    if (host === 'localhost' || host === '127.0.0.1') {
+      finalProxyUrl = 'http://localhost:8787';
+    }
+  }
+
+  const useProxy = finalProxyUrl && finalProxyUrl.length > 0;
+  const base = trimSlash(useProxy ? finalProxyUrl : ITEM_INFO_API_URL);
   const headers = {};
   // If calling the API directly (no proxy), send Authorization header.
   if (!useProxy && ITEM_INFO_API_KEY) {
@@ -78,14 +91,31 @@ export async function fetchItemInfo(barcode) {
  * @returns {Promise<Object|null>}
  */
 export async function searchItem(query) {
-  if (!query || !ITEM_INFO_API_URL) return null;
+  if (!query) return null;
 
-  const base = trimSlash(ITEM_INFO_API_URL);
-  const apikeyParam = ITEM_INFO_API_KEY ? `&apikey=${encodeURIComponent(ITEM_INFO_API_KEY)}` : '';
-  const url = `${base}/search?q=${encodeURIComponent(query)}${apikeyParam ? (apikeyParam.startsWith('&') ? apikeyParam : `?apikey=${encodeURIComponent(ITEM_INFO_API_KEY)}`) : ''}`;
+  // Prefer proxy when available (same logic as fetchItemInfo)
+  const isBrowser = typeof window !== 'undefined' && window?.location;
+  let finalProxyUrl = ITEM_INFO_PROXY_URL || '';
+
+  if (!finalProxyUrl && isBrowser) {
+    const host = window.location.hostname;
+    if (host === 'localhost' || host === '127.0.0.1') {
+      finalProxyUrl = 'http://localhost:8787';
+    }
+  }
+
+  const useProxy = finalProxyUrl && finalProxyUrl.length > 0;
+  const base = trimSlash(useProxy ? finalProxyUrl : ITEM_INFO_API_URL);
+
+  const headers = {};
+  if (!useProxy && ITEM_INFO_API_KEY) {
+    headers['Authorization'] = `Bearer ${ITEM_INFO_API_KEY}`;
+  }
+
+  const url = `${base}/search?q=${encodeURIComponent(query)}`;
 
   try {
-    const res = await fetch(url, { method: 'GET' });
+    const res = await fetch(url, { method: 'GET', headers });
     if (!res.ok) {
       log.warn('Search request failed', res.status);
       return null;
