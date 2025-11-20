@@ -1,4 +1,4 @@
-import { ITEM_INFO_API_URL, ITEM_INFO_API_KEY } from '../constants.js';
+import { ITEM_INFO_API_URL, ITEM_INFO_API_KEY, ITEM_INFO_PROXY_URL } from '../constants.js';
 import { log } from '../utils/log.js';
 
 const trimSlash = s => s.replace(/\/+$/, '');
@@ -19,11 +19,12 @@ export async function fetchItemInfo(barcode) {
     log.info('Item info API URL not configured; skipping lookup.');
     return null;
   }
-
-
-  const base = trimSlash(ITEM_INFO_API_URL);
+  // If a proxy URL is configured, prefer calling it to avoid CORS and keep key server-side.
+  const useProxy = ITEM_INFO_PROXY_URL && ITEM_INFO_PROXY_URL.length > 0;
+  const base = trimSlash(useProxy ? ITEM_INFO_PROXY_URL : ITEM_INFO_API_URL);
   const headers = {};
-  if (ITEM_INFO_API_KEY) {
+  // If calling the API directly (no proxy), send Authorization header.
+  if (!useProxy && ITEM_INFO_API_KEY) {
     headers['Authorization'] = `Bearer ${ITEM_INFO_API_KEY}`;
   }
 
