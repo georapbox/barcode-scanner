@@ -14,5 +14,10 @@ export const ACCEPTED_MIME_TYPES = [
 // Set `ITEM_INFO_API_URL` to the endpoint that accepts a `barcode` query param
 // (e.g. https://api.example.com/items). If the API requires an API key, set
 // `ITEM_INFO_API_KEY` to the value. Leave empty to disable automatic lookups.
-export const ITEM_INFO_API_URL = '';
-export const ITEM_INFO_API_KEY = '4190D3F1E6057DD921DA7E426A79AAF3';
+// Default to the official API host for UPC Database
+export const ITEM_INFO_API_URL = 'https://api.upcdatabase.org';
+// Do not store API keys in source. Read from build-time env variable.
+// During local development you can set UPC_API_KEY in your environment.
+// In CI (GitHub Actions) set a repository Secret named `UPC_API_KEY` and
+// the workflow below will expose it as `UPC_API_KEY` during build.
+export const ITEM_INFO_API_KEY = (typeof process !== 'undefined' && process?.env?.UPC_API_KEY) || '';

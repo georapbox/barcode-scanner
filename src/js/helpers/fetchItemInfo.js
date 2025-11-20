@@ -1,11 +1,11 @@
 import { ITEM_INFO_API_URL, ITEM_INFO_API_KEY } from '../constants.js';
 import { log } from '../utils/log.js';
 
+const trimSlash = s => s.replace(/\/+$/, '');
+
 /**
- * Fetch item information from configured API using the barcode.
- *
- * The API is expected to accept a `barcode` query parameter and return JSON.
- * If `ITEM_INFO_API_URL` is empty the function returns null (disabled).
+ * Try GET /products/{id} then fallback to POST /products/{id} if not found.
+ * Also export a `searchItem` helper that calls GET /search?q={query}.
  *
  * @param {string} barcode
  * @returns {Promise<Object|null>}
@@ -20,26 +20,78 @@ export async function fetchItemInfo(barcode) {
     return null;
   }
 
-  try {
-    const url = new URL(ITEM_INFO_API_URL);
-    url.searchParams.set('barcode', barcode);
 
-    const headers = {};
-    if (ITEM_INFO_API_KEY) {
-      headers['Authorization'] = `Bearer ${ITEM_INFO_API_KEY}`;
+  const base = trimSlash(ITEM_INFO_API_URL);
+  const headers = {};
+  if (ITEM_INFO_API_KEY) {
+    headers['Authorization'] = `Bearer ${ITEM_INFO_API_KEY}`;
+  }
+
+  // Try endpoints in this order to support both API styles:
+  // 1) GET /product/{id} (example in your message)
+  // 2) GET /products/{id}
+  // 3) POST /products/{id} (fallback)
+
+  // Helper to attempt a request and return parsed JSON or null
+  async function attempt(url, opts = {}) {
+    try {
+      const res = await fetch(url, { headers, ...opts });
+      if (!res.ok) {
+        return { status: res.status, json: null };
+      }
+      try {
+        const data = await res.json();
+        return { status: res.status, json: data };
+      } catch (e) {
+        log.warn('Non-JSON response from item API', e);
+        return { status: res.status, json: null };
+      }
+    } catch (err) {
+      log.warn('Request failed', err);
+      return { status: 0, json: null };
     }
+  }
 
-    const res = await fetch(url.toString(), { headers });
+  // 1) GET /product/{id}
+  const urlProduct = `${base}/product/${encodeURIComponent(barcode)}`;
+  const tryGetProduct = await attempt(urlProduct, { method: 'GET' });
+  if (tryGetProduct.json) return tryGetProduct.json;
 
+  // 2) GET /products/{id}
+  const urlProducts = `${base}/products/${encodeURIComponent(barcode)}`;
+  const tryGetProducts = await attempt(urlProducts, { method: 'GET' });
+  if (tryGetProducts.json) return tryGetProducts.json;
+
+  // 3) POST /products/{id}
+  const tryPostProducts = await attempt(urlProducts, { method: 'POST' });
+  if (tryPostProducts.json) return tryPostProducts.json;
+
+  return null;
+}
+
+/**
+ * Search endpoint: GET /search?q={query}
+ * Returns parsed JSON or null.
+ *
+ * @param {string} query
+ * @returns {Promise<Object|null>}
+ */
+export async function searchItem(query) {
+  if (!query || !ITEM_INFO_API_URL) return null;
+
+  const base = trimSlash(ITEM_INFO_API_URL);
+  const apikeyParam = ITEM_INFO_API_KEY ? `&apikey=${encodeURIComponent(ITEM_INFO_API_KEY)}` : '';
+  const url = `${base}/search?q=${encodeURIComponent(query)}${apikeyParam ? (apikeyParam.startsWith('&') ? apikeyParam : `?apikey=${encodeURIComponent(ITEM_INFO_API_KEY)}`) : ''}`;
+
+  try {
+    const res = await fetch(url, { method: 'GET' });
     if (!res.ok) {
-      log.warn('Item info API returned non-OK response', res.status);
+      log.warn('Search request failed', res.status);
       return null;
     }
-
-    const data = await res.json();
-    return data;
+    return await res.json();
   } catch (err) {
-    log.error('Error fetching item info', err);
+    log.error('Search request error', err);
     return null;
   }
 }

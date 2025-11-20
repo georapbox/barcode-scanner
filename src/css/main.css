@@ -627,6 +627,30 @@ alert-element {
   border-block-end: 1px solid var(--border);
 }
 
+/* Item info card shown below camera or file panel */
+.item-info {
+  padding: 0.75rem;
+  border-top: 1px solid var(--border);
+  background: var(--background-body);
+}
+
+.item-info__title {
+  margin: 0 0 0.25rem 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.item-info__description {
+  margin: 0 0 0.25rem 0;
+  color: var(--text-muted);
+}
+
+.item-info__brand {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text-main);
+}
+
 /* Utils */
 .visually-hidden {
   position: absolute !important;

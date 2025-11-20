@@ -85,6 +85,64 @@ import './components/bs-history.js';
 
   VideoCapture.defineCustomElement();
 
+  /**
+   * Render the fetched item details inside the provided tab panel.
+   * Creates or updates a container with id `itemInfo` inside the panel.
+   * @param {HTMLElement} panelEl
+   * @param {Object} info
+   */
+  function renderItemDetails(panelEl, info) {
+    if (!panelEl || !info) return;
+
+    let itemInfoEl = panelEl.querySelector('#itemInfo');
+    if (!itemInfoEl) {
+      itemInfoEl = document.createElement('div');
+      itemInfoEl.id = 'itemInfo';
+      itemInfoEl.className = 'item-info';
+      // Insert after the results element if present, otherwise append
+      const resultsEl = panelEl.querySelector('.results');
+      if (resultsEl && resultsEl.parentNode) {
+        resultsEl.parentNode.insertBefore(itemInfoEl, resultsEl.nextSibling);
+      } else {
+        panelEl.appendChild(itemInfoEl);
+      }
+    }
+
+    // Clear existing content
+    itemInfoEl.textContent = '';
+
+    const title = document.createElement('h3');
+    title.className = 'item-info__title';
+    title.textContent = info.title || info.name || info.alias || '';
+
+    const desc = document.createElement('p');
+    desc.className = 'item-info__description';
+    desc.textContent = info.description || '';
+
+    const brand = document.createElement('p');
+    brand.className = 'item-info__brand';
+    brand.textContent = info.brand ? `Brand: ${info.brand}` : '';
+
+    itemInfoEl.appendChild(title);
+    if (desc.textContent) itemInfoEl.appendChild(desc);
+    if (brand.textContent) itemInfoEl.appendChild(brand);
+  }
+
+  async function handleFetchedItemInfo(barcodeValue, panelEl) {
+    try {
+      const info = await fetchItemInfo(barcodeValue);
+      if (info) {
+        const name = info.title || info.name || info.alias || '';
+        const desc = info.description || info.brand || '';
+        const msg = `${name || barcodeValue}${desc ? ` — ${desc}` : ''}`;
+        toastify(msg, { variant: 'success' });
+        renderItemDetails(panelEl, info);
+      }
+    } catch (err) {
+      // ignore lookup errors
+    }
+  }
+
   const videoCaptureShadowRoot = videoCaptureEl?.shadowRoot;
   const videoCaptureVideoEl = videoCaptureShadowRoot?.querySelector('video');
   const videoCaptureActionsEl = videoCaptureShadowRoot?.querySelector('[part="actions-container"]');
@@ -121,19 +179,7 @@ import './components/bs-history.js';
       createResult(cameraResultsEl, barcodeValue);
 
       // Attempt to fetch item info for 12-14 digit numeric barcodes
-      (async () => {
-        try {
-          const info = await fetchItemInfo(barcodeValue);
-          if (info) {
-            const name = info.name || info.title || info.productName || '';
-            const desc = info.description || info.brand || '';
-            const msg = `${name || barcodeValue}${desc ? ` — ${desc}` : ''}`;
-            toastify(msg, { variant: 'success' });
-          }
-        } catch (err) {
-          // ignore lookup errors
-        }
-      })();
+      handleFetchedItemInfo(barcodeValue, cameraPanel);
 
       if (settings?.addToHistory) {
         bsHistoryEl?.add(barcodeValue);
@@ -242,19 +288,7 @@ import './components/bs-history.js';
           createResult(fileResultsEl, barcodeValue);
 
               // Try to fetch item info for file-scanned barcodes as well
-              (async () => {
-                try {
-                  const info = await fetchItemInfo(barcodeValue);
-                  if (info) {
-                    const name = info.name || info.title || info.productName || '';
-                    const desc = info.description || info.brand || '';
-                    const msg = `${name || barcodeValue}${desc ? ` — ${desc}` : ''}`;
-                    toastify(msg, { variant: 'success' });
-                  }
-                } catch (err) {
-                  // ignore lookup errors
-                }
-              })();
+              handleFetchedItemInfo(barcodeValue, filePanel);
 
           if (settings?.addToHistory) {
             bsHistoryEl?.add(barcodeValue);
