@@ -104,6 +104,7 @@ template.innerHTML = /* html */ `
 
   <div class="result" part="result">
     <div class="result__content">
+      <div class="result__meta"></div>
       <div class="result__datetime"></div>
     </div>
 
@@ -205,6 +206,36 @@ class BSResult extends HTMLElement {
     resultEl.className = 'result__item';
     resultEl.part = 'result__item';
     resultEl.textContent = value;
+
+    // Render optional item metadata if set as attributes on the host element
+    const metaEl = baseEl.querySelector('.result__meta');
+    if (metaEl) {
+      metaEl.textContent = '';
+      const title = this.getAttribute('data-title') || '';
+      const brand = this.getAttribute('data-brand') || '';
+      const description = this.getAttribute('data-description') || '';
+
+      if (title) {
+        const t = document.createElement('div');
+        t.className = 'result__meta-title';
+        t.textContent = title;
+        metaEl.appendChild(t);
+      }
+
+      if (brand) {
+        const b = document.createElement('div');
+        b.className = 'result__meta-brand';
+        b.textContent = `Brand: ${brand}`;
+        metaEl.appendChild(b);
+      }
+
+      if (description) {
+        const d = document.createElement('div');
+        d.className = 'result__meta-description';
+        d.textContent = description;
+        metaEl.appendChild(d);
+      }
+    }
 
     resultDatetimeEl.textContent = dateTimeFormatter.format(new Date());
     resultContentEl?.insertBefore(resultEl, resultDatetimeEl);

@@ -137,6 +137,21 @@ import './components/bs-history.js';
         const msg = `${name || barcodeValue}${desc ? ` — ${desc}` : ''}`;
         toastify(msg, { variant: 'success' });
         renderItemDetails(panelEl, info);
+
+        // Also update the inline result element (bs-result) next to the scanned UPC
+        try {
+          const resultsContainer = panelEl?.querySelector('.results');
+          if (resultsContainer) {
+            const resultEl = resultsContainer.querySelector(`bs-result[value="${barcodeValue}"]`);
+            if (resultEl) {
+              if (info.title) resultEl.setAttribute('data-title', info.title);
+              if (info.brand) resultEl.setAttribute('data-brand', info.brand);
+              if (info.description) resultEl.setAttribute('data-description', info.description);
+            }
+          }
+        } catch (e) {
+          // non-fatal
+        }
       }
     } catch (err) {
       // ignore lookup errors
@@ -287,8 +302,8 @@ import './components/bs-history.js';
 
           createResult(fileResultsEl, barcodeValue);
 
-              // Try to fetch item info for file-scanned barcodes as well
-              handleFetchedItemInfo(barcodeValue, filePanel);
+          // Try to fetch item info for file-scanned barcodes as well
+          handleFetchedItemInfo(barcodeValue, filePanel);
 
           if (settings?.addToHistory) {
             bsHistoryEl?.add(barcodeValue);
