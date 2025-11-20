@@ -16,7 +16,7 @@ The project aims to address the significant issue of food waste in the U.S., whe
 
 **Samuel Kwibe:** who will be working closely with Jon on the backend of the project, will be responsible for fixing the API and ensuring the project runs smoothly.
 
-**Jon Scott:** Back End
+**Jon Scott:** Back End. I am linking the API from https://api.upcdatabase.org/. This API will resolve a 12-14 digit UPC to a product that can be added to out list
 
 **Jonathan Corwin:** Design and Test
 
