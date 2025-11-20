@@ -20,6 +20,6 @@ The project aims to address the significant issue of food waste in the U.S., whe
 
 **Jonathan Corwin:** Design and Test
 
-Isaac Akhtar Zada: Front End (I will be working on the fronf end to make and making a time count for our app to count time from the time we bought the food until it will go bad and also try to make the app for IOS also not just android.)
+**Isaac Akhtar Zada:** Front End (I will be working on the front end to create a time counter for our app, which will track the time from when the food is purchased until it expires. Additionally, I will attempt to develop the app for iOS as well as Android.)
 
 **Elena Guzman:** Website design
