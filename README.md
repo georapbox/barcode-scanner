@@ -1,85 +1,27 @@
-# Barcode/QR code Scanner
+Project Overview:
 
-A Progressive Web Application (PWA) that scans barcodes of various formats, using the [Barcode Detection API](https://developer.mozilla.org/docs/Web/API/Barcode_Detection_API).
+The project aims to address the significant issue of food waste in the U.S., where the average American discards approximately $2000 worth of edible food annually, contributing to an estimated $408 billion in grocery waste nationwide. The solution is an app designed to help users manage their food inventory by tracking items brought into their homes and suggesting recipes based on available ingredients, those nearing expiration, and user preferences.
 
-> [!NOTE]
-> The Barcode Detection API is part of the [Fugu](https://fugu-tracker.web.app/) project. Currently it is supported only on Chromium browsers in MacOS and Android. For non-supporting browsers, a [polyfill](https://github.com/Sec-ant/barcode-detector) is used.
+Key Components:
+1. Barcode Repository Integration: A free barcode repository has been connected to a system that tracks scanned items, recording details such as the item and purchase time.
+2. Database Storage: The item list is stored in a MySQL database for its structured format and performance advantages over MongoDB.
+3. Recipe API Connection: The app is linked to TheMealDB, a free meal API that searches for meals based on available ingredients, offering recipe suggestions to users.
 
-## Live demo
+Current Tasks:
+- Implement a list to track scanned ingredients.
+- Add expiration timers to each ingredient, potentially using national average data.
+- Store the ingredient list in a database.
+- Ensure seamless connection between TheMealDB and the app.
+- Develop logic for suggesting recipes based on the user’s available ingredients.
 
-👉 [Barcode/QR code Scanner](https://georapbox.github.io/barcode-scanner/)
+List of which project parts will be (at least initially) worked on by which team member(s).
 
-## Features
+Samuel Kwibe: Back End
 
-Some of the key features of the application include:
+Jonathan Corwin: Design and Test
 
-- Scan barcodes from web camera
-- Scan barcodes from image files
-- Copy detected barcode to clipboard
-- Share detected barcode via Web Share API (mobile)
-- Offer option to open detected barcode in a new tab if it is a URL
-- Offer to save detected barcodes to history (IndexedDB)
+Jon Scott: Back End
 
-## Screenshots
+Isaac Akhtar Zada: Front End
 
-The following screenshots show the application in action:
-
-![Camera scanner screenshot](screenshots/camera-scanner.png)
-![Image scanner screenshot](screenshots/image-scanner.png)
-
-## Development
-
-Below are the instructions for setting up the development environment.
-
-### Prerequisites
-
-- Node.js (v20.x.x)
-- npm (v10.x.x)
-
-### Installation
-
-Clone the repository to your local machine:
-
-```sh
-git clone git@github.com:georapbox/barcode-scanner.git
-```
-
-Navigate to the project's directory and install the dependencies:
-
-```sh
-npm install
-```
-
-### Running the application
-
-To run the application in development mode, run the following command:
-
-```sh
-npm start -- --open
-```
-
-This will start the development server and open the application in your default web browser.
-
-### Building the application for production
-
-To build the application for production, run the following command:
-
-```sh
-npm run build
-```
-
-This will create a `dist` directory containing the production build of the application.
-
-### Deployment
-
-To deploy the application, run the following command:
-
-```sh
-npm run deploy
-```
-
-This will build the application first and then deploy it to GitHub Pages in the `gh-pages` branch.
-
-## License
-
-[The MIT License (MIT)](https://github.com/georapbox/barcode-scanner/blob/main/LICENSE)
+Elena Guzman: Website design
