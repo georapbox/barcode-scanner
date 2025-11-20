@@ -1,85 +1,25 @@
-# Barcode/QR code Scanner
+**Project Overview:**
 
-A Progressive Web Application (PWA) that scans barcodes of various formats, using the [Barcode Detection API](https://developer.mozilla.org/docs/Web/API/Barcode_Detection_API).
+The project aims to address the significant issue of food waste in the U.S., where the average American discards approximately $2000 worth of edible food annually, contributing to an estimated $408 billion in grocery waste nationwide. The solution is an app designed to help users manage their food inventory by tracking items brought into their homes and suggesting recipes based on available ingredients, those nearing expiration, and user preferences.
 
-> [!NOTE]
-> The Barcode Detection API is part of the [Fugu](https://fugu-tracker.web.app/) project. Currently it is supported only on Chromium browsers in MacOS and Android. For non-supporting browsers, a [polyfill](https://github.com/Sec-ant/barcode-detector) is used.
+**Key Components:**
+1. Barcode Repository Integration: A free barcode repository has been connected to a system that tracks scanned items, recording details such as the item and purchase time.
+3. Recipe API Connection: The app is linked to TheMealDB, a free meal API that searches for meals based on available ingredients, offering recipe suggestions to users.
 
-## Live demo
+**Current Tasks:**
+- Implement a list to track scanned ingredients.
+- Add expiration timers to each ingredient, potentially using national average data.
+- Store the ingredient list in a database.
+- Develop logic for suggesting recipes based on the user’s available ingredients.
 
-👉 [Barcode/QR code Scanner](https://georapbox.github.io/barcode-scanner/)
+**List of which project parts will be (at least initially) worked on by which team member(s):**
 
-## Features
+**Samuel Kwibe:** who will be working closely with Jon on the backend of the project, will be responsible for fixing the API and ensuring the project runs smoothly.
 
-Some of the key features of the application include:
+**Jon Scott:** Back End. I am linking the API from https://api.upcdatabase.org/. This API will resolve a 12-14 digit UPC to a product that can be added to our list
 
-- Scan barcodes from web camera
-- Scan barcodes from image files
-- Copy detected barcode to clipboard
-- Share detected barcode via Web Share API (mobile)
-- Offer option to open detected barcode in a new tab if it is a URL
-- Offer to save detected barcodes to history (IndexedDB)
+**Jonathan Corwin:** Design and Test - I will work on presentation design.  I will also work on creating test cases and implimentation of testing.
 
-## Screenshots
+**Isaac Akhtar Zada:** Front End (I will be working on the front end to create a time counter for our app, which will track the time from when the food is purchased until it expires. Additionally, I will attempt to develop the app for iOS as well as Android.)
 
-The following screenshots show the application in action:
-
-![Camera scanner screenshot](screenshots/camera-scanner.png)
-![Image scanner screenshot](screenshots/image-scanner.png)
-
-## Development
-
-Below are the instructions for setting up the development environment.
-
-### Prerequisites
-
-- Node.js (v20.x.x)
-- npm (v10.x.x)
-
-### Installation
-
-Clone the repository to your local machine:
-
-```sh
-git clone git@github.com:georapbox/barcode-scanner.git
-```
-
-Navigate to the project's directory and install the dependencies:
-
-```sh
-npm install
-```
-
-### Running the application
-
-To run the application in development mode, run the following command:
-
-```sh
-npm start -- --open
-```
-
-This will start the development server and open the application in your default web browser.
-
-### Building the application for production
-
-To build the application for production, run the following command:
-
-```sh
-npm run build
-```
-
-This will create a `dist` directory containing the production build of the application.
-
-### Deployment
-
-To deploy the application, run the following command:
-
-```sh
-npm run deploy
-```
-
-This will build the application first and then deploy it to GitHub Pages in the `gh-pages` branch.
-
-## License
-
-[The MIT License (MIT)](https://github.com/georapbox/barcode-scanner/blob/main/LICENSE)
+**Elena Guzman:** Website design - I'm going to be working on the initial landing page for the web page
