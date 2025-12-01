@@ -197,7 +197,26 @@ import './components/bs-history.js';
       handleFetchedItemInfo(barcodeValue, cameraPanel);
 
       if (settings?.addToHistory) {
-        bsHistoryEl?.add(barcodeValue);
+        try {
+          await bsHistoryEl?.add(barcodeValue);
+          // Open history and scroll the new item into view so countdown is visible immediately
+          if (historyDialog) {
+            historyDialog.open = true;
+            // small timeout to allow history element to render
+            setTimeout(() => {
+              try {
+                const li = bsHistoryEl?.shadowRoot?.querySelector(`li[data-value="${barcodeValue}"]`);
+                li?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                li?.classList?.add('highlight');
+                setTimeout(() => li?.classList?.remove('highlight'), 2000);
+              } catch (e) {
+                // ignore
+              }
+            }, 50);
+          }
+        } catch (e) {
+          // ignore
+        }
       }
 
       triggerScanEffects();
@@ -306,7 +325,20 @@ import './components/bs-history.js';
           handleFetchedItemInfo(barcodeValue, filePanel);
 
           if (settings?.addToHistory) {
-            bsHistoryEl?.add(barcodeValue);
+            try {
+              await bsHistoryEl?.add(barcodeValue);
+              if (historyDialog) {
+                historyDialog.open = true;
+                setTimeout(() => {
+                  try {
+                    const li = bsHistoryEl?.shadowRoot?.querySelector(`li[data-value="${barcodeValue}"]`);
+                    li?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    li?.classList?.add('highlight');
+                    setTimeout(() => li?.classList?.remove('highlight'), 2000);
+                  } catch (e) {}
+                }, 50);
+              }
+            } catch (e) {}
           }
 
           triggerScanEffects();

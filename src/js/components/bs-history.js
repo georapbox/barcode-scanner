@@ -139,7 +139,6 @@ template.innerHTML = /* html */ `
   <footer>
     <div>There are no saved items in history.</div>
     <div style="display:flex;gap:0.5rem;">
-      <button type="button" id="testExpireBtn">Add test expiring item</button>
       <button type="button" id="emptyHistoryBtn">Empty history</button>
     </div>
   </footer>
@@ -148,9 +147,46 @@ template.innerHTML = /* html */ `
 class BSHistory extends HTMLElement {
   #historyListEl = null;
   #emptyHistoryBtn = null;
-  #testExpireBtn = null;
+  
   // Notify a short warning before expiry (ms). 3s works for 5s test items.
   #PRE_NOTIFY_THRESHOLD_MS = 3000;
+
+  // Default expiry (7 days) in ms
+  static #DEFAULT_EXPIRY_MS = 7 * 24 * 60 * 60 * 1000;
+
+  // Read optional test expiry seconds from URL: ?testExpireSeconds=5
+  static #getDefaultExpiryMs() {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const s = params.get('testExpireSeconds');
+      const n = s ? Number(s) : NaN;
+      if (!Number.isNaN(n) && n > 0) {
+        return n * 1000;
+      }
+      // Convenience test mode: `?testMode=1` or `?testMode=true` sets expiry to 5s
+      const testMode = params.get('testMode');
+      if (testMode === '1' || String(testMode).toLowerCase() === 'true') {
+        return 10 * 1000;
+      }
+      // Auto-detect local dev environment: treat localhost/file protocol as test mode (10s)
+      if (typeof window !== 'undefined') {
+        try {
+          const host = window.location.hostname;
+          const protocol = window.location.protocol;
+          const isLocalHost = host === 'localhost' || host === '127.0.0.1' || host === '::1';
+          const isFile = protocol === 'file:';
+          if (isLocalHost || isFile) {
+            return 10 * 1000;
+          }
+        } catch (e) {
+          // ignore
+        }
+      }
+    } catch (e) {
+      // ignore
+    }
+    return BSHistory.#DEFAULT_EXPIRY_MS;
+  }
 
   constructor() {
     super();
@@ -164,7 +200,7 @@ class BSHistory extends HTMLElement {
   async connectedCallback() {
     this.#historyListEl = this.shadowRoot?.getElementById('historyList');
     this.#emptyHistoryBtn = this.shadowRoot?.getElementById('emptyHistoryBtn');
-    this.#testExpireBtn = this.shadowRoot?.getElementById('testExpireBtn');
+    
 
     // Load history and normalize legacy string entries to objects
     const [, rawHistory = []] = await getHistory();
@@ -175,7 +211,7 @@ class BSHistory extends HTMLElement {
         return {
           value: item,
           addedAt,
-          expiresAt: addedAt + 7 * 24 * 60 * 60 * 1000,
+          expiresAt: addedAt + BSHistory.#getDefaultExpiryMs(),
           notified: false,
           preNotified: false
         };
@@ -185,7 +221,7 @@ class BSHistory extends HTMLElement {
       return {
         value: item.value ?? (item?.barcode ?? ''),
         addedAt: item.addedAt ?? Date.now(),
-        expiresAt: item.expiresAt ?? (item.addedAt ? item.addedAt + 7 * 24 * 60 * 60 * 1000 : Date.now() + 7 * 24 * 60 * 60 * 1000),
+        expiresAt: item.expiresAt ?? (item.addedAt ? item.addedAt + BSHistory.#getDefaultExpiryMs() : Date.now() + BSHistory.#getDefaultExpiryMs()),
         notified: Boolean(item.notified),
         preNotified: Boolean(item.preNotified)
       };
@@ -196,9 +232,21 @@ class BSHistory extends HTMLElement {
 
     this.#renderHistoryList(normalized || []);
 
+    // If test mode or explicit test expiry seconds set, show an informative toast for quick testing
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const s = params.get('testExpireSeconds');
+      const tm = params.get('testMode');
+      if (s || tm) {
+        const secs = s ? String(Number(s)) : '10';
+        try { toastify(`Test expiry active: items expire in ${secs} second${secs === '1' ? '' : 's'}`, { variant: 'warning' }); } catch (e) { /* ignore */ }
+      }
+    } catch (e) {
+      // ignore
+    }
+
     this.#historyListEl?.addEventListener('click', this.#handleHistoryListClick);
     this.#emptyHistoryBtn?.addEventListener('click', this.#handleEmptyHistoryClick);
-    this.#testExpireBtn?.addEventListener('click', this.#handleTestExpireClick);
 
     this.#startCountdownTimer();
   }
@@ -207,7 +255,7 @@ class BSHistory extends HTMLElement {
     this.#historyListEl?.removeEventListener('click', this.#handleHistoryListClick);
     this.#emptyHistoryBtn?.removeEventListener('click', this.#handleEmptyHistoryClick);
 
-    this.#testExpireBtn?.removeEventListener('click', this.#handleTestExpireClick);
+    
 
     this.#stopCountdownTimer();
   }
@@ -239,13 +287,49 @@ class BSHistory extends HTMLElement {
     // Normalize current history (strings -> objects)
     const normalized = (history || []).map(h =>
       typeof h === 'string'
-        ? { value: h, addedAt: Date.now(), expiresAt: Date.now() + 7 * 24 * 60 * 60 * 1000, notified: false, preNotified: false }
-        : { value: h.value ?? h.barcode ?? '', addedAt: h.addedAt ?? Date.now(), expiresAt: h.expiresAt ?? (h.addedAt ? h.addedAt + 7 * 24 * 60 * 60 * 1000 : Date.now() + 7 * 24 * 60 * 60 * 1000), notified: Boolean(h.notified), preNotified: Boolean(h.preNotified) }
+        ? { value: h, addedAt: Date.now(), expiresAt: Date.now() + BSHistory.#getDefaultExpiryMs(), notified: false, preNotified: false }
+        : { value: h.value ?? h.barcode ?? '', addedAt: h.addedAt ?? Date.now(), expiresAt: h.expiresAt ?? (h.addedAt ? h.addedAt + BSHistory.#getDefaultExpiryMs() : Date.now() + BSHistory.#getDefaultExpiryMs()), notified: Boolean(h.notified), preNotified: Boolean(h.preNotified) }
     );
 
     const value = typeof item === 'string' ? item : item.value;
 
-    if (normalized.find(h => h.value === value)) {
+    const existing = normalized.find(h => h.value === value);
+    // If item already exists
+    if (existing) {
+      // If running in test mode (short expiry), refresh the existing item's expiry so tests can reuse same value
+      try {
+        const defaultExpiry = BSHistory.#getDefaultExpiryMs();
+        if (defaultExpiry < BSHistory.#DEFAULT_EXPIRY_MS) {
+          existing.expiresAt = Date.now() + defaultExpiry;
+          existing.notified = false;
+          existing.preNotified = false;
+          const [setErr] = await setHistory(normalized);
+          if (!setErr) {
+            // Update UI countdown if present
+            const li = this.#historyListEl?.querySelector(`li[data-value="${value}"]`);
+            if (li) {
+              const countdownEl = li.querySelector('.history-countdown');
+              if (countdownEl) {
+                countdownEl.dataset.expiresAt = String(existing.expiresAt);
+                countdownEl.textContent = this.#formatRemaining(existing.expiresAt - Date.now());
+              }
+            }
+
+            this.#emitEvent('bs-history-success', {
+              type: 'add',
+              message: 'Barcode expiry refreshed for testing'
+            });
+            // Run immediate countdown check to possibly trigger pre-notify quickly
+            this.#updateCountdowns();
+          }
+          return null;
+        }
+      } catch (e) {
+        // fallback to not updating existing item
+        return;
+      }
+
+      // Not in test mode: don't add duplicate
       return;
     }
 
@@ -253,7 +337,7 @@ class BSHistory extends HTMLElement {
     const newItem = {
       value,
       addedAt,
-      expiresAt: addedAt + 7 * 24 * 60 * 60 * 1000,
+      expiresAt: addedAt + BSHistory.#getDefaultExpiryMs(),
       notified: false,
       preNotified: false
     };
@@ -364,47 +448,7 @@ class BSHistory extends HTMLElement {
     return null;
   }
 
-  // Test helper: insert a short-lived history item (expires in ~10s)
-  #handleTestExpireClick = async () => {
-    try {
-      const testSeconds = 5; // expires in 5 seconds
-      const value = `TEST-EXP-${Date.now()}`;
-
-      const [getHistoryError, history = []] = await getHistory();
-      if (getHistoryError || !Array.isArray(history)) {
-        this.#emitEvent('bs-history-error', { type: 'add', message: 'Error adding test item to history' });
-        return;
-      }
-
-      const normalized = (history || []).map(h =>
-        typeof h === 'string'
-          ? { value: h, addedAt: Date.now(), expiresAt: Date.now() + 7 * 24 * 60 * 60 * 1000, notified: false, preNotified: false }
-          : { value: h.value ?? h.barcode ?? '', addedAt: h.addedAt ?? Date.now(), expiresAt: h.expiresAt ?? (h.addedAt ? h.addedAt + 7 * 24 * 60 * 60 * 1000 : Date.now() + 7 * 24 * 60 * 60 * 1000), notified: Boolean(h.notified), preNotified: Boolean(h.preNotified) }
-      );
-
-      const now = Date.now();
-      const newItem = {
-        value,
-        addedAt: now,
-        expiresAt: now + testSeconds * 1000,
-        notified: false,
-        preNotified: false
-      };
-
-      const data = [newItem, ...normalized];
-      const [setHistoryError] = await setHistory(data);
-      if (setHistoryError) {
-        this.#emitEvent('bs-history-error', { type: 'add', message: 'Error adding test item to history' });
-        return;
-      }
-
-      this.#historyListEl?.insertBefore(this.#createHistoryItemElement(newItem), this.#historyListEl.firstElementChild);
-      this.#emitEvent('bs-history-success', { type: 'add', message: 'Test item added to history' });
-      this.#updateCountdowns();
-    } catch (err) {
-      // ignore
-    }
-  };
+  
 
   /**
    * Renders the history list. If there are no items in history, it will show a message.
@@ -434,7 +478,7 @@ class BSHistory extends HTMLElement {
 
     // `item` is expected to be an object with { value, addedAt, expiresAt }
     const value = typeof item === 'string' ? item : item.value || '';
-    const expiresAt = item?.expiresAt || Date.now() + 7 * 24 * 60 * 60 * 1000;
+    const expiresAt = item?.expiresAt || Date.now() + BSHistory.#getDefaultExpiryMs();
 
     li.setAttribute('data-value', value);
 
@@ -529,8 +573,8 @@ class BSHistory extends HTMLElement {
       const [, history = []] = await getHistory();
       const normalized = (history || []).map(h =>
         typeof h === 'string'
-          ? { value: h, addedAt: Date.now(), expiresAt: Date.now() + 7 * 24 * 60 * 60 * 1000, notified: false, preNotified: false }
-          : { value: h.value ?? h.barcode ?? '', addedAt: h.addedAt ?? Date.now(), expiresAt: h.expiresAt ?? (h.addedAt ? h.addedAt + 7 * 24 * 60 * 60 * 1000 : Date.now() + 7 * 24 * 60 * 60 * 1000), notified: Boolean(h.notified), preNotified: Boolean(h.preNotified) }
+          ? { value: h, addedAt: Date.now(), expiresAt: Date.now() + BSHistory.#getDefaultExpiryMs(), notified: false, preNotified: false }
+          : { value: h.value ?? h.barcode ?? '', addedAt: h.addedAt ?? Date.now(), expiresAt: h.expiresAt ?? (h.addedAt ? h.addedAt + BSHistory.#getDefaultExpiryMs() : Date.now() + BSHistory.#getDefaultExpiryMs()), notified: Boolean(h.notified), preNotified: Boolean(h.preNotified) }
       );
 
       const now = Date.now();
@@ -541,16 +585,19 @@ class BSHistory extends HTMLElement {
         const expiresAt = Number(el.dataset.expiresAt) || now;
         el.textContent = this.#formatRemaining(expiresAt - now);
       });
-
       // Check for items that are nearing expiry and those that reached expiry
       let updated = false;
+
+      // Count items that will hit pre-notify threshold and haven't been pre-notified yet
+      const nearExpiryCount = normalized.filter(h => h && ((h.expiresAt || 0) - now) > 0 && ((h.expiresAt || 0) - now) <= this.#PRE_NOTIFY_THRESHOLD_MS && !h.preNotified).length;
+
       for (const it of normalized) {
         if (!it) continue;
         const timeLeft = (it.expiresAt || 0) - now;
 
         // Pre-notify when small threshold is reached (only once)
         if (timeLeft > 0 && timeLeft <= this.#PRE_NOTIFY_THRESHOLD_MS && !it.preNotified) {
-          this.#notifyItemWillExpire(it, timeLeft);
+          this.#notifyItemWillExpire(it, timeLeft, nearExpiryCount);
           it.preNotified = true;
           updated = true;
         }
@@ -571,10 +618,17 @@ class BSHistory extends HTMLElement {
     }
   }
 
-  async #notifyItemWillExpire(item, timeLeft) {
+  async #notifyItemWillExpire(item, timeLeft, nearExpiryCount = 1) {
     try {
       const title = 'Item will expire soon';
-      const body = `${item.value} will expire in ${this.#formatRemaining(timeLeft)}.`;
+      let body = `${item.value} will expire in ${this.#formatRemaining(timeLeft)}.`;
+      if (Number.isFinite(nearExpiryCount) && nearExpiryCount > 0) {
+        if (nearExpiryCount === 1) {
+          body += ' You have one more item that will expire soon; the next notification will be when it expires.';
+        } else if (nearExpiryCount > 1) {
+          body += ` You have ${nearExpiryCount} items that will expire soon.`;
+        }
+      }
 
       try { toastify(body, { variant: 'warning' }); } catch (e) { /* ignore */ }
 
