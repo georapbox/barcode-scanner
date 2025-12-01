@@ -60,3 +60,22 @@
 ## Acceptance Testing
 ### A. Conduct user acceptance testing with real users
 ### B. Gather feedback on usefulness, clarity, and trust in suggestions
+
+
+### Refinements, additions, and other changes from checkpoint #1. 
+
+  Checkpoint 1:
+  -Barcode Scanner working properly
+  -Barcode is resolved to a UPC number
+
+  Checkpoint 2:
+  -UPC number is sent to ReceipeDB to resolve UPC code to an ingredient
+    -limit is 100 requests/day
+    -If UPC not found, returns number instead of name
+  -Added a timer feature that sets an expiration date for each scanned item. Default timer is 7 days.
+  -UI/UX updates / minor landing page updates
+  -Persists a list of scanned items.
+
+  
+
+  
