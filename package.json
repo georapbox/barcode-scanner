@@ -9,6 +9,7 @@
     "clean": "rimraf dist .parcel-cache",
     "generateSW": "workbox generateSW",
     "start": "parcel",
+    "start:proxy": "node server/proxy.js",
     "build:parcel": "parcel build --dist-dir=dist --public-url=./",
     "build": "npm-run-all clean build:parcel",
     "postbuild": "npm run generateSW",
@@ -59,19 +60,6 @@
     "svgo": "~3.3.2",
     "workbox-cli": "~7.3.0"
   },
-  "scripts": {
-    "lint": "eslint src/js/**",
-    "format": "prettier --ignore-unknown --write .",
-    "clean": "rimraf dist .parcel-cache",
-    "generateSW": "workbox generateSW",
-    "start": "parcel",
-    "start:proxy": "node server/proxy.js",
-    "build:parcel": "parcel build --dist-dir=dist --public-url=./",
-    "build": "npm-run-all clean build:parcel",
-    "postbuild": "npm run generateSW",
-    "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist"
-  },
   "dependencies": {
     "@georapbox/a-tab-group": "~2.4.1",
     "@georapbox/alert-element": "~1.0.1",
@@ -81,7 +69,8 @@
     "@georapbox/resize-observer-element": "~2.0.1",
     "@georapbox/web-share-element": "~3.1.1",
     "barcode-detector": "~3.0.4",
-    "idb-keyval": "~6.2.2"
+    "idb-keyval": "~6.2.2",
+    "node-fetch": "~3.3.2"
   },
   "optionalDependencies": {
     "express": "^4.18.2"

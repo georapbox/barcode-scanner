@@ -12,10 +12,13 @@
 
 const express = require('express');
 const fetch = global.fetch || require('node-fetch');
+const fs = require('fs').promises;
+const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 8787;
 const UPC_API_BASE = 'https://api.upcdatabase.org';
 const API_KEY = process.env.UPC_API_KEY || '';
+const INGREDIENTS_FILE = process.env.INGREDIENTS_FILE || path.join(__dirname, 'ingredients.json');
 
 // Helper to mask API keys in logs (show first 4 and last 4 chars).
 function maskKey(k) {
@@ -71,18 +74,28 @@ async function proxyRequest(targetUrl, method, req, res) {
     const fetchRes = await fetch(targetUrl, fetchOptions);
     const text = await fetchRes.text();
 
-    // Log upstream response body for debugging.
-    // If it's JSON, parse and pretty-print it for easier reading in the console.
+    // Log upstream response body for debugging and save item title when present.
     try {
       const contentType = fetchRes.headers.get('content-type') || '';
       if (contentType.toLowerCase().includes('application/json')) {
         const parsed = JSON.parse(text);
         console.log('Proxy <- upstream response (JSON):\n' + JSON.stringify(parsed, null, 2));
+        // If the response contains a title field, save it to ingredients.json
+        if (parsed && typeof parsed.title === 'string' && parsed.title.trim()) {
+          saveTitleToIngredients(parsed.title.trim()).catch(err =>
+            console.warn('Failed to save title to ingredients.json', err)
+          );
+        }
       } else {
         // Not JSON according to content-type, still try to parse safely
         try {
           const parsed = JSON.parse(text);
           console.log('Proxy <- upstream response (parsed):\n' + JSON.stringify(parsed, null, 2));
+          if (parsed && typeof parsed.title === 'string' && parsed.title.trim()) {
+            saveTitleToIngredients(parsed.title.trim()).catch(err =>
+              console.warn('Failed to save title to ingredients.json', err)
+            );
+          }
         } catch {
           console.log('Proxy <- upstream response (text):', text);
         }
@@ -101,6 +114,37 @@ async function proxyRequest(targetUrl, method, req, res) {
   } catch (err) {
     console.error('Proxy error', err);
     return res.status(500).json({ error: 'proxy_error', details: String(err) });
+  }
+}
+
+async function saveTitleToIngredients(title) {
+  try {
+    let current = { ingredients: [] };
+    try {
+      const data = await fs.readFile(INGREDIENTS_FILE, 'utf8');
+      const parsed = JSON.parse(data);
+      if (Array.isArray(parsed)) {
+        // old format: array
+        current.ingredients = parsed.map(String);
+      } else if (parsed && Array.isArray(parsed.ingredients)) {
+        current.ingredients = parsed.ingredients.map(String);
+      }
+    } catch {
+      // file may not exist or contain invalid JSON — start fresh
+      current = { ingredients: [] };
+    }
+
+    // Append if not already present
+    if (!current.ingredients.includes(title)) {
+      current.ingredients.push(title);
+      await fs.writeFile(INGREDIENTS_FILE, JSON.stringify(current, null, 2), 'utf8');
+      console.log(`Saved title to ingredients.json: ${title}`);
+    } else {
+      // Already present; do nothing
+    }
+  } catch (err) {
+    // swallow errors but log
+    console.warn('Error saving title to ingredients file', err);
   }
 }
 

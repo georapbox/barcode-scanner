@@ -10,12 +10,24 @@
  when running on localhost.
 */
 
-const express = require('express');
-const fetch = global.fetch || require('node-fetch');
+import express from 'express';
+import fetch from 'node-fetch'; // `node-fetch` is a CommonJS module, so you can use `import`
+import fs from 'fs/promises'; // Promises API of `fs`
+import path from 'path';
+
 const app = express();
-const PORT = process.env.PORT || 8787;
-const UPC_API_BASE = 'https://api.upcdatabase.org';
-const API_KEY = process.env.UPC_API_KEY || '';
+const PORT = process.env.PORT || 8788;
+const UPC_API_BASE = 'https://api.spoonacular.com';
+const API_KEY2 = process.env.UPC_API_KEY2 || '';
+const INGREDIENTS_FILE = process.env.INGREDIENTS_FILE || path.resolve('ingredients.json');
+
+function maskUrlApiKey(url) {
+  try {
+    return url.replace(/([?&]apiKey=)[^&]+/i, '$1****');
+  } catch {
+    return url;
+  }
+}
 
 // Helper to mask API keys in logs (show first 4 and last 4 chars).
 function maskKey(k) {
@@ -29,7 +41,7 @@ function maskKey(k) {
 }
 
 // Log which key will be used (masked) so developers can confirm behavior.
-console.log(`UPC proxy: using API key: ${maskKey(API_KEY)}`);
+console.log(`UPC proxy: using API key: ${maskKey(API_KEY2)}`);
 
 app.use(express.json());
 
@@ -44,95 +56,99 @@ app.use((req, res, next) => {
   next();
 });
 
-async function proxyRequest(targetUrl, method, req, res) {
+// GET /recipes/from-file
+// Reads ingredients from a JSON file and calls Spoonacular's
+// GET /recipes/findByIngredients endpoint. Query params can override
+// defaults: number, ranking, ignorePantry.
+
+app.get('/recipes/from-file', async (req, res) => {
   try {
-    const headers = { Accept: 'application/json' };
-    if (API_KEY) {
-      headers['Authorization'] = `Bearer ${API_KEY}`;
-    }
-
-    const fetchOptions = {
-      method: method || 'GET',
-      headers
-    };
-
-    // Log outbound request details (mask the Authorization header)
+    // Read ingredients file (supports array or object with `ingredients` key)
+    const content = await fs.readFile(INGREDIENTS_FILE, 'utf8');
+    let parsed;
     try {
-      const loggedHeaders = { ...headers };
-      if (loggedHeaders['Authorization']) {
-        const token = String(loggedHeaders['Authorization']).replace(/^Bearer\s+/i, '');
-        loggedHeaders['Authorization'] = `Bearer ${maskKey(token)}`;
-      }
-      console.log('Proxy -> upstream:', targetUrl, JSON.stringify(loggedHeaders));
+      parsed = JSON.parse(content);
     } catch {
-      // never fail the request because logging threw
+      return res.status(400).json({ error: 'invalid ingredients JSON' });
     }
 
-    const fetchRes = await fetch(targetUrl, fetchOptions);
-    const text = await fetchRes.text();
+    let ingredientsList = [];
+    if (Array.isArray(parsed)) {
+      ingredientsList = parsed;
+    } else if (parsed && parsed.ingredients) {
+      if (Array.isArray(parsed.ingredients)) {
+        ingredientsList = parsed.ingredients;
+      } else if (typeof parsed.ingredients === 'string') {
+        ingredientsList = parsed.ingredients
+          .split(',')
+          .map(s => s.trim())
+          .filter(Boolean);
+      }
+    } else {
+      return res
+        .status(400)
+        .json({ error: 'ingredients JSON must be an array or have an `ingredients` property' });
+    }
 
-    // Log upstream response body for debugging.
-    // If it's JSON, parse and pretty-print it for easier reading in the console.
+    if (ingredientsList.length === 0) {
+      return res.status(400).json({ error: 'no ingredients found in file' });
+    }
+
+    const ingredientsParam = encodeURIComponent(ingredientsList.join(','));
+    const number = Number(req.query.number) || 10;
+    const ranking = Number(req.query.ranking) || 1;
+    const ignorePantry =
+      req.query.ignorePantry == null
+        ? true
+        : req.query.ignorePantry === 'true' || req.query.ignorePantry === true;
+
+    let targetUrl = `${UPC_API_BASE}/recipes/findByIngredients?ingredients=${ingredientsParam}&number=${number}&ranking=${ranking}&ignorePantry=${ignorePantry}`;
+    if (API_KEY2) {
+      // Spoonacular expects `apiKey` query param
+      targetUrl += `&apiKey=${encodeURIComponent(API_KEY2)}`;
+    }
+
+    // Prepare headers
+    const headers = { Accept: 'application/json' };
+
+    // Log masked target URL
+    console.log('RecipeDB Proxy -> upstream:', maskUrlApiKey(targetUrl));
+
+    const upstreamRes = await fetch(targetUrl, { method: 'GET', headers });
+    const text = await upstreamRes.text();
+
+    // Log upstream JSON response pretty-printed when possible
     try {
-      const contentType = fetchRes.headers.get('content-type') || '';
+      const contentType = upstreamRes.headers.get('content-type') || '';
       if (contentType.toLowerCase().includes('application/json')) {
-        const parsed = JSON.parse(text);
-        console.log('Proxy <- upstream response (JSON):\n' + JSON.stringify(parsed, null, 2));
+        const parsedBody = JSON.parse(text);
+        console.log(
+          'RecipeDB Proxy <- upstream response (JSON):\n' + JSON.stringify(parsedBody, null, 2)
+        );
       } else {
-        // Not JSON according to content-type, still try to parse safely
         try {
-          const parsed = JSON.parse(text);
-          console.log('Proxy <- upstream response (parsed):\n' + JSON.stringify(parsed, null, 2));
+          const parsedBody = JSON.parse(text);
+          console.log(
+            'RecipeDB Proxy <- upstream response (parsed):\n' + JSON.stringify(parsedBody, null, 2)
+          );
         } catch {
-          console.log('Proxy <- upstream response (text):', text);
+          console.log('RecipeDB Proxy <- upstream response (text):', text);
         }
       }
     } catch {
-      console.log('Proxy <- upstream response (raw):', text);
+      console.log('RecipeDB Proxy <- upstream response (raw):', text);
     }
 
-    res.status(fetchRes.status);
-    // pass content-type if present
-    const contentType = fetchRes.headers.get('content-type');
+    // Forward response
+    const contentType = upstreamRes.headers.get('content-type');
     if (contentType) {
       res.set('Content-Type', contentType);
     }
-    return res.send(text);
+    return res.status(upstreamRes.status).send(text);
   } catch (err) {
-    console.error('Proxy error', err);
-    return res.status(500).json({ error: 'proxy_error', details: String(err) });
+    console.error('RecipeDB error', err);
+    return res.status(500).json({ error: 'recipe_proxy_error', details: String(err) });
   }
-}
-
-// GET /product/:id
-app.get('/product/:id', (req, res) => {
-  const id = req.params.id;
-  const target = `${UPC_API_BASE}/product/${encodeURIComponent(id)}`;
-  return proxyRequest(target, 'GET', req, res);
-});
-
-// GET /products/:id
-app.get('/products/:id', (req, res) => {
-  const id = req.params.id;
-  const target = `${UPC_API_BASE}/products/${encodeURIComponent(id)}`;
-  return proxyRequest(target, 'GET', req, res);
-});
-
-// POST /products/:id
-app.post('/products/:id', (req, res) => {
-  const id = req.params.id;
-  const target = `${UPC_API_BASE}/products/${encodeURIComponent(id)}`;
-  return proxyRequest(target, 'POST', req, res);
-});
-
-// GET /search
-app.get('/search', (req, res) => {
-  const q = req.query.q;
-  if (!q) {
-    return res.status(400).json({ error: 'missing q parameter' });
-  }
-  const target = `${UPC_API_BASE}/search?q=${encodeURIComponent(q)}`;
-  return proxyRequest(target, 'GET', req, res);
 });
 
 app.listen(PORT, () => {
