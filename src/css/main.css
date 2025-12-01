@@ -694,14 +694,14 @@ alert-element {
   color: white;
 }
 
-/* .navigationList {
+.navigationList {
   display: flex;
   justify-content: right;
   flex-flow:row;
   list-style: none;
   margin: 10px 10px; 
   background: rgb(0, 0, 0);
-} */
+}
 
 
 .headerList {
