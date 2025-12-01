@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -38,7 +39,23 @@
     </button>
   </div>
 
+  <header class="navigation">
+    <!-- Ellie -->
+    <a href= "#"><h1 class="header-title">Barcode Scanner App <br></h1></a>   
+    <ul id = "Header List" class = "navigationList"> 
+      <li class="headerList" id="1"><a href="#">Home </a></li>
+      <li class="headerList" id="2"><a href="#">Items </a></li>
+      <li class="headerList" id="3"><a href="#">Recipes </a></li>
+    </ul>
+  </header>
+
+
+
   <header class="site-header">
+
+
+
+
     <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 512 512" width="5em" height="5em" xml:space="preserve" class="logo" aria-hidden="true">
       <path fill="var(--accent)" d="M93.867,51.2H8.533C3.814,51.2,0,55.014,0,59.733v85.333c0,4.719,3.814,8.533,8.533,8.533s8.533-3.814,8.533-8.533v-76.8 h76.8c4.719,0,8.533-3.814,8.533-8.533S98.586,51.2,93.867,51.2z" />
       <path fill="var(--accent)" d="M503.467,51.2h-85.333c-4.719,0-8.533,3.814-8.533,8.533s3.814,8.533,8.533,8.533h76.8v76.8c0,4.719,3.814,8.533,8.533,8.533c4.719,0,8.533-3.814,8.533-8.533V59.733C512,55.014,508.186,51.2,503.467,51.2z" />
@@ -67,6 +84,16 @@
 
     <h1>Barcode/QR code Scanner</h1>
   </header>
+
+<!-- Ellie -->
+  <form className="leftJustify" onSubmit={submitAnswer}>
+    <input type="text" value=""></input>
+    <input type="submit" value="Search"></input>
+  </form>
+
+
+
+
 
   <div class="container">
     <alert-element variant="danger" id="barcodeReaderError">
@@ -254,4 +281,16 @@
   <script src="./js/register-service-worker.js" type="module"></script>
   <script src="./js/index.js" type="module"></script>
 </body>
+
+
+<!-- Ellie -->
+<footer>
+    <ul id = "Navigation Footer List" class = "navigation"> 
+      <li class="footerList" id="1"><a href="#">About </a></li>
+      <li class="footerList" id="2"><a href="#">FAQ </a></li>
+      <li class="footerList" id="3"><a href="#">Contact </a></li>
+    </ul>
+  </header>
+</footer>
+
 </html>

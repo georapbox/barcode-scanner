@@ -1,7 +1,7 @@
 :root {
   /* Font variables */
   --font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-
+  
   /* Color variables */
   --accent-h: 217.75deg;
   --accent-s: 98.36%;
@@ -675,6 +675,49 @@ alert-element {
 .fw-normal {
   font-weight: normal !important;
 }
+
+
+
+/* Added by Ellie */
+.navigation {
+  display: flex;
+  flex-flow:row;
+  list-style: none;
+  margin: 10px 10px; 
+  background: rgb(0, 0, 0);
+}
+.navigation a {
+  text-decoration: none;
+  justify-content: right;
+  display: block;
+  padding: 1em;
+  color: white;
+}
+
+/* .navigationList {
+  display: flex;
+  justify-content: right;
+  flex-flow:row;
+  list-style: none;
+  margin: 10px 10px; 
+  background: rgb(0, 0, 0);
+} */
+
+
+.headerList {
+
+  margin: 0px 10px; 
+}
+.header-title {
+  justify-content: right;
+}
+
+
+
+
+
+
+
 
 /* Media queries */
 @media (min-width: 37.5rem) {
