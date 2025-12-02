@@ -39,16 +39,21 @@
     </button>
   </div>
 
+  <!--added by Ellie -->
   <header class="navigation">
-    <!-- Ellie -->
-    <a href= "#"><h1 class="header-title">Barcode Scanner App <br></h1></a>   
+    <a href= "#"><h1 class="header-title">Barcode Scanner App</h1></a>   
     <ul id = "Header List" class = "navigationList"> 
-      <li class="headerList" id="1"><a href="#">Home </a></li>
-      <li class="headerList" id="2"><a href="#">Items </a></li>
-      <li class="headerList" id="3"><a href="#">Recipes </a></li>
+      <li class="navigationListItem" id="1"><a href="#">Home </a></li>
+      <li class="navigationListItem" id="2"><a href="#">Items </a></li>
+      <li class="navigationListItem" id="3"><a href="#">Recipes </a></li>
+      <li class="navigationListItem">
+        <form onSubmit={submitAnswer}>
+        <input type="text" value=""></input>
+        <input type="submit" value="Search"></input>
+        </form>
+      </li>
     </ul>
   </header>
-
 
 
   <header class="site-header">
@@ -85,11 +90,6 @@
     <h1>Barcode/QR code Scanner</h1>
   </header>
 
-<!-- Ellie -->
-  <form className="leftJustify" onSubmit={submitAnswer}>
-    <input type="text" value=""></input>
-    <input type="submit" value="Search"></input>
-  </form>
 
 
 
@@ -284,13 +284,12 @@
 
 
 <!-- Ellie -->
-<footer>
-    <ul id = "Navigation Footer List" class = "navigation"> 
-      <li class="footerList" id="1"><a href="#">About </a></li>
-      <li class="footerList" id="2"><a href="#">FAQ </a></li>
-      <li class="footerList" id="3"><a href="#">Contact </a></li>
+<footer class="navigation">
+    <ul id = "Navigation Footer List" class = "navigationList"> 
+      <li class="navigationListItem" id="1"><a href="#">About </a></li>
+      <li class="navigationListItem" id="2"><a href="#">FAQ </a></li>
+      <li class="navigationListItem" id="3"><a href="#">Contact </a></li>
     </ul>
-  </header>
 </footer>
 
 </html>

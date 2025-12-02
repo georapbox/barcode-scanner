@@ -31,7 +31,7 @@
   --alert-foreground: var(--text-main);
 
   /* Other variables */
-  --body-max-width: 64rem;
+  /* --body-max-width: 64rem; */
   --border-radius: 6px;
   --animation-duration: 0.1s;
   --container-max-width: 37.5rem;
@@ -84,8 +84,10 @@
 body {
   font-family: var(--font-family);
   max-width: var(--body-max-width);
-  padding: 0 0.75rem;
-  margin: 1.25rem auto;
+  padding: 0px;
+  margin: 0px;
+  /* padding: 0 0.75rem;
+  margin: 1.25rem auto; */
   word-wrap: break-word;
   color: var(--text-main);
   background: var(--background-body);
@@ -680,36 +682,35 @@ alert-element {
 
 /* Added by Ellie */
 .navigation {
-  display: flex;
-  flex-flow:row;
-  list-style: none;
-  margin: 10px 10px; 
+  margin: 0px 0px; 
+  width: 100%;
+  justify-items: center;
+  padding: 0.25em;
   background: rgb(0, 0, 0);
+  background-size: 100% auto;
 }
 .navigation a {
   text-decoration: none;
-  justify-content: right;
   display: block;
-  padding: 1em;
   color: white;
 }
 
 .navigationList {
   display: flex;
-  justify-content: right;
+  justify-content: flex-end;
   flex-flow:row;
   list-style: none;
-  margin: 10px 10px; 
+  /* margin: 10px 10px;  */
   background: rgb(0, 0, 0);
 }
 
 
-.headerList {
+.navigationListItem {
 
   margin: 0px 10px; 
 }
 .header-title {
-  justify-content: right;
+  justify-content: center;
 }
 
 
@@ -735,6 +736,7 @@ alert-element {
 
   .global-actions button {
     font-size: 0.9rem;
+    color: #ffffff;
   }
 
   .global-actions button span {
