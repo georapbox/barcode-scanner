@@ -23,3 +23,10 @@ The project aims to address the significant issue of food waste in the U.S., whe
 **Isaac Akhtar Zada:** Front End (I will be working on the front end to create a time counter for our app, which will track the time from when the food is purchased until it expires. Additionally, I will attempt to develop the app for iOS as well as Android.)
 
 **Elena Guzman:** Website design - I'm going to be working on the landing page for the web page
+
+How to start:
+cd into server and run the following 2 commands:
+$env:UPC_API_KEY = "4190D3F1E6057DD921DA7E426A79AAF3"
+npm run start:proxy
+cd into the main folder where everything is:
+run npm start
