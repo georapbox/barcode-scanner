@@ -24,9 +24,14 @@ The project aims to address the significant issue of food waste in the U.S., whe
 
 **Elena Guzman:** Website design - I'm going to be working on the landing page for the web page
 
-How to start:
+**How to start:**
+
 cd into server and run the following 2 commands:
+
 $env:UPC_API_KEY = "4190D3F1E6057DD921DA7E426A79AAF3"
+
 npm run start:proxy
+
 cd into the main folder where everything is:
+
 run npm start
