@@ -25,6 +25,7 @@ export const ITEM_INFO_API_KEY =
 
 // Optional: a server-side proxy endpoint (recommended). Configure this to a
 // relative function path like `/.netlify/functions/upc` or a deployed proxy URL.
+// For Firebase Cloud Functions, use '/api/upc' which will be rewritten to the function.
 // When set, the client will call the proxy instead of calling the API directly
 // which avoids CORS and keeps your API key secret server-side.
 // Prefer a server-side proxy. During build the `ITEM_INFO_PROXY_URL` can be

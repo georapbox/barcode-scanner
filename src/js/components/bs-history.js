@@ -102,6 +102,10 @@ const styles = /* css */ `
     color: var(--danger-color);
   }
 
+  .actions .details-action {
+    color: var(--info-color);
+  }
+
   .actions .delete-action {
     color: var(--danger-color);
     margin-right: -0.5rem;
@@ -144,13 +148,17 @@ const styles = /* css */ `
     opacity: 0.7;
   }
 
-  ul li span[style*="cursor: pointer"] {
-    text-decoration: underline;
-    text-decoration-style: dotted;
+  .history-item-clickable {
+    cursor: pointer;
   }
 
-  ul li span[style*="cursor: pointer"]:hover {
+  .history-item-clickable:hover {
     opacity: 0.8;
+    text-decoration: underline;
+  }
+
+  .history-item-clickable strong {
+    color: var(--links);
   }
 `;
 
@@ -201,11 +209,11 @@ class BSHistory extends HTMLElement {
           if (isLocalHost || isFile) {
             return 10 * 1000;
           }
-        } catch (e) {
+        } catch (_e) {
           // ignore
         }
       }
-    } catch (e) {
+    } catch (_e) {
       // ignore
     }
     return BSHistory.#DEFAULT_EXPIRY_MS;
@@ -229,80 +237,85 @@ class BSHistory extends HTMLElement {
     const [, rawHistory = []] = await getHistory();
     
     let historyData = [];
+    let useFirebase = false;
     
     // Try to load from Firestore if configured and user is authenticated
-    if (isFirebaseConfigured() && isAuthenticated()) {
-      try {
-        const { error, scans } = await getUserScans();
-        if (!error && scans) {
-          // Convert Firestore scans to history format
-          const firestoreScans = scans.map(scan => ({
-            value: scan.value || '',
-            addedAt: scan.scannedAt ? scan.scannedAt.getTime() : Date.now(),
-            expiresAt: scan.scannedAt ? scan.scannedAt.getTime() + BSHistory.#getDefaultExpiryMs() : Date.now() + BSHistory.#getDefaultExpiryMs(),
-            notified: false,
-            preNotified: false,
-            title: scan.title || '',
-            brand: scan.brand || '',
-            description: scan.description || '',
-            format: scan.format || '',
-            firestoreId: scan.id || null
-          }));
-          
-          log.info(`Loaded ${firestoreScans.length} scans from Firestore`);
-          
-          // Merge Firestore scans with local storage
-          // Firestore is the source of truth, but keep local scans too
-          const localNormalized = (rawHistory || []).map(item => {
-            if (!item) return null;
-            if (typeof item === 'string') {
-              const addedAt = Date.now();
+    try {
+      if (typeof isFirebaseConfigured === 'function' && typeof isAuthenticated === 'function') {
+        if (isFirebaseConfigured() && isAuthenticated()) {
+          useFirebase = true;
+          const { error, scans } = await getUserScans();
+          if (!error && scans) {
+            // Convert Firestore scans to history format
+            const firestoreScans = scans.map(scan => ({
+              value: scan.value || '',
+              addedAt: scan.scannedAt ? scan.scannedAt.getTime() : Date.now(),
+              expiresAt: scan.scannedAt ? scan.scannedAt.getTime() + BSHistory.#getDefaultExpiryMs() : Date.now() + BSHistory.#getDefaultExpiryMs(),
+              notified: false,
+              preNotified: false,
+              title: scan.title || '',
+              brand: scan.brand || '',
+              description: scan.description || '',
+              format: scan.format || '',
+              firestoreId: scan.id || null
+            }));
+            
+            log.info(`Loaded ${firestoreScans.length} scans from Firestore`);
+            
+            // Merge Firestore scans with local storage
+            // Firestore is the source of truth, but keep local scans too
+            const localNormalized = (rawHistory || []).map(item => {
+              if (!item) return null;
+              if (typeof item === 'string') {
+                const addedAt = Date.now();
+                return {
+                  value: item,
+                  addedAt,
+                  expiresAt: addedAt + BSHistory.#getDefaultExpiryMs(),
+                  notified: false,
+                  preNotified: false
+                };
+              }
               return {
-                value: item,
-                addedAt,
-                expiresAt: addedAt + BSHistory.#getDefaultExpiryMs(),
-                notified: false,
-                preNotified: false
+                value: item.value ?? (item?.barcode ?? ''),
+                addedAt: item.addedAt ?? Date.now(),
+                expiresAt: item.expiresAt ?? (item.addedAt ? item.addedAt + BSHistory.#getDefaultExpiryMs() : Date.now() + BSHistory.#getDefaultExpiryMs()),
+                notified: Boolean(item.notified),
+                preNotified: Boolean(item.preNotified),
+                title: item.title || '',
+                brand: item.brand || '',
+                description: item.description || '',
+                format: item.format || '',
+                firestoreId: item.firestoreId || null
               };
-            }
-            return {
-              value: item.value ?? (item?.barcode ?? ''),
-              addedAt: item.addedAt ?? Date.now(),
-              expiresAt: item.expiresAt ?? (item.addedAt ? item.addedAt + BSHistory.#getDefaultExpiryMs() : Date.now() + BSHistory.#getDefaultExpiryMs()),
-              notified: Boolean(item.notified),
-              preNotified: Boolean(item.preNotified),
-              title: item.title || '',
-              brand: item.brand || '',
-              description: item.description || '',
-              format: item.format || '',
-              firestoreId: item.firestoreId || null
-            };
-          }).filter(Boolean);
-          
-          // Merge: combine Firestore and local, removing duplicates
-          const mergedMap = new Map();
-          
-          // Add Firestore scans first (source of truth)
-          firestoreScans.forEach(scan => {
-            mergedMap.set(scan.value, scan);
-          });
-          
-          // Add local scans that aren't in Firestore
-          localNormalized.forEach(scan => {
-            if (!mergedMap.has(scan.value)) {
+            }).filter(Boolean);
+            
+            // Merge: combine Firestore and local, removing duplicates
+            const mergedMap = new Map();
+            
+            // Add Firestore scans first (source of truth)
+            firestoreScans.forEach(scan => {
               mergedMap.set(scan.value, scan);
-            }
-          });
-          
-          historyData = Array.from(mergedMap.values());
+            });
+            
+            // Add local scans that aren't in Firestore
+            localNormalized.forEach(scan => {
+              if (!mergedMap.has(scan.value)) {
+                mergedMap.set(scan.value, scan);
+              }
+            });
+            
+            historyData = Array.from(mergedMap.values());
+          }
         }
-      } catch (err) {
-        log.error('Error loading from Firestore:', err);
       }
+    } catch (err) {
+      log.error('Firebase not available or error loading from Firestore:', err);
+      useFirebase = false;
     }
     
-    // If Firestore didn't work or user not authenticated, use local storage only
-    if (historyData.length === 0) {
+    // If Firestore didn't work or not using Firebase, use local storage only
+    if (!useFirebase || historyData.length === 0) {
       const normalized = (rawHistory || []).map(item => {
         if (!item) return null;
         if (typeof item === 'string') {
@@ -348,7 +361,7 @@ class BSHistory extends HTMLElement {
         const secs = s ? String(Number(s)) : '10';
         try { toastify(`Test expiry active: items expire in ${secs} second${secs === '1' ? '' : 's'}`, { variant: 'warning' }); } catch (e) { /* ignore */ }
       }
-    } catch (e) {
+    } catch (_e) {
       // ignore
     }
 
@@ -431,7 +444,7 @@ class BSHistory extends HTMLElement {
           }
           return null;
         }
-      } catch (e) {
+      } catch (_e) {
         // fallback to not updating existing item
         return;
       }
@@ -491,17 +504,24 @@ class BSHistory extends HTMLElement {
     };
 
     // If Firebase is configured and user is authenticated, delete from Firestore
-    if (isFirebaseConfigured() && isAuthenticated()) {
-      const historyItem = this.#historyListEl?.querySelector(`li[data-value="${item}"]`);
-      const firestoreId = historyItem?.dataset.firestoreId;
-      
-      if (firestoreId) {
-        const { error } = await deleteScan(firestoreId);
-        if (error) {
-          log.error('Error deleting scan from Firestore:', error);
-          // Continue to delete from local storage anyway
+    try {
+      if (typeof isFirebaseConfigured === 'function' && typeof isAuthenticated === 'function') {
+        if (isFirebaseConfigured() && isAuthenticated()) {
+          const historyItem = this.#historyListEl?.querySelector(`li[data-value="${item}"]`);
+          const firestoreId = historyItem?.dataset.firestoreId;
+          
+          if (firestoreId && typeof deleteScan === 'function') {
+            const { error } = await deleteScan(firestoreId);
+            if (error) {
+              log.error('Error deleting scan from Firestore:', error);
+              // Continue to delete from local storage anyway
+            }
+          }
         }
       }
+    } catch (err) {
+      log.error('Firebase not available:', err);
+      // Continue to delete from local storage anyway
     }
 
     const [getHistoryError, history = []] = await getHistory();
@@ -548,14 +568,23 @@ class BSHistory extends HTMLElement {
     };
 
     // If Firebase is configured and user is authenticated, delete all from Firestore
-    if (isFirebaseConfigured() && isAuthenticated()) {
-      const { error, deletedCount } = await deleteAllUserScans();
-      if (error) {
-        log.error('Error deleting all scans from Firestore:', error);
-        // Continue to delete from local storage anyway
-      } else {
-        log.info(`Deleted ${deletedCount} scans from Firestore`);
+    try {
+      if (typeof isFirebaseConfigured === 'function' && typeof isAuthenticated === 'function') {
+        if (isFirebaseConfigured() && isAuthenticated()) {
+          if (typeof deleteAllUserScans === 'function') {
+            const { error, deletedCount } = await deleteAllUserScans();
+            if (error) {
+              log.error('Error deleting all scans from Firestore:', error);
+              // Continue to delete from local storage anyway
+            } else {
+              log.info(`Deleted ${deletedCount} scans from Firestore`);
+            }
+          }
+        }
       }
+    } catch (err) {
+      log.error('Firebase not available:', err);
+      // Continue to delete from local storage anyway
     }
 
     const [setHistoryError] = await setHistory([]);
@@ -579,7 +608,115 @@ class BSHistory extends HTMLElement {
     return null;
   }
 
-  
+  /**
+   * Public method to reload history (useful when auth state changes)
+   */
+  async loadHistory() {
+    // Always load from local storage first
+    const [, rawHistory = []] = await getHistory();
+    
+    let historyData = [];
+    let useFirebase = false;
+    
+    // Try to load from Firestore if configured and user is authenticated
+    try {
+      if (typeof isFirebaseConfigured === 'function' && typeof isAuthenticated === 'function') {
+        if (isFirebaseConfigured() && isAuthenticated()) {
+          useFirebase = true;
+          const { error, scans } = await getUserScans();
+          if (!error && scans) {
+            const firestoreScans = scans.map(scan => ({
+              value: scan.value || '',
+              addedAt: scan.scannedAt ? scan.scannedAt.getTime() : Date.now(),
+              expiresAt: scan.scannedAt ? scan.scannedAt.getTime() + BSHistory.#getDefaultExpiryMs() : Date.now() + BSHistory.#getDefaultExpiryMs(),
+              notified: false,
+              preNotified: false,
+              title: scan.title || '',
+              brand: scan.brand || '',
+              description: scan.description || '',
+              format: scan.format || '',
+              firestoreId: scan.id || null
+            }));
+            
+            const localNormalized = (rawHistory || []).map(item => {
+              if (!item) return null;
+              if (typeof item === 'string') {
+                const addedAt = Date.now();
+                return {
+                  value: item,
+                  addedAt,
+                  expiresAt: addedAt + BSHistory.#getDefaultExpiryMs(),
+                  notified: false,
+                  preNotified: false
+                };
+              }
+              return {
+                value: item.value ?? (item?.barcode ?? ''),
+                addedAt: item.addedAt ?? Date.now(),
+                expiresAt: item.expiresAt ?? (item.addedAt ? item.addedAt + BSHistory.#getDefaultExpiryMs() : Date.now() + BSHistory.#getDefaultExpiryMs()),
+                notified: Boolean(item.notified),
+                preNotified: Boolean(item.preNotified),
+                title: item.title || '',
+                brand: item.brand || '',
+                description: item.description || '',
+                format: item.format || '',
+                firestoreId: item.firestoreId || null
+              };
+            }).filter(Boolean);
+            
+            const mergedMap = new Map();
+            firestoreScans.forEach(scan => {
+              mergedMap.set(scan.value, scan);
+            });
+            localNormalized.forEach(scan => {
+              if (!mergedMap.has(scan.value)) {
+                mergedMap.set(scan.value, scan);
+              }
+            });
+            
+            historyData = Array.from(mergedMap.values());
+          }
+        }
+      }
+    } catch (err) {
+      log.error('Firebase not available or error loading:', err);
+      useFirebase = false;
+    }
+    
+    // If Firestore didn't work or not using Firebase, use local storage only
+    if (!useFirebase || historyData.length === 0) {
+      const normalized = (rawHistory || []).map(item => {
+        if (!item) return null;
+        if (typeof item === 'string') {
+          const addedAt = Date.now();
+          return {
+            value: item,
+            addedAt,
+            expiresAt: addedAt + BSHistory.#getDefaultExpiryMs(),
+            notified: false,
+            preNotified: false
+          };
+        }
+        return {
+          value: item.value ?? (item?.barcode ?? ''),
+          addedAt: item.addedAt ?? Date.now(),
+          expiresAt: item.expiresAt ?? (item.addedAt ? item.addedAt + BSHistory.#getDefaultExpiryMs() : Date.now() + BSHistory.#getDefaultExpiryMs()),
+          notified: Boolean(item.notified),
+          preNotified: Boolean(item.preNotified),
+          title: item.title || '',
+          brand: item.brand || '',
+          description: item.description || '',
+          format: item.format || '',
+          firestoreId: item.firestoreId || null
+        };
+      }).filter(Boolean);
+
+      historyData = normalized;
+      await setHistory(normalized);
+    }
+
+    this.#renderHistoryList(historyData || []);
+  }
 
   /**
    * Renders the history list. If there are no items in history, it will show a message.
@@ -625,7 +762,7 @@ class BSHistory extends HTMLElement {
     if (brand) li.setAttribute('data-brand', brand);
     if (description) li.setAttribute('data-description', description);
 
-    // Make the item clickable to show details
+    // Create the main item display - make it clickable
     let historyItem;
     try {
       new URL(value);
@@ -635,20 +772,9 @@ class BSHistory extends HTMLElement {
       historyItem.setAttribute('rel', 'noreferrer noopener');
     } catch {
       historyItem = document.createElement('span');
-      historyItem.style.cursor = title ? 'pointer' : 'default';
-      
-      // Add click event to show details
-      if (title || brand || description) {
-        historyItem.addEventListener('click', () => {
-          const details = [];
-          if (title) details.push(`Product: ${title}`);
-          if (brand) details.push(`Brand: ${brand}`);
-          if (description) details.push(`Details: ${description}`);
-          details.push(`Barcode: ${value}`);
-          
-          alert(details.join('\n'));
-        });
-      }
+      // Make clickable if we have details to show
+      historyItem.className = 'history-item-clickable';
+      historyItem.setAttribute('data-action', 'view-details');
     }
 
     // Show title if available, with barcode below
@@ -703,12 +829,38 @@ class BSHistory extends HTMLElement {
   #handleHistoryListClick = async evt => {
     const target = evt.target;
 
+    // Handle delete button
     if (target.closest('[data-action="delete"]')) {
       const value = target.closest('li').dataset.value;
 
       if (window.confirm(`Delete history item ${value}?`)) {
         this.remove(value);
       }
+      return;
+    }
+
+    // Handle clicking on the item itself to view details
+    if (target.closest('[data-action="view-details"]')) {
+      const listItem = target.closest('li');
+      const value = listItem.dataset.value;
+      const title = listItem.dataset.title || '';
+      const brand = listItem.dataset.brand || '';
+      const description = listItem.dataset.description || '';
+
+      // Show details popup
+      const details = [];
+      if (title) details.push(`📦 Product: ${title}`);
+      if (brand) details.push(`🏷️ Brand: ${brand}`);
+      if (description) details.push(`📝 Description: ${description}`);
+      details.push(`🔢 Barcode: ${value}`);
+
+      // If no product info, show a simple message
+      if (!title && !brand && !description) {
+        alert(`Barcode: ${value}\n\n(No product information available)`);
+      } else {
+        alert(details.join('\n\n'));
+      }
+      return;
     }
   };
 
@@ -776,7 +928,7 @@ class BSHistory extends HTMLElement {
       if (updated) {
         await setHistory(normalized);
       }
-    } catch (err) {
+    } catch (_err) {
       // non-fatal
     }
   }
@@ -793,7 +945,7 @@ class BSHistory extends HTMLElement {
         }
       }
 
-      try { toastify(body, { variant: 'warning' }); } catch (e) { /* ignore */ }
+      try { toastify(body, { variant: 'warning' }); } catch (_e) { /* ignore */ }
 
       if ('Notification' in window) {
         if (Notification.permission === 'default') {
@@ -804,7 +956,7 @@ class BSHistory extends HTMLElement {
           new Notification(title, { body });
         }
       }
-    } catch (err) {
+    } catch (_err) {
       // non-fatal
     }
   }
@@ -827,7 +979,7 @@ class BSHistory extends HTMLElement {
       const body = `${item.value} may have reached its expiry date.`;
 
       // In-app toast
-      try { toastify(body, { variant: 'warning' }); } catch (e) { /* ignore */ }
+      try { toastify(body, { variant: 'warning' }); } catch (_e) { /* ignore */ }
 
       // Browser notification (request permission when needed)
       if ('Notification' in window) {
@@ -839,7 +991,7 @@ class BSHistory extends HTMLElement {
           new Notification(title, { body });
         }
       }
-    } catch (err) {
+    } catch (_err) {
       // non-fatal
     }
   }
