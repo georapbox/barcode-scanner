@@ -26,12 +26,30 @@ The project aims to address the significant issue of food waste in the U.S., whe
 
 **How to start:**
 
+You need to start two API's and one react component
+
+API 1: 
 cd into server and run the following 2 commands:
 
 $env:UPC_API_KEY = "4190D3F1E6057DD921DA7E426A79AAF3"
 
 npm run start:proxy
 
+API 2:
+
+cd in a new terminal into server and run the following 2 commands:
+
+$env:UPC_API_KEY2 = "fca61d79d6054c04943fdfbf80b32256"
+
+node server/RecipeDB.js
+
+React Component
+
 cd into the main folder where everything is:
 
+run: npm install
+
 run npm start
+
+**I just added the image feature the user can scan and view the history and see the image URL
+
