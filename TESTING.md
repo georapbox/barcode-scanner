@@ -30,8 +30,11 @@
 ## UI/UX Testing
 
 ### A. Test layout across multiple platforms
+        12/4/25 Tested on Windows laptop and IPhone.  Layout rendered properly
 ### B. Intuativee navigation: scan, view inventory, get meals
+        12/4/25 Able to navigate to account, history, settings screens.  Able to switch to use image function.  Home, Items, and Recipes buttons are not functional at this time.  Search function is also non operational.  
 ### C. Test accessibility like screen readers and color contrast
+        12/4/25 Attempted to use screen reader.  Some text was read but not others.  I was not able to test color contrast at this time.
 ### D. Test error states like no camera, no internet, no matching meals
 
 ---
