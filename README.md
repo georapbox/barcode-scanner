@@ -36,46 +36,4 @@ cd into the main folder where everything is:
 
 run npm start
 
-
-
-I just added product images to the scanner! Now when you scan a barcode, you’ll see a photo of the item right away, and the History page also shows thumbnails.
-
-✅ What’s New
-
-Scan → Shows product image instantly
-
-History → Small thumbnails for each item
-
-Image URL is now saved in Firebase
-
-🛠️ How It Works
-
-When you scan:
-
-Scan → API returns product info + image → We display it
-
-
-Images come from the UPC Database API.
-I updated the code so the image URL gets saved and shown everywhere.
-
-🔧 Code Changes
-
-index.js → Show product image + save image URL
-
-firebase-scans.js → Added imageUrl field
-
-bs-history.js → Added thumbnails in history
-
-main.css → Added simple image styles
-
-🚀 Try It
-
-Open the app
-
-Scan something
-
-See the product photo
-
-Check History for thumbnails
-
-Live App: https://barcode-scanner-cs465.web.app
+**I just added the image feature the user can scan and view the history and see the image URL
