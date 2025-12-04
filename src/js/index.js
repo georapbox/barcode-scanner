@@ -158,27 +158,6 @@ import { isFirebaseConfigured } from './services/firebase-config.js';
     // Clear existing content
     itemInfoEl.textContent = '';
 
-    // Add product image if available
-    const imageUrl = info.images?.[0] || info.image_url || info.image;
-    if (imageUrl) {
-      const imgContainer = document.createElement('div');
-      imgContainer.className = 'item-info__image-container';
-
-      const img = document.createElement('img');
-      img.className = 'item-info__image';
-      img.src = imageUrl;
-      img.alt = info.title || 'Product image';
-      img.loading = 'lazy'; // Load images efficiently
-
-      // Handle image load errors
-      img.onerror = () => {
-        imgContainer.style.display = 'none';
-      };
-
-      imgContainer.appendChild(img);
-      itemInfoEl.appendChild(imgContainer);
-    }
-
     const title = document.createElement('h3');
     title.className = 'item-info__title';
     title.textContent = info.title || info.name || info.alias || '';
@@ -221,29 +200,17 @@ import { isFirebaseConfigured } from './services/firebase-config.js';
           // non-fatal
         }
 
-        // Save scan to Firestore with product info (including image)
+        // Save scan to Firestore with product info
         try {
-          // Check multiple possible image field names from the API
-          const imageUrl = info.images?.[0] || info.image_url || info.image || info.imageUrl || '';
-          
-          // Log for debugging
-          if (imageUrl) {
-            log.info('Found product image:', imageUrl);
-          } else {
-            log.info('No product image available for this barcode');
-          }
-          
           await saveScan({
             value: barcodeValue,
             format: barcodeFormat,
             title: info.title || info.name || info.alias || '',
             brand: info.brand || '',
             description: info.description || '',
-            imageUrl: imageUrl,
             metadata: {
               source: 'camera',
-              hasProductInfo: true,
-              hasImage: !!imageUrl
+              hasProductInfo: true
             }
           });
         } catch (saveError) {

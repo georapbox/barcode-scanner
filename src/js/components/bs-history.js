@@ -133,46 +133,24 @@ const styles = /* css */ `
     display: none;
   }
 
-  /* Product image styles */
-  .history-item-image {
-    flex-shrink: 0;
-    width: 60px;
-    height: 60px;
-    border-radius: 4px;
-    overflow: hidden;
-    background-color: #f0f0f0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .history-item-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-
-  .history-item-content {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-  }
-
-  .history-item-content strong {
+  /* Product info styles */
+  ul li strong {
     font-weight: 600;
+    color: var(--text-main);
   }
 
-  .history-item-content small {
+  ul li small {
     font-size: 0.85em;
     opacity: 0.7;
   }
 
-  @media (prefers-color-scheme: dark) {
-    .history-item-image {
-      background-color: rgba(255, 255, 255, 0.05);
-    }
+  ul li span[style*="cursor: pointer"] {
+    text-decoration: underline;
+    text-decoration-style: dotted;
+  }
+
+  ul li span[style*="cursor: pointer"]:hover {
+    opacity: 0.8;
   }
 `;
 
@@ -267,7 +245,6 @@ class BSHistory extends HTMLElement {
             title: scan.title || '',
             brand: scan.brand || '',
             description: scan.description || '',
-            imageUrl: scan.imageUrl || '',
             format: scan.format || '',
             firestoreId: scan.id || null
           }));
@@ -297,7 +274,6 @@ class BSHistory extends HTMLElement {
               title: item.title || '',
               brand: item.brand || '',
               description: item.description || '',
-              imageUrl: item.imageUrl || '',
               format: item.format || '',
               firestoreId: item.firestoreId || null
             };
@@ -635,35 +611,21 @@ class BSHistory extends HTMLElement {
     const value = typeof item === 'string' ? item : item.value || '';
     const expiresAt = item?.expiresAt || Date.now() + BSHistory.#getDefaultExpiryMs();
     const firestoreId = item?.firestoreId || null;
-    const imageUrl = item?.imageUrl || '';
     const title = item?.title || '';
+    const brand = item?.brand || '';
+    const description = item?.description || '';
 
     li.setAttribute('data-value', value);
     if (firestoreId) {
       li.setAttribute('data-firestore-id', firestoreId);
     }
 
-    // Add product image thumbnail if available
-    if (imageUrl) {
-      const imgContainer = document.createElement('div');
-      imgContainer.className = 'history-item-image';
-      
-      const img = document.createElement('img');
-      img.src = imageUrl;
-      img.alt = title || 'Product';
-      img.loading = 'lazy';
-      img.onerror = () => {
-        imgContainer.style.display = 'none';
-      };
-      
-      imgContainer.appendChild(img);
-      li.appendChild(imgContainer);
-    }
+    // Store product details for click event
+    if (title) li.setAttribute('data-title', title);
+    if (brand) li.setAttribute('data-brand', brand);
+    if (description) li.setAttribute('data-description', description);
 
-    const contentDiv = document.createElement('div');
-    contentDiv.className = 'history-item-content';
-
-    // Show product title if available, otherwise barcode
+    // Make the item clickable to show details
     let historyItem;
     try {
       new URL(value);
@@ -673,6 +635,20 @@ class BSHistory extends HTMLElement {
       historyItem.setAttribute('rel', 'noreferrer noopener');
     } catch {
       historyItem = document.createElement('span');
+      historyItem.style.cursor = title ? 'pointer' : 'default';
+      
+      // Add click event to show details
+      if (title || brand || description) {
+        historyItem.addEventListener('click', () => {
+          const details = [];
+          if (title) details.push(`Product: ${title}`);
+          if (brand) details.push(`Brand: ${brand}`);
+          if (description) details.push(`Details: ${description}`);
+          details.push(`Barcode: ${value}`);
+          
+          alert(details.join('\n'));
+        });
+      }
     }
 
     // Show title if available, with barcode below
@@ -689,9 +665,8 @@ class BSHistory extends HTMLElement {
     countdownEl.dataset.expiresAt = String(expiresAt);
     countdownEl.textContent = this.#formatRemaining(expiresAt - Date.now());
 
-    contentDiv.appendChild(historyItem);
-    contentDiv.appendChild(countdownEl);
-    li.appendChild(contentDiv);
+    li.appendChild(historyItem);
+    li.appendChild(countdownEl);
 
     const actionsEl = document.createElement('div');
     actionsEl.className = 'actions';

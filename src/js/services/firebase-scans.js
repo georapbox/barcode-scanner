@@ -76,7 +76,6 @@ export async function saveScan(scanData) {
         title: scanData.title || '',
         brand: scanData.brand || '',
         description: scanData.description || '',
-        imageUrl: scanData.imageUrl || '',
         format: scanData.format || '',
         metadata: scanData.metadata || {}
       };
@@ -97,7 +96,6 @@ export async function saveScan(scanData) {
       title: scanData.title || '',
       brand: scanData.brand || '',
       description: scanData.description || '',
-      imageUrl: scanData.imageUrl || '',
       metadata: scanData.metadata || {},
       scannedAt: Timestamp.now(),
       createdAt: Timestamp.now(),
@@ -119,7 +117,6 @@ export async function saveScan(scanData) {
           title: scanData.title || '',
           brand: scanData.brand || '',
           description: scanData.description || '',
-          imageUrl: scanData.imageUrl || '',
           format: scanData.format || '',
           firestoreId: docRef.id
         };
@@ -145,7 +142,6 @@ export async function saveScan(scanData) {
         title: scanData.title || '',
         brand: scanData.brand || '',
         description: scanData.description || '',
-        imageUrl: scanData.imageUrl || '',
         format: scanData.format || '',
         pendingSync: true // Mark for sync when online
       };
@@ -184,7 +180,6 @@ export async function getUserScans(maxResults = 100) {
         title: item.title || '',
         brand: item.brand || '',
         description: item.description || '',
-        imageUrl: item.imageUrl || '',
         format: item.format || '',
         scannedAt: item.addedAt ? new Date(item.addedAt) : new Date(),
         metadata: item.metadata || {}
@@ -231,7 +226,6 @@ export async function getUserScans(maxResults = 100) {
           title: item.title || '',
           brand: item.brand || '',
           description: item.description || '',
-          imageUrl: item.imageUrl || '',
           format: item.format || '',
           scannedAt: item.addedAt ? new Date(item.addedAt) : new Date(),
           metadata: item.metadata || {}
