@@ -32,7 +32,7 @@ import { isFirebaseConfigured } from './services/firebase-config.js';
     if (isFirebaseConfigured()) {
       log.info('Initializing Firebase...');
       await initFirestore();
-      
+
       // Initialize auth and automatically sign in anonymously if no user
       const user = await initAuth();
       if (!user) {
@@ -163,18 +163,18 @@ import { isFirebaseConfigured } from './services/firebase-config.js';
     if (imageUrl) {
       const imgContainer = document.createElement('div');
       imgContainer.className = 'item-info__image-container';
-      
+
       const img = document.createElement('img');
       img.className = 'item-info__image';
       img.src = imageUrl;
       img.alt = info.title || 'Product image';
       img.loading = 'lazy'; // Load images efficiently
-      
+
       // Handle image load errors
       img.onerror = () => {
         imgContainer.style.display = 'none';
       };
-      
+
       imgContainer.appendChild(img);
       itemInfoEl.appendChild(imgContainer);
     }
@@ -223,7 +223,16 @@ import { isFirebaseConfigured } from './services/firebase-config.js';
 
         // Save scan to Firestore with product info (including image)
         try {
-          const imageUrl = info.images?.[0] || info.image_url || info.image || '';
+          // Check multiple possible image field names from the API
+          const imageUrl = info.images?.[0] || info.image_url || info.image || info.imageUrl || '';
+          
+          // Log for debugging
+          if (imageUrl) {
+            log.info('Found product image:', imageUrl);
+          } else {
+            log.info('No product image available for this barcode');
+          }
+          
           await saveScan({
             value: barcodeValue,
             format: barcodeFormat,
@@ -324,7 +333,9 @@ import { isFirebaseConfigured } from './services/firebase-config.js';
             // small timeout to allow history element to render
             setTimeout(() => {
               try {
-                const li = bsHistoryEl?.shadowRoot?.querySelector(`li[data-value="${barcodeValue}"]`);
+                const li = bsHistoryEl?.shadowRoot?.querySelector(
+                  `li[data-value="${barcodeValue}"]`
+                );
                 li?.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 li?.classList?.add('highlight');
                 setTimeout(() => li?.classList?.remove('highlight'), 2000);
@@ -451,7 +462,9 @@ import { isFirebaseConfigured } from './services/firebase-config.js';
                 historyDialog.open = true;
                 setTimeout(() => {
                   try {
-                    const li = bsHistoryEl?.shadowRoot?.querySelector(`li[data-value="${barcodeValue}"]`);
+                    const li = bsHistoryEl?.shadowRoot?.querySelector(
+                      `li[data-value="${barcodeValue}"]`
+                    );
                     li?.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     li?.classList?.add('highlight');
                     setTimeout(() => li?.classList?.remove('highlight'), 2000);

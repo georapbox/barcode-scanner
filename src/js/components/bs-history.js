@@ -247,15 +247,18 @@ class BSHistory extends HTMLElement {
     this.#emptyHistoryBtn = this.shadowRoot?.getElementById('emptyHistoryBtn');
     
 
-    // Try to load from Firestore first if configured and user is authenticated
+    // Always load from local storage first (this persists across logout)
+    const [, rawHistory = []] = await getHistory();
+    
     let historyData = [];
     
+    // Try to load from Firestore if configured and user is authenticated
     if (isFirebaseConfigured() && isAuthenticated()) {
       try {
         const { error, scans } = await getUserScans();
         if (!error && scans) {
           // Convert Firestore scans to history format
-          historyData = scans.map(scan => ({
+          const firestoreScans = scans.map(scan => ({
             value: scan.value || '',
             addedAt: scan.scannedAt ? scan.scannedAt.getTime() : Date.now(),
             expiresAt: scan.scannedAt ? scan.scannedAt.getTime() + BSHistory.#getDefaultExpiryMs() : Date.now() + BSHistory.#getDefaultExpiryMs(),
@@ -264,20 +267,66 @@ class BSHistory extends HTMLElement {
             title: scan.title || '',
             brand: scan.brand || '',
             description: scan.description || '',
+            imageUrl: scan.imageUrl || '',
             format: scan.format || '',
             firestoreId: scan.id || null
           }));
           
-          log.info(`Loaded ${historyData.length} scans from Firestore`);
+          log.info(`Loaded ${firestoreScans.length} scans from Firestore`);
+          
+          // Merge Firestore scans with local storage
+          // Firestore is the source of truth, but keep local scans too
+          const localNormalized = (rawHistory || []).map(item => {
+            if (!item) return null;
+            if (typeof item === 'string') {
+              const addedAt = Date.now();
+              return {
+                value: item,
+                addedAt,
+                expiresAt: addedAt + BSHistory.#getDefaultExpiryMs(),
+                notified: false,
+                preNotified: false
+              };
+            }
+            return {
+              value: item.value ?? (item?.barcode ?? ''),
+              addedAt: item.addedAt ?? Date.now(),
+              expiresAt: item.expiresAt ?? (item.addedAt ? item.addedAt + BSHistory.#getDefaultExpiryMs() : Date.now() + BSHistory.#getDefaultExpiryMs()),
+              notified: Boolean(item.notified),
+              preNotified: Boolean(item.preNotified),
+              title: item.title || '',
+              brand: item.brand || '',
+              description: item.description || '',
+              imageUrl: item.imageUrl || '',
+              format: item.format || '',
+              firestoreId: item.firestoreId || null
+            };
+          }).filter(Boolean);
+          
+          // Merge: combine Firestore and local, removing duplicates
+          const mergedMap = new Map();
+          
+          // Add Firestore scans first (source of truth)
+          firestoreScans.forEach(scan => {
+            mergedMap.set(scan.value, scan);
+          });
+          
+          // Add local scans that aren't in Firestore
+          localNormalized.forEach(scan => {
+            if (!mergedMap.has(scan.value)) {
+              mergedMap.set(scan.value, scan);
+            }
+          });
+          
+          historyData = Array.from(mergedMap.values());
         }
       } catch (err) {
         log.error('Error loading from Firestore:', err);
       }
     }
     
-    // Fallback to local storage or merge with Firestore data
+    // If Firestore didn't work or user not authenticated, use local storage only
     if (historyData.length === 0) {
-      const [, rawHistory = []] = await getHistory();
       const normalized = (rawHistory || []).map(item => {
         if (!item) return null;
         if (typeof item === 'string') {

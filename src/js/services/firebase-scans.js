@@ -184,6 +184,7 @@ export async function getUserScans(maxResults = 100) {
         title: item.title || '',
         brand: item.brand || '',
         description: item.description || '',
+        imageUrl: item.imageUrl || '',
         format: item.format || '',
         scannedAt: item.addedAt ? new Date(item.addedAt) : new Date(),
         metadata: item.metadata || {}
@@ -230,6 +231,7 @@ export async function getUserScans(maxResults = 100) {
           title: item.title || '',
           brand: item.brand || '',
           description: item.description || '',
+          imageUrl: item.imageUrl || '',
           format: item.format || '',
           scannedAt: item.addedAt ? new Date(item.addedAt) : new Date(),
           metadata: item.metadata || {}
