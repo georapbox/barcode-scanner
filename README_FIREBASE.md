@@ -1,43 +1,112 @@
-Project Overview:
+I finished connecting my barcode scanner app to Firebase, and now it has authentication, cloud storage, and full offline support. Everything works smoothly and the app is more reliable than ever.
 
-The project aims to address the significant issue of food waste in the U.S., where the average American discards approximately $2000 worth of edible food annually, contributing to an estimated $408 billion in grocery waste nationwide. The solution is an app designed to help users manage their food inventory by tracking items brought into their homes and suggesting recipes based on available ingredients, those nearing expiration, and user preferences.
+ What I Added
 
-Key Components:
+User Login: Anonymous sign-in and email/password accounts
 
-Barcode Repository Integration: A free barcode repository has been connected to a system that tracks scanned items, recording details such as the item and purchase time.
-Recipe API Connection: The app is linked to TheMealDB, a free meal API that searches for meals based on available ingredients, offering recipe suggestions to users.
-Current Tasks:
+Cloud Storage: All scans now save to Firestore with product details
 
-Implement a list to track scanned ingredients.
-Add expiration timers to each ingredient, potentially using national average data.
-Store the ingredient list in a database.
-Develop logic for suggesting recipes based on the user’s available ingredients.
-List of which project parts will be worked on by which team member(s):
+Offline Mode: The app works even without internet and syncs automatically
 
-Samuel Kwibe: I will be working closely with Jon on the backend of the project, will be responsible for fixing the API and ensuring the project runs smoothly. Working on list to maintain scanned items into a database. Currently when the scanner is exited the data is removed.
+Security: Each user only sees their own data through Firestore rules
 
-Jon Scott: Back End. Completed linking the API from https://api.upcdatabase.org/. This API will resolve a 12-14 digit UPC to a product that can be added to our list. Working on linking the API from https://spoonacular.com/food-api/console#Profile.
+ How to Set It Up
+1. Create a Firebase project
 
-Jonathan Corwin: Design and Test - Working on presentation design. Also, Working on creating test cases and implimentation of testing.
+Go to Firebase Console → Add project → Register the web app.
 
-Isaac Akhtar Zada: Front End (I will be working on the front end to create a time counter for our app, which will track the time from when the food is purchased until it expires. Additionally, I will attempt to develop the app for iOS as well as Android.)
+2. Add your .env file
+VITE_FIREBASE_API_KEY=xxx
+VITE_FIREBASE_AUTH_DOMAIN=xxx
+VITE_FIREBASE_PROJECT_ID=xxx
+VITE_FIREBASE_STORAGE_BUCKET=xxx
+VITE_FIREBASE_MESSAGING_SENDER_ID=xxx
+VITE_FIREBASE_APP_ID=xxx
 
-Elena Guzman: Website design - I'm going to be working on the landing page for the web page
+3. Turn on services
 
-How to start:
+Enable Anonymous + Email/Password auth
 
-cd into server and run the following 2 commands:
+Create a Firestore database
 
-$env:UPC_API_KEY = "4190D3F1E6057DD921DA7E426A79AAF3"
+4. Deploy security rules
+firebase login
+firebase init firestore
+firebase deploy --only firestore:rules
 
-npm run start:proxy
+5. Run the app
+npm start
 
-cd into the main folder where everything is:
+ Important Files I Added
 
-run npm start
+firebase-config.js – Firebase setup
 
+firebase-auth.js – Login / sign-out functions
 
+firebase-scans.js – Saving and loading scans
 
+bs-auth.js – The UI for signing in
 
+firestore.rules – Security rules
 
+.env.example – Example config
 
+Extra docs I created:
+
+FIREBASE_QUICKSTART.md
+
+FIREBASE_SETUP.md
+
+FIREBASE_FEATURES.md
+
+IMPLEMENTATION_SUMMARY.md
+
+ How the App Works Now
+
+When a scan happens, it saves to Firestore AND to local storage
+
+If the user is offline, scans stay local and sync later
+
+History loads from the cloud when logged in, or from local storage when offline
+
+ What I Changed
+
+Added Firebase SDK
+
+Added automatic anonymous sign-in
+
+Connected Firestore to scan history
+
+Updated index.js and history UI
+
+Added the account dialog and login button
+
+ Things I Tested
+
+Scanning online
+
+Scanning offline
+
+Auto-sync after reconnecting
+
+Logging out and back in
+
+Viewing history on all modes
+
+ If Something Breaks
+
+“Permission denied” → deploy rules
+
+“Firebase not configured” → check .env
+
+Scans not syncing → check internet + Firestore
+
+ If Firebase Is Not Set Up
+
+The app still works offline and saves everything locally.
+
+ Final Summary
+
+I successfully upgraded the app to a secure, offline-first, cloud-based barcode scanner.
+Users can sign in, save scans safely, and their data stays private.
+And I documented everything so it’s easy to set up and maintain.
