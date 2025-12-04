@@ -1,4 +1,7 @@
 import { getHistory, setHistory } from '../services/storage.js';
+import { getUserScans, deleteAllUserScans, deleteScan } from '../services/firebase-scans.js';
+import { isFirebaseConfigured } from '../services/firebase-config.js';
+import { isAuthenticated } from '../services/firebase-auth.js';
 import { log } from '../utils/log.js';
 import { toastify } from '../helpers/toastify.js';
 
@@ -151,8 +154,8 @@ class BSHistory extends HTMLElement {
   // Notify a short warning before expiry (ms). 3s works for 5s test items.
   #PRE_NOTIFY_THRESHOLD_MS = 3000;
 
-  // Default expiry (7 days) in ms
-  static #DEFAULT_EXPIRY_MS = 7 * 24 * 60 * 60 * 1000;
+  // Default expiry (30 days / 1 month) in ms
+  static #DEFAULT_EXPIRY_MS = 30 * 24 * 60 * 60 * 1000;
 
   // Read optional test expiry seconds from URL: ?testExpireSeconds=5
   static #getDefaultExpiryMs() {
@@ -202,35 +205,72 @@ class BSHistory extends HTMLElement {
     this.#emptyHistoryBtn = this.shadowRoot?.getElementById('emptyHistoryBtn');
     
 
-    // Load history and normalize legacy string entries to objects
-    const [, rawHistory = []] = await getHistory();
-    const normalized = (rawHistory || []).map(item => {
-      if (!item) return null;
-      if (typeof item === 'string') {
-        const addedAt = Date.now();
-        return {
-          value: item,
-          addedAt,
-          expiresAt: addedAt + BSHistory.#getDefaultExpiryMs(),
-          notified: false,
-          preNotified: false
-        };
+    // Try to load from Firestore first if configured and user is authenticated
+    let historyData = [];
+    
+    if (isFirebaseConfigured() && isAuthenticated()) {
+      try {
+        const { error, scans } = await getUserScans();
+        if (!error && scans) {
+          // Convert Firestore scans to history format
+          historyData = scans.map(scan => ({
+            value: scan.value || '',
+            addedAt: scan.scannedAt ? scan.scannedAt.getTime() : Date.now(),
+            expiresAt: scan.scannedAt ? scan.scannedAt.getTime() + BSHistory.#getDefaultExpiryMs() : Date.now() + BSHistory.#getDefaultExpiryMs(),
+            notified: false,
+            preNotified: false,
+            title: scan.title || '',
+            brand: scan.brand || '',
+            description: scan.description || '',
+            format: scan.format || '',
+            firestoreId: scan.id || null
+          }));
+          
+          log.info(`Loaded ${historyData.length} scans from Firestore`);
+        }
+      } catch (err) {
+        log.error('Error loading from Firestore:', err);
       }
+    }
+    
+    // Fallback to local storage or merge with Firestore data
+    if (historyData.length === 0) {
+      const [, rawHistory = []] = await getHistory();
+      const normalized = (rawHistory || []).map(item => {
+        if (!item) return null;
+        if (typeof item === 'string') {
+          const addedAt = Date.now();
+          return {
+            value: item,
+            addedAt,
+            expiresAt: addedAt + BSHistory.#getDefaultExpiryMs(),
+            notified: false,
+            preNotified: false
+          };
+        }
 
-      // Already an object: ensure required fields exist
-      return {
-        value: item.value ?? (item?.barcode ?? ''),
-        addedAt: item.addedAt ?? Date.now(),
-        expiresAt: item.expiresAt ?? (item.addedAt ? item.addedAt + BSHistory.#getDefaultExpiryMs() : Date.now() + BSHistory.#getDefaultExpiryMs()),
-        notified: Boolean(item.notified),
-        preNotified: Boolean(item.preNotified)
-      };
-    }).filter(Boolean);
+        // Already an object: ensure required fields exist
+        return {
+          value: item.value ?? (item?.barcode ?? ''),
+          addedAt: item.addedAt ?? Date.now(),
+          expiresAt: item.expiresAt ?? (item.addedAt ? item.addedAt + BSHistory.#getDefaultExpiryMs() : Date.now() + BSHistory.#getDefaultExpiryMs()),
+          notified: Boolean(item.notified),
+          preNotified: Boolean(item.preNotified),
+          title: item.title || '',
+          brand: item.brand || '',
+          description: item.description || '',
+          format: item.format || '',
+          firestoreId: item.firestoreId || null
+        };
+      }).filter(Boolean);
 
-    // Persist normalized history so storage uses the new format
-    await setHistory(normalized);
+      historyData = normalized;
 
-    this.#renderHistoryList(normalized || []);
+      // Persist normalized history so storage uses the new format
+      await setHistory(normalized);
+    }
+
+    this.#renderHistoryList(historyData || []);
 
     // If test mode or explicit test expiry seconds set, show an informative toast for quick testing
     try {
@@ -383,6 +423,19 @@ class BSHistory extends HTMLElement {
       message: 'Error removing barcode from history'
     };
 
+    // If Firebase is configured and user is authenticated, delete from Firestore
+    if (isFirebaseConfigured() && isAuthenticated()) {
+      const historyItem = this.#historyListEl?.querySelector(`li[data-value="${item}"]`);
+      const firestoreId = historyItem?.dataset.firestoreId;
+      
+      if (firestoreId) {
+        const { error } = await deleteScan(firestoreId);
+        if (error) {
+          log.error('Error deleting scan from Firestore:', error);
+          // Continue to delete from local storage anyway
+        }
+      }
+    }
 
     const [getHistoryError, history = []] = await getHistory();
 
@@ -426,6 +479,17 @@ class BSHistory extends HTMLElement {
       type: 'empty',
       message: 'Error emptying history'
     };
+
+    // If Firebase is configured and user is authenticated, delete all from Firestore
+    if (isFirebaseConfigured() && isAuthenticated()) {
+      const { error, deletedCount } = await deleteAllUserScans();
+      if (error) {
+        log.error('Error deleting all scans from Firestore:', error);
+        // Continue to delete from local storage anyway
+      } else {
+        log.info(`Deleted ${deletedCount} scans from Firestore`);
+      }
+    }
 
     const [setHistoryError] = await setHistory([]);
 
@@ -479,8 +543,12 @@ class BSHistory extends HTMLElement {
     // `item` is expected to be an object with { value, addedAt, expiresAt }
     const value = typeof item === 'string' ? item : item.value || '';
     const expiresAt = item?.expiresAt || Date.now() + BSHistory.#getDefaultExpiryMs();
+    const firestoreId = item?.firestoreId || null;
 
     li.setAttribute('data-value', value);
+    if (firestoreId) {
+      li.setAttribute('data-firestore-id', firestoreId);
+    }
 
     let historyItem;
 
