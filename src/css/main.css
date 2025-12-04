@@ -759,3 +759,28 @@ alert-element {
     display: none;
   }
 }
+
+/* Product Image Styles */
+.item-info__image-container {
+  margin: 1rem 0;
+  text-align: center;
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  background-color: var(--background-alt);
+}
+
+.item-info__image {
+  max-width: 100%;
+  max-height: 300px;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+  border-radius: var(--border-radius);
+  object-fit: contain;
+}
+
+@media (prefers-color-scheme: dark) {
+  .item-info__image-container {
+    background-color: rgba(255, 255, 255, 0.05);
+  }
+}

@@ -132,6 +132,48 @@ const styles = /* css */ `
   ul:not(:empty) + footer > div {
     display: none;
   }
+
+  /* Product image styles */
+  .history-item-image {
+    flex-shrink: 0;
+    width: 60px;
+    height: 60px;
+    border-radius: 4px;
+    overflow: hidden;
+    background-color: #f0f0f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .history-item-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .history-item-content {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .history-item-content strong {
+    font-weight: 600;
+  }
+
+  .history-item-content small {
+    font-size: 0.85em;
+    opacity: 0.7;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .history-item-image {
+      background-color: rgba(255, 255, 255, 0.05);
+    }
+  }
 `;
 
 const template = document.createElement('template');
@@ -544,14 +586,36 @@ class BSHistory extends HTMLElement {
     const value = typeof item === 'string' ? item : item.value || '';
     const expiresAt = item?.expiresAt || Date.now() + BSHistory.#getDefaultExpiryMs();
     const firestoreId = item?.firestoreId || null;
+    const imageUrl = item?.imageUrl || '';
+    const title = item?.title || '';
 
     li.setAttribute('data-value', value);
     if (firestoreId) {
       li.setAttribute('data-firestore-id', firestoreId);
     }
 
-    let historyItem;
+    // Add product image thumbnail if available
+    if (imageUrl) {
+      const imgContainer = document.createElement('div');
+      imgContainer.className = 'history-item-image';
+      
+      const img = document.createElement('img');
+      img.src = imageUrl;
+      img.alt = title || 'Product';
+      img.loading = 'lazy';
+      img.onerror = () => {
+        imgContainer.style.display = 'none';
+      };
+      
+      imgContainer.appendChild(img);
+      li.appendChild(imgContainer);
+    }
 
+    const contentDiv = document.createElement('div');
+    contentDiv.className = 'history-item-content';
+
+    // Show product title if available, otherwise barcode
+    let historyItem;
     try {
       new URL(value);
       historyItem = document.createElement('a');
@@ -562,7 +626,12 @@ class BSHistory extends HTMLElement {
       historyItem = document.createElement('span');
     }
 
-    historyItem.textContent = value;
+    // Show title if available, with barcode below
+    if (title) {
+      historyItem.innerHTML = `<strong>${title}</strong><br><small>${value}</small>`;
+    } else {
+      historyItem.textContent = value;
+    }
 
     // countdown element
     const countdownEl = document.createElement('span');
@@ -570,6 +639,10 @@ class BSHistory extends HTMLElement {
     countdownEl.setAttribute('aria-live', 'polite');
     countdownEl.dataset.expiresAt = String(expiresAt);
     countdownEl.textContent = this.#formatRemaining(expiresAt - Date.now());
+
+    contentDiv.appendChild(historyItem);
+    contentDiv.appendChild(countdownEl);
+    li.appendChild(contentDiv);
 
     const actionsEl = document.createElement('div');
     actionsEl.className = 'actions';
@@ -593,8 +666,6 @@ class BSHistory extends HTMLElement {
     `;
     actionsEl.appendChild(removeBtn);
 
-    li.appendChild(historyItem);
-    li.appendChild(countdownEl);
     li.appendChild(actionsEl);
 
     return li;

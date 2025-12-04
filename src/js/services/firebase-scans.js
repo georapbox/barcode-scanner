@@ -76,6 +76,7 @@ export async function saveScan(scanData) {
         title: scanData.title || '',
         brand: scanData.brand || '',
         description: scanData.description || '',
+        imageUrl: scanData.imageUrl || '',
         format: scanData.format || '',
         metadata: scanData.metadata || {}
       };
@@ -96,6 +97,7 @@ export async function saveScan(scanData) {
       title: scanData.title || '',
       brand: scanData.brand || '',
       description: scanData.description || '',
+      imageUrl: scanData.imageUrl || '',
       metadata: scanData.metadata || {},
       scannedAt: Timestamp.now(),
       createdAt: Timestamp.now(),
@@ -117,6 +119,7 @@ export async function saveScan(scanData) {
           title: scanData.title || '',
           brand: scanData.brand || '',
           description: scanData.description || '',
+          imageUrl: scanData.imageUrl || '',
           format: scanData.format || '',
           firestoreId: docRef.id
         };
@@ -142,6 +145,7 @@ export async function saveScan(scanData) {
         title: scanData.title || '',
         brand: scanData.brand || '',
         description: scanData.description || '',
+        imageUrl: scanData.imageUrl || '',
         format: scanData.format || '',
         pendingSync: true // Mark for sync when online
       };
