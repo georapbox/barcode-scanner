@@ -24,11 +24,13 @@ import './components/bs-history.js';
 import './components/bs-auth.js';
 import { initAuth, signInAnonymous } from './services/firebase-auth.js';
 import { initFirestore, saveScan, syncPendingScans } from './services/firebase-scans.js';
-import { isFirebaseConfigured } from './services/firebase-config.js';
+import { isFirebaseConfigured, initFirebaseRuntime } from './services/firebase-config.js';
 
 (async function () {
   // Initialize Firebase Authentication and Firestore
   try {
+    // If a runtime config was injected into `window.__FIREBASE_CONFIG__`, initialize Firebase now.
+    try { initFirebaseRuntime(); } catch (e) { /* ignore */ }
     if (isFirebaseConfigured()) {
       log.info('Initializing Firebase...');
       await initFirestore();

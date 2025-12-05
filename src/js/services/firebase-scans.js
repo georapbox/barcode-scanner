@@ -70,7 +70,7 @@ export async function saveScan(scanData) {
       const newScan = {
         value: scanData.value,
         addedAt: Date.now(),
-        expiresAt: Date.now() + (30 * 24 * 60 * 60 * 1000), // 30 days (1 month)
+        expiresAt: Date.now() + (7 * 24 * 60 * 60 * 1000), // 7 days
         notified: false,
         preNotified: false,
         title: scanData.title || '',
@@ -111,7 +111,7 @@ export async function saveScan(scanData) {
         const localScan = {
           value: scanData.value,
           addedAt: Date.now(),
-          expiresAt: Date.now() + (30 * 24 * 60 * 60 * 1000), // 30 days (1 month)
+          expiresAt: Date.now() + (7 * 24 * 60 * 60 * 1000), // 7 days
           notified: false,
           preNotified: false,
           title: scanData.title || '',
@@ -136,7 +136,7 @@ export async function saveScan(scanData) {
       const localScan = {
         value: scanData.value,
         addedAt: Date.now(),
-        expiresAt: Date.now() + (30 * 24 * 60 * 60 * 1000), // 30 days (1 month)
+        expiresAt: Date.now() + (7 * 24 * 60 * 60 * 1000), // 7 days
         notified: false,
         preNotified: false,
         title: scanData.title || '',

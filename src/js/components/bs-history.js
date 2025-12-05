@@ -179,11 +179,11 @@ class BSHistory extends HTMLElement {
   #historyListEl = null;
   #emptyHistoryBtn = null;
   
-  // Notify a short warning before expiry (ms). 3s works for 5s test items.
-  #PRE_NOTIFY_THRESHOLD_MS = 3000;
+  // Notify a warning before expiry (ms). Default is 1 day (pre-notify one day before expiry).
+  #PRE_NOTIFY_THRESHOLD_MS = 24 * 60 * 60 * 1000; // 1 day
 
-  // Default expiry (30 days / 1 month) in ms
-  static #DEFAULT_EXPIRY_MS = 30 * 24 * 60 * 60 * 1000;
+  // Default expiry (7 days) in ms
+  static #DEFAULT_EXPIRY_MS = 7 * 24 * 60 * 60 * 1000;
 
   // Read optional test expiry seconds from URL: ?testExpireSeconds=5
   static #getDefaultExpiryMs() {
@@ -199,20 +199,9 @@ class BSHistory extends HTMLElement {
       if (testMode === '1' || String(testMode).toLowerCase() === 'true') {
         return 10 * 1000;
       }
-      // Auto-detect local dev environment: treat localhost/file protocol as test mode (10s)
-      if (typeof window !== 'undefined') {
-        try {
-          const host = window.location.hostname;
-          const protocol = window.location.protocol;
-          const isLocalHost = host === 'localhost' || host === '127.0.0.1' || host === '::1';
-          const isFile = protocol === 'file:';
-          if (isLocalHost || isFile) {
-            return 10 * 1000;
-          }
-        } catch (_e) {
-          // ignore
-        }
-      }
+      // Note: do not auto-detect localhost/file as test mode —
+      // default expiry remains the configured value (7 days) unless
+      // overridden explicitly via URL params.
     } catch (_e) {
       // ignore
     }
@@ -475,6 +464,15 @@ class BSHistory extends HTMLElement {
       this.#createHistoryItemElement(newItem),
       this.#historyListEl.firstElementChild
     );
+
+    // Show expiry info toast so users can see the computed expiry (helps verify 7 days)
+    try {
+      const expiresDate = new Date(newItem.expiresAt);
+      const daysLeft = Math.round((newItem.expiresAt - Date.now()) / (24 * 60 * 60 * 1000));
+      toastify(`Expires on ${expiresDate.toLocaleString()} (~${daysLeft} day${daysLeft === 1 ? '' : 's'})`, { variant: 'info' });
+    } catch (_e) {
+      // ignore
+    }
 
     this.#emitEvent('bs-history-success', {
       type: 'add',
@@ -894,6 +892,21 @@ class BSHistory extends HTMLElement {
 
       const now = Date.now();
 
+      // Determine effective pre-notify threshold. In normal use this is 1 day.
+      // For short/test expiry durations, scale the pre-notify threshold down
+      // so pre-notify is observable during tests. We choose 20% of the
+      // default expiry time but never less than 1 second.
+      const defaultExpiryMs = BSHistory.#getDefaultExpiryMs();
+      let effectivePreNotify = this.#PRE_NOTIFY_THRESHOLD_MS;
+      try {
+        if (defaultExpiryMs < this.#PRE_NOTIFY_THRESHOLD_MS) {
+          effectivePreNotify = Math.max(1000, Math.floor(defaultExpiryMs * 0.2));
+        }
+      } catch (_e) {
+        // fallback to configured threshold
+        effectivePreNotify = this.#PRE_NOTIFY_THRESHOLD_MS;
+      }
+
       // Update countdown UI
       const countdownEls = this.shadowRoot?.querySelectorAll('.history-countdown') || [];
       countdownEls.forEach(el => {
@@ -904,14 +917,14 @@ class BSHistory extends HTMLElement {
       let updated = false;
 
       // Count items that will hit pre-notify threshold and haven't been pre-notified yet
-      const nearExpiryCount = normalized.filter(h => h && ((h.expiresAt || 0) - now) > 0 && ((h.expiresAt || 0) - now) <= this.#PRE_NOTIFY_THRESHOLD_MS && !h.preNotified).length;
+      const nearExpiryCount = normalized.filter(h => h && ((h.expiresAt || 0) - now) > 0 && ((h.expiresAt || 0) - now) <= effectivePreNotify && !h.preNotified).length;
 
       for (const it of normalized) {
         if (!it) continue;
         const timeLeft = (it.expiresAt || 0) - now;
 
         // Pre-notify when small threshold is reached (only once)
-        if (timeLeft > 0 && timeLeft <= this.#PRE_NOTIFY_THRESHOLD_MS && !it.preNotified) {
+        if (timeLeft > 0 && timeLeft <= effectivePreNotify && !it.preNotified) {
           this.#notifyItemWillExpire(it, timeLeft, nearExpiryCount);
           it.preNotified = true;
           updated = true;
@@ -919,7 +932,7 @@ class BSHistory extends HTMLElement {
 
         // Notify when expired (only once)
         if (timeLeft <= 0 && !it.notified) {
-          this.#notifyItemExpired(it);
+            this.#notifyItemExpired(it);
           it.notified = true;
           updated = true;
         }
@@ -965,21 +978,23 @@ class BSHistory extends HTMLElement {
     if (ms <= 0) return 'Expired';
     const seconds = Math.floor(ms / 1000);
     const days = Math.floor(seconds / (24 * 3600));
-    if (days > 0) return `${days} day${days === 1 ? '' : 's'} left`;
     const hours = Math.floor((seconds % (24 * 3600)) / 3600);
-    if (hours > 0) return `${hours} hour${hours === 1 ? '' : 's'} left`;
     const minutes = Math.floor((seconds % 3600) / 60);
-    if (minutes > 0) return `${minutes} min left`;
-    return 'Less than a minute';
+    const secs = seconds % 60;
+
+    if (days > 0) return `${days}d ${hours}h ${minutes}m left`;
+    if (hours > 0) return `${hours}h ${minutes}m ${secs}s left`;
+    if (minutes > 0) return `${minutes}m ${secs}s left`;
+    return `${secs}s left`;
   }
 
   async #notifyItemExpired(item) {
     try {
-      const title = 'Item may have expired';
-      const body = `${item.value} may have reached its expiry date.`;
+      const title = 'Item expired';
+      const body = `${item.value} has expired.`;
 
-      // In-app toast
-      try { toastify(body, { variant: 'warning' }); } catch (_e) { /* ignore */ }
+      // In-app toast (use danger to indicate expiry)
+      try { toastify(body, { variant: 'danger' }); } catch (_e) { /* ignore */ }
 
       // Browser notification (request permission when needed)
       if ('Notification' in window) {

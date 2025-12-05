@@ -1,4 +1,4 @@
-import { isFirebaseConfigured } from '../services/firebase-config.js';
+import { isFirebaseConfigured, initFirebaseRuntime } from '../services/firebase-config.js';
 import {
   onAuthStateChange,
   signInAnonymous,
@@ -7,6 +7,8 @@ import {
   signOut,
   getCurrentUser
 } from '../services/firebase-auth.js';
+import { initFirestore } from '../services/firebase-scans.js';
+import { initAuth } from '../services/firebase-auth.js';
 import { log } from '../utils/log.js';
 import { toastify } from '../helpers/toastify.js';
 
@@ -235,6 +237,11 @@ template.innerHTML = /* html */ `
       <div class="info-message" id="firebaseNotConfigured" hidden>
         <strong>Firebase Not Configured</strong><br>
         Your scans are being saved locally. To sync across devices, configure Firebase in your project.
+        <div style="margin-top:0.5rem;">
+          <small>Paste your Firebase web app config (JSON) below and click Configure to enable auth & syncing.</small>
+          <textarea id="firebaseConfigInput" style="width:100%;height:6rem;margin-top:0.5rem;font-family:monospace;" placeholder='{"apiKey":"...","authDomain":"...","projectId":"...","storageBucket":"...","messagingSenderId":"...","appId":"..."}'></textarea>
+          <div style="display:flex;gap:0.5rem;margin-top:0.5rem;"><button type="button" class="btn" id="firebaseConfigureBtn">Configure Firebase</button><button type="button" class="btn btn-secondary" id="firebaseClearBtn">Clear</button></div>
+        </div>
       </div>
 
       <div class="auth-tabs">
@@ -317,6 +324,12 @@ class BSAuth extends HTMLElement {
     // Set up event listeners
     this.#setupEventListeners();
 
+    // Configure Firebase button
+    const configureBtn = this.shadowRoot.getElementById('firebaseConfigureBtn');
+    const clearBtn = this.shadowRoot.getElementById('firebaseClearBtn');
+    if (configureBtn) configureBtn.addEventListener('click', () => this.#handleConfigureFirebase());
+    if (clearBtn) clearBtn.addEventListener('click', () => this.#handleClearFirebaseInput());
+
     // Subscribe to auth state changes
     this.#unsubscribeAuth = onAuthStateChange(user => {
       this.#handleAuthStateChange(user);
@@ -393,7 +406,6 @@ class BSAuth extends HTMLElement {
 
   async #handleSignIn(event) {
     event.preventDefault();
-    
     const emailInput = this.shadowRoot.getElementById('signinEmail');
     const passwordInput = this.shadowRoot.getElementById('signinPassword');
     const errorEl = this.shadowRoot.getElementById('signinError');
@@ -419,7 +431,6 @@ class BSAuth extends HTMLElement {
 
   async #handleSignUp(event) {
     event.preventDefault();
-    
     const emailInput = this.shadowRoot.getElementById('signupEmail');
     const passwordInput = this.shadowRoot.getElementById('signupPassword');
     const displayNameInput = this.shadowRoot.getElementById('signupDisplayName');
@@ -461,6 +472,74 @@ class BSAuth extends HTMLElement {
     } else {
       toastify('Signed out successfully', { variant: 'success' });
     }
+  }
+
+  async #handleConfigureFirebase() {
+    const inputEl = this.shadowRoot.getElementById('firebaseConfigInput');
+    if (!inputEl) return;
+
+    const raw = inputEl.value.trim();
+    if (!raw) {
+      toastify('Please paste your Firebase config JSON first', { variant: 'warning' });
+      return;
+    }
+
+    let parsed = null;
+    try {
+      parsed = JSON.parse(raw);
+    } catch (err) {
+      toastify('Invalid JSON. Please check and try again.', { variant: 'danger' });
+      return;
+    }
+
+    const { error } = initFirebaseRuntime(parsed);
+    if (error) {
+      log.error('Error initializing Firebase with provided config:', error);
+      toastify('Failed to initialize Firebase. Check console for details.', { variant: 'danger' });
+      return;
+    }
+
+    // Try to initialize Firestore persistence and auth
+    try {
+      await initFirestore();
+    } catch (e) {
+      // non-fatal
+    }
+
+    try {
+      const user = await initAuth();
+      if (!user) {
+        // attempt anonymous sign-in if allowed
+        await signInAnonymous();
+      }
+    } catch (e) {
+      // ignore
+    }
+
+    // Re-subscribe to auth state changes now that Firebase is initialized
+    try {
+      if (this.#unsubscribeAuth) {
+        this.#unsubscribeAuth();
+      }
+      this.#unsubscribeAuth = onAuthStateChange(user => this.#handleAuthStateChange(user));
+    } catch (e) {
+      // ignore
+    }
+
+    // Hide the not-configured message and refresh UI
+    this.shadowRoot.getElementById('firebaseNotConfigured')?.setAttribute('hidden', '');
+    toastify('Firebase configured successfully', { variant: 'success' });
+
+    // Enable sign-in/sign-up buttons now that Firebase is configured
+    const signinBtn = this.shadowRoot.getElementById('signinBtn');
+    const signupBtn = this.shadowRoot.getElementById('signupBtn');
+    if (signinBtn) signinBtn.disabled = false;
+    if (signupBtn) signupBtn.disabled = false;
+  }
+
+  #handleClearFirebaseInput() {
+    const inputEl = this.shadowRoot.getElementById('firebaseConfigInput');
+    if (inputEl) inputEl.value = '';
   }
 
   #handleAuthStateChange(user) {
