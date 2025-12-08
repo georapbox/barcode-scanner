@@ -681,6 +681,14 @@ alert-element {
 
 
 /* Added by Ellie */
+
+.test {
+  margin: 0px 0px; 
+  width: 100%;
+  justify-items: center;
+  padding: 0.25em;
+}
+
 .navigation {
   margin: 0px 0px; 
   width: 100%;
