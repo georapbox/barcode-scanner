@@ -89,7 +89,7 @@
 
       // Spoonacular returns JSON array of recipes
       const data = await res.json();
-      resultsEl.innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+      renderRecipesTable(data, resultsEl);
     } catch (e) {
       resultsEl.textContent = 'Fetch failed: ' + String(e);
     }
@@ -99,6 +99,77 @@
     const btn = document.querySelector('button.Generate.styled');
     if (btn) btn.addEventListener('click', onGenerateClick);
   });
+</script>
+
+<script>
+  // Render the recipes array into a simple table: Image | Title | Used | Missing
+  function renderRecipesTable(items, container) {
+    container.innerHTML = '';
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      container.textContent = 'No recipes found.';
+      return;
+    }
+
+    const table = document.createElement('table');
+    table.style.width = '100%';
+    table.style.borderCollapse = 'collapse';
+    table.style.marginTop = '8px';
+
+    const thead = document.createElement('thead');
+    const headRow = document.createElement('tr');
+    ['Image', 'Title', 'Used Ingredient', 'Missing Ingredient'].forEach(h => {
+      const th = document.createElement('th');
+      th.textContent = h;
+      th.style.textAlign = 'left';
+      th.style.padding = '6px';
+      th.style.borderBottom = '1px solid #ccc';
+      headRow.appendChild(th);
+    });
+    thead.appendChild(headRow);
+    table.appendChild(thead);
+
+    const tbody = document.createElement('tbody');
+    for (const it of items) {
+      const tr = document.createElement('tr');
+
+      // Image cell
+      const tdImg = document.createElement('td');
+      tdImg.style.padding = '6px';
+      const img = document.createElement('img');
+      img.src = it.image || '';
+      img.alt = it.title || '';
+      img.style.width = '64px';
+      img.style.height = '64px';
+      img.style.objectFit = 'cover';
+      img.loading = 'lazy';
+      tdImg.appendChild(img);
+      tr.appendChild(tdImg);
+
+      // Title cell
+      const tdTitle = document.createElement('td');
+      tdTitle.style.padding = '6px';
+      tdTitle.textContent = it.title || '(no title)';
+      tr.appendChild(tdTitle);
+
+      // Used count
+      const tdUsed = document.createElement('td');
+      tdUsed.style.padding = '6px';
+      tdUsed.textContent = String(it.usedIngredientCount != null ? it.usedIngredientCount : '0');
+      tr.appendChild(tdUsed);
+
+      // Missed count
+      const tdMiss = document.createElement('td');
+      tdMiss.style.padding = '6px';
+      tdMiss.textContent = String(it.missedIngredientCount != null ? it.missedIngredientCount : '0');
+      tr.appendChild(tdMiss);
+
+      tbody.appendChild(tr);
+    }
+
+    table.appendChild(tbody);
+    container.appendChild(table);
+  }
+</script>
 </script>
 
 </html>
