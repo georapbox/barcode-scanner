@@ -26,48 +26,73 @@
 
 <script type="module">
   import { initAuth, getCurrentUser } from './js/services/firebase-auth.js';
+  import { getHistory } from './js/services/storage.js';
 
   async function fetchUserIngredients() {
-    // Ensure the auth module is initialized and we have the current user
-    let user = null;
+    const container = document.getElementById('user-ingredients-list');
+    container.innerHTML = 'Loading...';
+
+    // 1) Try to use firebase-auth module (works when Firebase client is configured)
     try {
-      user = await initAuth();
-    } catch (e) {
-      console.warn('initAuth failed', e);
-    }
+      let user = null;
+      try { user = await initAuth(); } catch (e) { /* ignore */ }
 
-    // After initAuth, try to get the current user (may be local fallback)
-    if (!user) user = getCurrentUser();
+      if (!user) user = getCurrentUser();
+      let token = null;
 
-    // If there is a Firebase-backed user, request ID token and call proxy
-    let token = null;
-    if (user && typeof user.getIdToken === 'function') {
+      if (user && typeof user.getIdToken === 'function') {
+        try { token = await user.getIdToken(); } catch (e) { console.warn('user.getIdToken failed', e); }
+      }
+
+      // 2) If no token from firebase-auth above, try reading token React might have saved
+      if (!token) {
+        // React snippet (see next section) stores keys `barcode-scanner/idToken` and `barcode-scanner/uid`
+        token = localStorage.getItem('barcode-scanner/idToken') || null;
+      }
+
+      // 3) If we have a token, call the proxy endpoint
+      if (token) {
+        try {
+          const res = await fetch('/user/ingredients', {
+            method: 'GET',
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          if (res.ok) {
+            const json = await res.json();
+            renderItems(json.items || []);
+            return;
+          } else {
+            console.warn('/user/ingredients returned', res.status);
+            // If server says token invalid or Firestore not configured, fallthrough to local fallback
+          }
+        } catch (err) {
+          console.error('Fetch /user/ingredients failed', err);
+        }
+      }
+
+      // 4) No valid server token or server refused: show local IndexedDB history fallback
       try {
-        token = await user.getIdToken();
-      } catch (e) {
-        console.warn('Failed to get ID token', e);
-      }
-    }
-
-    // If no Firebase token, show a friendly message or local fallback
-    if (!token) {
-      const el = document.getElementById('user-ingredients-list');
-      el.innerHTML = '<p>Sign in with Firebase to see your per-user scanned items.</p>';
-      return;
-    }
-
-    try {
-      const res = await fetch('/user/ingredients', { headers: { Authorization: `Bearer ${token}` } });
-      if (!res.ok) {
-        console.warn('Failed to fetch /user/ingredients', res.status);
-        document.getElementById('user-ingredients-list').innerHTML = '<p>Unable to load your items.</p>';
+        const [, history = []] = await getHistory();
+        // Optionally filter by uid if React stored one in localStorage
+        const uid = localStorage.getItem('barcode-scanner/uid') || null;
+        let items = history.map(h => (typeof h === 'string' ? { title: h, addedAt: h.addedAt } : { title: h.title || h.value || '(unknown)', addedAt: h.addedAt || h.addedAt }));
+        if (uid) {
+          // If your local-saves include userId field, filter by it
+          items = items.filter(it => !it.userId || it.userId === uid ? true : false);
+        }
+        // De-duplicate and show
+        items = items.slice(0, 200);
+        renderItems(items);
         return;
+      } catch (err) {
+        console.error('Local fallback failed', err);
       }
-      const json = await res.json();
-      const items = json.items || [];
-      renderItems(items);
-    } catch (e) {
-      console.error('Error fetching user ingredients', e);
+
+      // Final fallback message
+      container.innerHTML = '<p>Sign in (in the React UI) to view your scanned items, or enable server-side Firestore.</p>';
+
+    } catch (err) {
+      console.error('Unexpected error', err);
       document.getElementById('user-ingredients-list').innerHTML = '<p>Error loading items.</p>';
     }
   }
@@ -81,9 +106,10 @@
     }
     const ul = document.createElement('ul');
     for (const it of items) {
-      const li = document.createElement('li');
+      const title = it.title || it.value || '(unknown)';
       const when = it.addedAt ? ` — ${new Date(it.addedAt).toLocaleString()}` : '';
-      li.textContent = `${it.title || '(unknown)'}${when}`;
+      const li = document.createElement('li');
+      li.textContent = `${title}${when}`;
       ul.appendChild(li);
     }
     container.appendChild(ul);
