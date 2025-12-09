@@ -20,6 +20,42 @@ const PORT = process.env.PORT || 8788;
 const UPC_API_BASE = 'https://api.spoonacular.com';
 const API_KEY2 = process.env.UPC_API_KEY2 || '';
 const INGREDIENTS_FILE = process.env.INGREDIENTS_FILE || path.resolve('ingredients.json');
+// Optional: allow server to verify Firebase ID tokens and read per-user
+// ingredients from Firestore. We initialize firebase-admin lazily so the
+// module is not required unless the environment is configured.
+let admin = null;
+let firestore = null;
+async function initFirebaseAdmin() {
+  if (admin) return;
+  try {
+    // dynamic import so projects without firebase-admin don't fail at startup
+    const mod = await import('firebase-admin');
+    admin = mod.default || mod;
+
+    if (process.env.FIREBASE_SERVICE_ACCOUNT_JSON) {
+      const svc = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON);
+      admin.initializeApp({ credential: admin.credential.cert(svc) });
+      console.log('firebase-admin initialized from FIREBASE_SERVICE_ACCOUNT_JSON');
+    } else if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+      admin.initializeApp();
+      console.log('firebase-admin initialized using GOOGLE_APPLICATION_CREDENTIALS');
+    } else {
+      // no credentials supplied
+      console.log('firebase-admin not initialized: no service account provided');
+      admin = null;
+      return;
+    }
+
+    firestore = admin.firestore();
+  } catch (err) {
+    console.warn(
+      'Could not initialize firebase-admin. To enable per-user storage install firebase-admin and provide credentials. Error:',
+      String(err)
+    );
+    admin = null;
+    firestore = null;
+  }
+}
 
 function maskUrlApiKey(url) {
   try {
@@ -63,35 +99,96 @@ app.use((req, res, next) => {
 
 app.get('/recipes/from-file', async (req, res) => {
   try {
-    // Read ingredients file (supports array or object with `ingredients` key)
-    const content = await fs.readFile(INGREDIENTS_FILE, 'utf8');
-    let parsed;
-    try {
-      parsed = JSON.parse(content);
-    } catch {
-      return res.status(400).json({ error: 'invalid ingredients JSON' });
+    // Prefer user-specific ingredients when client provides an Authorization
+    // Firebase ID token (Bearer) or a dev X-Local-Uid header. Otherwise fall
+    // back to reading the configured ingredients file.
+    const authHeader = req.headers && (req.headers.authorization || req.headers['authorization']);
+    const localUid = req.headers && (req.headers['x-local-uid'] || req.headers['X-Local-Uid']);
+
+    let ingredientsList = null;
+
+    // Attempt Firestore per-user read if credentials available
+    if ((process.env.FIREBASE_SERVICE_ACCOUNT_JSON || process.env.GOOGLE_APPLICATION_CREDENTIALS)) {
+      await initFirebaseAdmin();
     }
 
-    let ingredientsList = [];
-    if (Array.isArray(parsed)) {
-      ingredientsList = parsed;
-    } else if (parsed && parsed.ingredients) {
-      if (Array.isArray(parsed.ingredients)) {
-        ingredientsList = parsed.ingredients;
-      } else if (typeof parsed.ingredients === 'string') {
-        ingredientsList = parsed.ingredients
-          .split(',')
-          .map(s => s.trim())
-          .filter(Boolean);
+    if (admin && firestore && authHeader) {
+      try {
+        const token = String(authHeader).replace(/^Bearer\s+/i, '').trim();
+        if (token) {
+          const decoded = await admin.auth().verifyIdToken(token);
+          const uid = decoded && decoded.uid;
+          if (uid) {
+            const ref = firestore.collection('userIngredients').doc(uid).collection('items');
+            const snapshot = await ref.orderBy('addedAt', 'desc').get();
+            const items = snapshot.docs.map(d => {
+              const data = d.data() || {};
+              return (data.title || null);
+            }).filter(Boolean);
+            if (items.length > 0) ingredientsList = items;
+          }
+        }
+      } catch (e) {
+        console.warn('Failed to fetch per-user ingredients from Firestore:', String(e));
+        // fallthrough to file-based handling below
       }
-    } else {
-      return res
-        .status(400)
-        .json({ error: 'ingredients JSON must be an array or have an `ingredients` property' });
     }
 
-    if (ingredientsList.length === 0) {
-      return res.status(400).json({ error: 'no ingredients found in file' });
+    // If no Firestore list yet, but user provided X-Local-Uid (dev mode), read and filter file
+    if (!ingredientsList && localUid) {
+      try {
+        const content = await fs.readFile(INGREDIENTS_FILE, 'utf8');
+        const parsed = JSON.parse(content);
+        let all = [];
+        if (Array.isArray(parsed)) {
+          all = parsed;
+        } else if (parsed && Array.isArray(parsed.ingredients)) {
+          all = parsed.ingredients;
+        }
+        // parsed items may be strings or objects
+        const filtered = all
+          .map(it => (typeof it === 'string' ? { title: it } : it || {}))
+          .filter(it => it && it.userId === localUid)
+          .map(it => it.title)
+          .filter(Boolean);
+        if (filtered.length > 0) ingredientsList = filtered;
+      } catch (e) {
+        // file missing or invalid, will be handled below
+      }
+    }
+
+    // Final fallback: read the ingredients file (existing behavior)
+    if (!ingredientsList) {
+      // Read ingredients file (supports array or object with `ingredients` key)
+      const content = await fs.readFile(INGREDIENTS_FILE, 'utf8');
+      let parsed;
+      try {
+        parsed = JSON.parse(content);
+      } catch {
+        return res.status(400).json({ error: 'invalid ingredients JSON' });
+      }
+
+      ingredientsList = [];
+      if (Array.isArray(parsed)) {
+        ingredientsList = parsed;
+      } else if (parsed && parsed.ingredients) {
+        if (Array.isArray(parsed.ingredients)) {
+          ingredientsList = parsed.ingredients;
+        } else if (typeof parsed.ingredients === 'string') {
+          ingredientsList = parsed.ingredients
+            .split(',')
+            .map(s => s.trim())
+            .filter(Boolean);
+        }
+      } else {
+        return res
+          .status(400)
+          .json({ error: 'ingredients JSON must be an array or have an `ingredients` property' });
+      }
+
+      if (ingredientsList.length === 0) {
+        return res.status(400).json({ error: 'no ingredients found in file' });
+      }
     }
 
     const ingredientsParam = encodeURIComponent(ingredientsList.join(','));
