@@ -70,6 +70,7 @@
     "@georapbox/web-share-element": "~3.1.1",
     "barcode-detector": "~3.0.4",
     "firebase": "~12.6.0",
+    "firebase-admin": "~13.6.0",
     "idb-keyval": "~6.2.2",
     "node-fetch": "~3.3.2"
   },

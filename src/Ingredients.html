@@ -18,7 +18,79 @@
 
 <div class="body">
   <h1 class="header-title">Ingredients</h1>
+  <section id="user-ingredients">
+    <h2>Your Scanned Items</h2>
+    <div id="user-ingredients-list">Loading...</div>
+  </section>
 </div>
+
+<script type="module">
+  import { initAuth, getCurrentUser } from './js/services/firebase-auth.js';
+
+  async function fetchUserIngredients() {
+    // Ensure the auth module is initialized and we have the current user
+    let user = null;
+    try {
+      user = await initAuth();
+    } catch (e) {
+      console.warn('initAuth failed', e);
+    }
+
+    // After initAuth, try to get the current user (may be local fallback)
+    if (!user) user = getCurrentUser();
+
+    // If there is a Firebase-backed user, request ID token and call proxy
+    let token = null;
+    if (user && typeof user.getIdToken === 'function') {
+      try {
+        token = await user.getIdToken();
+      } catch (e) {
+        console.warn('Failed to get ID token', e);
+      }
+    }
+
+    // If no Firebase token, show a friendly message or local fallback
+    if (!token) {
+      const el = document.getElementById('user-ingredients-list');
+      el.innerHTML = '<p>Sign in with Firebase to see your per-user scanned items.</p>';
+      return;
+    }
+
+    try {
+      const res = await fetch('/user/ingredients', { headers: { Authorization: `Bearer ${token}` } });
+      if (!res.ok) {
+        console.warn('Failed to fetch /user/ingredients', res.status);
+        document.getElementById('user-ingredients-list').innerHTML = '<p>Unable to load your items.</p>';
+        return;
+      }
+      const json = await res.json();
+      const items = json.items || [];
+      renderItems(items);
+    } catch (e) {
+      console.error('Error fetching user ingredients', e);
+      document.getElementById('user-ingredients-list').innerHTML = '<p>Error loading items.</p>';
+    }
+  }
+
+  function renderItems(items) {
+    const container = document.getElementById('user-ingredients-list');
+    container.innerHTML = '';
+    if (!items || items.length === 0) {
+      container.innerHTML = '<p>No scanned items yet.</p>';
+      return;
+    }
+    const ul = document.createElement('ul');
+    for (const it of items) {
+      const li = document.createElement('li');
+      const when = it.addedAt ? ` — ${new Date(it.addedAt).toLocaleString()}` : '';
+      li.textContent = `${it.title || '(unknown)'}${when}`;
+      ul.appendChild(li);
+    }
+    container.appendChild(ul);
+  }
+
+  document.addEventListener('DOMContentLoaded', fetchUserIngredients);
+</script>
 
   <footer class="navigation">
     <ul id = "Navigation Footer List" class = "navigationList"> 
