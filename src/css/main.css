@@ -1,5 +1,5 @@
 :root {
-  /* Font variables */
+/* Font variables */
   --font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
   
   /* Color variables */
@@ -93,6 +93,9 @@ body {
   background: var(--background-body);
   text-rendering: optimizeLegibility;
   line-height: 1.5;
+  background-image: url("https://images.pexels.com/photos/616484/pexels-photo-616484.jpeg");
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
 }
 
 [hidden] {
@@ -761,9 +764,22 @@ alert-element {
     inset 2px 2px 3px rgb(0 0 0 / 0.6);
 }
 
+.bottomnav {
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    text-align: center;
+}
 
-
-
+.center {
+  margin: auto;
+  width: 50%;
+  font-size: 30px;
+  font-family:Lucida Console;
+  text-align: center;
+  padding: 10px;
+}
 
 
 
