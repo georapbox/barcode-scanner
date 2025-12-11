@@ -1,0 +1,175 @@
+<html lang="en">
+<link rel="stylesheet" type="text/css" href="./css/main.css">
+
+<header class="navigation">
+    <a href= "./index.html"><h1 class="header-title">Barcode Scanner App</h1></a>   
+    <ul id = "Header List" class = "navigationList"> 
+      <li class="navigationListItem" id="1"><a href="./index.html">Home </a></li>
+      <li class="navigationListItem" id="2"><a href="./Ingredients.html">Ingredients </a></li>
+      <li class="navigationListItem" id="3"><a href="./recipes.html">Recipes </a></li>
+      <li class="navigationListItem">
+        <form onSubmit={submitAnswer}>
+        <input type="text" value=""></input>
+        <input type="submit" value="Search"></input>
+        </form>
+      </li>
+    </ul>
+  </header>
+
+<div class="body">
+  <h1 class="header-title">Recipes</h1>
+<button class="Generate styled" type="button">Generate</button>
+  <div id="recipes-results">Click Generate to fetch recipes.</div>
+</div>
+
+  <footer class="navigation">
+    <ul id = "Navigation Footer List" class = "navigationList"> 
+      <li class="navigationListItem" id="1"><a href="./about.html">About </a></li>
+      <li class="navigationListItem" id="2"><a href="./faq.html">FAQ </a></li>
+      <li class="navigationListItem" id="3"><a href="./contact.html">Contact </a></li>
+    </ul>
+</footer>
+
+<script type="module">
+  import { initAuth, getCurrentUser } from './js/services/firebase-auth.js';
+
+  async function onGenerateClick() {
+    const resultsEl = document.getElementById('recipes-results');
+    resultsEl.textContent = 'Generating...';
+
+    // 1) Try firebase auth module (if configured)
+    let user = null;
+    try {
+      user = await initAuth();
+    } catch (e) {
+      // ignore
+    }
+    if (!user) {
+      try { user = getCurrentUser(); } catch {} // local fallback
+    }
+
+    let token = null;
+    if (user && typeof user.getIdToken === 'function') {
+      try { token = await user.getIdToken(); } catch (e) { console.warn('getIdToken failed', e); }
+    }
+
+    // 2) Fallback to token stored by React in localStorage (if used)
+    if (!token) token = localStorage.getItem('barcode-scanner/idToken') || null;
+
+    // 3) If we have a token, call the server with Authorization; otherwise try X-Local-Uid
+    const headers = { Accept: 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    else {
+      const uid = localStorage.getItem('barcode-scanner/uid');
+      if (uid) headers['X-Local-Uid'] = uid;
+    }
+
+    try {
+      // If we're running the static pages locally, the RecipeDB server runs
+      // on port 8788 (see server/RecipeDB.js). Use absolute URL on localhost
+      // so the request reaches the correct server instead of the static host.
+      const isLocal = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+      const endpoint = isLocal ? 'http://localhost:8788/recipes/from-file' : '/recipes/from-file';
+
+      const res = await fetch(endpoint, { method: 'GET', headers });
+      if (!res.ok) {
+        // Try to read text (may be HTML error page) and show concise message
+        const t = await res.text();
+        resultsEl.textContent = `Server error: ${res.status} ${t.slice(0, 200)}`;
+        return;
+      }
+
+      // Check content-type before parsing JSON to avoid HTML parse errors
+      const contentType = res.headers.get('content-type') || '';
+      if (!contentType.toLowerCase().includes('application/json')) {
+        const text = await res.text();
+        resultsEl.textContent = 'Unexpected non-JSON response from server: ' + text.slice(0, 500);
+        return;
+      }
+
+      // Spoonacular returns JSON array of recipes
+      const data = await res.json();
+      renderRecipesTable(data, resultsEl);
+    } catch (e) {
+      resultsEl.textContent = 'Fetch failed: ' + String(e);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const btn = document.querySelector('button.Generate.styled');
+    if (btn) btn.addEventListener('click', onGenerateClick);
+  });
+</script>
+
+<script>
+  // Render the recipes array into a simple table: Image | Title | Used | Missing
+  function renderRecipesTable(items, container) {
+    container.innerHTML = '';
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      container.textContent = 'No recipes found.';
+      return;
+    }
+
+    const table = document.createElement('table');
+    table.style.width = '100%';
+    table.style.borderCollapse = 'collapse';
+    table.style.marginTop = '8px';
+
+    const thead = document.createElement('thead');
+    const headRow = document.createElement('tr');
+    ['Image', 'Title', 'Used Ingredient', 'Missing Ingredient'].forEach(h => {
+      const th = document.createElement('th');
+      th.textContent = h;
+      th.style.textAlign = 'left';
+      th.style.padding = '6px';
+      th.style.borderBottom = '1px solid #ccc';
+      headRow.appendChild(th);
+    });
+    thead.appendChild(headRow);
+    table.appendChild(thead);
+
+    const tbody = document.createElement('tbody');
+    for (const it of items) {
+      const tr = document.createElement('tr');
+
+      // Image cell
+      const tdImg = document.createElement('td');
+      tdImg.style.padding = '6px';
+      const img = document.createElement('img');
+      img.src = it.image || '';
+      img.alt = it.title || '';
+      img.style.width = '64px';
+      img.style.height = '64px';
+      img.style.objectFit = 'cover';
+      img.loading = 'lazy';
+      tdImg.appendChild(img);
+      tr.appendChild(tdImg);
+
+      // Title cell
+      const tdTitle = document.createElement('td');
+      tdTitle.style.padding = '6px';
+      tdTitle.textContent = it.title || '(no title)';
+      tr.appendChild(tdTitle);
+
+      // Used count
+      const tdUsed = document.createElement('td');
+      tdUsed.style.padding = '6px';
+      tdUsed.textContent = String(it.usedIngredientCount != null ? it.usedIngredientCount : '0');
+      tr.appendChild(tdUsed);
+
+      // Missed count
+      const tdMiss = document.createElement('td');
+      tdMiss.style.padding = '6px';
+      tdMiss.textContent = String(it.missedIngredientCount != null ? it.missedIngredientCount : '0');
+      tr.appendChild(tdMiss);
+
+      tbody.appendChild(tr);
+    }
+
+    table.appendChild(tbody);
+    container.appendChild(table);
+  }
+</script>
+</script>
+
+</html>

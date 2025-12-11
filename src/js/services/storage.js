@@ -75,32 +75,32 @@ export const setHistory = async data => {
   // that will write it to a JSON file (server must expose `/recipes/save-ingredients`).
   (async () => {
     try {
-      // If running locally (localhost/127.0.0.1) the recipe server runs on port 8788
-      // so post to that port. Otherwise post to the same origin.
-      let serverPath = '/recipes/save-ingredients';
+      // If running locally (localhost/127.0.0.1) or via file://, skip sync.
+      // Many developers run the optional recipe server separately; avoid noisy network errors when it's not running.
       if (typeof window !== 'undefined' && window.location) {
         const host = window.location.hostname;
-        if (host === 'localhost' || host === '127.0.0.1') {
-          serverPath = `${window.location.protocol}//${host}:8788/recipes/save-ingredients`;
-        } else {
-          serverPath = `${window.location.origin}/recipes/save-ingredients`;
-        }
+        const protocol = window.location.protocol;
+        const isLocal = host === 'localhost' || host === '127.0.0.1' || host === '::1' || protocol === 'file:';
+        if (isLocal) return;
       }
 
-      // Best-effort POST; do not block the main flow
+      // If not local, construct server path on same origin
+      const serverPath = (typeof window !== 'undefined' && window.location) ? `${window.location.origin}/recipes/save-ingredients` : '/recipes/save-ingredients';
+
+      // Best-effort POST; do not block the main flow. Use fetch without awaiting so errors are not thrown into caller stack.
       const ingredientsToSend = (data || []).map(item =>
         typeof item === 'string' ? item : item.value || item.title || JSON.stringify(item)
       );
 
-      await fetch(serverPath, {
+      fetch(serverPath, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ingredients: ingredientsToSend })
+      }).catch(() => {
+        // swallow network errors silently — syncing is optional
       });
-      // optional: console.log('History synced to server');
     } catch (err) {
-      // Don't throw; syncing is best-effort
-      console.warn('Failed to sync history to server', err);
+      // Protect against unexpected errors in the sync helper; do not escalate
     }
   })();
 

@@ -6,7 +6,7 @@ The project aims to address the significant issue of food waste in the U.S., whe
 1. Barcode Repository Integration: A free barcode repository has been connected to a system that tracks scanned items, recording details such as the item and purchase time.
 3. Recipe API Connection: The app is linked to TheMealDB, a free meal API that searches for meals based on available ingredients, offering recipe suggestions to users.
 
-**List of which project parts will be worked on by which team member(s):**
+**List of which project parts were worked on by which team member(s):**
 
 **Samuel Kwibe:** I worked closely with Jon on the backend of the project, was responsible for fixing the API and ensuring the project runs smoothly.  I worked on a list to maintain scanned items into a database.  
 
@@ -44,6 +44,3 @@ cd into the main folder where everything is:
 run: npm install
 
 run npm start
-
-**I just added the image feature the user can scan and view the history and see the image URL
-

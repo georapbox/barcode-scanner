@@ -21,8 +21,54 @@ import './components/clipboard-copy.js';
 import './components/bs-result.js';
 import './components/bs-settings.js';
 import './components/bs-history.js';
+import './components/bs-auth.js';
+import { initAuth, signInAnonymous } from './services/firebase-auth.js';
+import { initFirestore, saveScan, syncPendingScans } from './services/firebase-scans.js';
+import { isFirebaseConfigured, initFirebaseRuntime } from './services/firebase-config.js';
 
 (async function () {
+  // Initialize Firebase Authentication and Firestore
+  try {
+    // If a runtime config was injected into `window.__FIREBASE_CONFIG__`, initialize Firebase now.
+    try { initFirebaseRuntime(); } catch (e) { /* ignore */ }
+    if (isFirebaseConfigured()) {
+      log.info('Initializing Firebase...');
+      await initFirestore();
+
+      // Initialize auth and automatically sign in anonymously if no user
+      const user = await initAuth();
+      if (!user) {
+        log.info('No user signed in, signing in anonymously...');
+        await signInAnonymous();
+      }
+
+      // Sync any pending scans from offline mode
+      const { syncedCount } = await syncPendingScans();
+      if (syncedCount > 0) {
+        toastify(`Synced ${syncedCount} scans from offline mode`, { variant: 'success' });
+      }
+
+      // Listen for online/offline events
+      window.addEventListener('online', async () => {
+        log.info('Back online, syncing pending scans...');
+        const { syncedCount } = await syncPendingScans();
+        if (syncedCount > 0) {
+          toastify(`Synced ${syncedCount} scans`, { variant: 'success' });
+        }
+      });
+
+      window.addEventListener('offline', () => {
+        log.info('Offline mode - scans will be saved locally');
+        toastify('Offline mode - scans will sync when online', { variant: 'warning' });
+      });
+    } else {
+      log.info('Firebase not configured - using local storage only');
+    }
+  } catch (error) {
+    log.error('Error initializing Firebase:', error);
+    toastify('Running in offline mode', { variant: 'warning' });
+  }
+
   const tabGroupEl = document.querySelector('a-tab-group');
   const videoCaptureEl = document.querySelector('video-capture');
   const bsSettingsEl = document.querySelector('bs-settings');
@@ -38,6 +84,8 @@ import './components/bs-history.js';
   const scanFrameEl = document.getElementById('scanFrame');
   const torchButton = document.getElementById('torchButton');
   const globalActionsEl = document.getElementById('globalActions');
+  const authBtn = document.getElementById('authBtn');
+  const authDialog = document.getElementById('authDialog');
   const historyBtn = document.getElementById('historyBtn');
   const historyDialog = document.getElementById('historyDialog');
   const settingsBtn = document.getElementById('settingsBtn');
@@ -53,6 +101,7 @@ import './components/bs-history.js';
   // is controlled by using the `showModal()` and `close()` methods.
   if (isDialogElementSupported()) {
     globalActionsEl?.removeAttribute('hidden');
+    authDialog?.removeAttribute('hidden');
     historyDialog?.removeAttribute('hidden');
     settingsDialog?.removeAttribute('hidden');
   }
@@ -128,7 +177,7 @@ import './components/bs-history.js';
     if (brand.textContent) itemInfoEl.appendChild(brand);
   }
 
-  async function handleFetchedItemInfo(barcodeValue, panelEl) {
+  async function handleFetchedItemInfo(barcodeValue, panelEl, barcodeFormat = '') {
     try {
       const info = await fetchItemInfo(barcodeValue);
       if (info) {
@@ -152,9 +201,56 @@ import './components/bs-history.js';
         } catch (e) {
           // non-fatal
         }
+
+        // Save scan to Firestore with product info
+        try {
+          await saveScan({
+            value: barcodeValue,
+            format: barcodeFormat,
+            title: info.title || info.name || info.alias || '',
+            brand: info.brand || '',
+            description: info.description || '',
+            metadata: {
+              source: 'camera',
+              hasProductInfo: true
+            }
+          });
+        } catch (saveError) {
+          log.warn('Error saving scan to Firestore:', saveError);
+          // Non-fatal - scan is still saved to local history
+        }
+
+        return info;
+      } else {
+        // Save scan without product info
+        try {
+          await saveScan({
+            value: barcodeValue,
+            format: barcodeFormat,
+            metadata: {
+              source: 'camera',
+              hasProductInfo: false
+            }
+          });
+        } catch (saveError) {
+          log.warn('Error saving scan to Firestore:', saveError);
+        }
       }
     } catch (err) {
-      // ignore lookup errors
+      // ignore lookup errors but still save scan
+      try {
+        await saveScan({
+          value: barcodeValue,
+          format: barcodeFormat,
+          metadata: {
+            source: 'camera',
+            hasProductInfo: false,
+            lookupFailed: true
+          }
+        });
+      } catch (saveError) {
+        log.warn('Error saving scan to Firestore:', saveError);
+      }
     }
   }
 
@@ -186,6 +282,7 @@ import './components/bs-history.js';
       const [, settings] = await getSettings();
       const barcode = await barcodeReader.detect(videoCaptureVideoEl);
       const barcodeValue = barcode?.rawValue ?? '';
+      const barcodeFormat = barcode?.format ?? '';
 
       if (!barcodeValue) {
         throw new Error('No barcode detected');
@@ -194,7 +291,7 @@ import './components/bs-history.js';
       createResult(cameraResultsEl, barcodeValue);
 
       // Attempt to fetch item info for 12-14 digit numeric barcodes
-      handleFetchedItemInfo(barcodeValue, cameraPanel);
+      handleFetchedItemInfo(barcodeValue, cameraPanel, barcodeFormat);
 
       if (settings?.addToHistory) {
         try {
@@ -205,7 +302,9 @@ import './components/bs-history.js';
             // small timeout to allow history element to render
             setTimeout(() => {
               try {
-                const li = bsHistoryEl?.shadowRoot?.querySelector(`li[data-value="${barcodeValue}"]`);
+                const li = bsHistoryEl?.shadowRoot?.querySelector(
+                  `li[data-value="${barcodeValue}"]`
+                );
                 li?.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 li?.classList?.add('highlight');
                 setTimeout(() => li?.classList?.remove('highlight'), 2000);
@@ -314,6 +413,7 @@ import './components/bs-history.js';
         try {
           const barcode = await barcodeReader.detect(image);
           const barcodeValue = barcode?.rawValue ?? '';
+          const barcodeFormat = barcode?.format ?? '';
 
           if (!barcodeValue) {
             throw new Error('No barcode detected');
@@ -322,7 +422,7 @@ import './components/bs-history.js';
           createResult(fileResultsEl, barcodeValue);
 
           // Try to fetch item info for file-scanned barcodes as well
-          handleFetchedItemInfo(barcodeValue, filePanel);
+          handleFetchedItemInfo(barcodeValue, filePanel, barcodeFormat);
 
           if (settings?.addToHistory) {
             try {
@@ -331,7 +431,9 @@ import './components/bs-history.js';
                 historyDialog.open = true;
                 setTimeout(() => {
                   try {
-                    const li = bsHistoryEl?.shadowRoot?.querySelector(`li[data-value="${barcodeValue}"]`);
+                    const li = bsHistoryEl?.shadowRoot?.querySelector(
+                      `li[data-value="${barcodeValue}"]`
+                    );
                     li?.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     li?.classList?.add('highlight');
                     setTimeout(() => li?.classList?.remove('highlight'), 2000);
@@ -496,6 +598,14 @@ import './components/bs-history.js';
         ${errorMessage}
       </alert-element>
     `;
+  }
+
+  /**
+   * Handles the auth button click event.
+   * It is responsible for displaying the auth dialog.
+   */
+  function handleAuthButtonClick() {
+    authDialog.open = true;
   }
 
   /**
@@ -665,6 +775,7 @@ import './components/bs-history.js';
   tabGroupEl.addEventListener('a-tab-show', debounce(handleTabShow, 250));
   dropzoneEl.addEventListener('files-dropzone-drop', handleFileDrop);
   resizeObserverEl.addEventListener('resize-observer:resize', handleVideoCaptureResize);
+  authBtn.addEventListener('click', handleAuthButtonClick);
   settingsBtn.addEventListener('click', handleSettingsButtonClick);
   settingsForm.addEventListener('change', debounce(handleSettingsFormChange, 500));
   historyBtn.addEventListener('click', handleHistoryButtonClick);
