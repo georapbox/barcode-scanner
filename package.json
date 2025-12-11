@@ -1,4 +1,30 @@
 {
+  "author": {
+    "name": "Jonathan Scott",
+    "email": "jonathan.scott6@snhu.edu"
+  },
+  "contributors": [
+    {
+      "name": "Elena Guzman",
+      "email": "elena.guzman@snhu.edu"
+    },
+    {
+      "name": "Jonathan Corwin",
+      "email": "jonathan.corwin@snhu.edu"
+    },
+    {
+      "name": "Isacc Akhtar Zada",
+      "email": "isacc.akhtarzada@snhu.edu"
+    },
+    {
+      "name": "Samual Kwibe",
+      "email": "samual.kwibe@snhu.edu"
+    },
+    {
+      "name": "George Raptis",
+      "email": "georapbox@gmail.com"
+    }
+  ],
   "name": "barcode-scanner",
   "version": "1.0.0",
   "description": "A Progressive Web Application (PWA) that scans barcodes of various formats, using the Barcode Detection API.",
@@ -36,10 +62,6 @@
     "upc_e",
     "scanner"
   ],
-  "author": {
-    "name": "George Raptis",
-    "email": "georapbox@gmail.com"
-  },
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/georapbox/barcode-scanner/issues"
