@@ -1,0 +1,95 @@
+<html lang="en">
+<link rel="stylesheet" type="text/css" href="./css/main.css">
+
+<header class="navigation">
+    <a href= "./index.html"><h1 class="header-title">Barcode Scanner App</h1></a>   
+    <ul id = "Header List" class = "navigationList"> 
+      <li class="navigationListItem" id="1"><a href="./index.html">Home </a></li>
+      <li class="navigationListItem" id="2"><a href="./Ingredients.html">Ingredients </a></li>
+      <li class="navigationListItem" id="3"><a href="./recipes.html">Recipes </a></li>
+      <li class="navigationListItem" id="4"><a href="./help.html">Help </a></li>
+      <li class="navigationListItem">
+        <form onSubmit={submitAnswer}>
+        <input type="text" value=""></input>
+        <input type="submit" value="Search"></input>
+        </form>
+      </li>
+    </ul>
+  </header>
+
+<div class="body">
+  <h1 class="header-title">Help & Information</h1>
+  
+  <section style="padding: 2rem; max-width: 800px; margin: 0 auto;">
+    <h2>About This Project</h2>
+    <ul style="margin: 1rem 0; padding-left: 1.5rem; line-height: 2;">
+      <li><strong>Barcode Scanner App</strong> - A Progressive Web Application (PWA) for scanning product barcodes using your device's camera</li>
+      <li><strong>Real-time Detection</strong> - Uses the native Barcode Detection API to identify barcodes instantly without server requests</li>
+      <li><strong>Offline Support</strong> - Works completely offline thanks to service worker technology; no internet required for core scanning features</li>
+      <li><strong>7-Day History</strong> - All scanned items are automatically saved with a 7-day expiration countdown for easy tracking</li>
+      <li><strong>Multiple Input Methods</strong> - Scan via webcam in real-time or upload barcode images for offline processing</li>
+      <li><strong>Product Information</strong> - Automatic product lookup displays ingredients, nutritional data, and allergen information</li>
+      <li><strong>Local Security</strong> - Your data stays on your device; optional account management with secure authentication</li>
+      <li><strong>Cross-Platform</strong> - Works on desktop, tablet, and mobile browsers with responsive design</li>
+      <li><strong>Flash Control</strong> - Toggle device flash/torch for better barcode visibility in low light conditions</li>
+      <li><strong>Customizable Settings</strong> - Control notifications, effects (beep/vibrate), and supported barcode formats</li>
+    </ul>
+
+    <h2 style="margin-top: 2rem;">How to Use</h2>
+    <h3>Scanning with Webcam</h3>
+    <ol style="margin: 0.5rem 0; padding-left: 1.5rem; line-height: 1.8;">
+      <li>Click <strong>Use webcam</strong> on the home page</li>
+      <li>Allow camera access when prompted by your browser</li>
+      <li>Point your camera at a product barcode</li>
+      <li>The app will automatically detect and scan the barcode</li>
+      <li>Product information will appear below</li>
+    </ol>
+
+    <h3>Uploading an Image</h3>
+    <ol style="margin: 0.5rem 0; padding-left: 1.5rem; line-height: 1.8;">
+      <li>Click <strong>Use image</strong> tab</li>
+      <li>Drag and drop a barcode image, or click to select a file</li>
+      <li>The barcode will be scanned automatically</li>
+      <li>Results will display below the upload area</li>
+    </ol>
+
+    <h2 style="margin-top: 2rem;">Features</h2>
+    <h3>History Tracking</h3>
+    <p>All scanned items are saved to your history with a 7-day expiration. Click the History button (clock icon) to view past scans.</p>
+
+    <h3>Account Management</h3>
+    <p>Create an optional account to sync your scans across devices. Click the Account button (person icon) to sign up or sign in.</p>
+
+    <h3>Settings</h3>
+    <p>Customize your scanning experience by clicking the Settings button (gear icon). You can control:</p>
+    <ul style="margin: 0.5rem 0; padding-left: 1.5rem; line-height: 1.8;">
+      <li>Automatic web page opening</li>
+      <li>History saving preferences</li>
+      <li>Continuous scanning mode</li>
+      <li>Sound and vibration effects</li>
+      <li>Supported barcode formats</li>
+    </ul>
+
+    <h2 style="margin-top: 2rem;">Troubleshooting</h2>
+    <ul style="margin: 0.5rem 0; padding-left: 1.5rem; line-height: 1.8;">
+      <li><strong>Camera not working?</strong> Make sure your browser has permission to access the camera. Check your browser settings.</li>
+      <li><strong>Can't scan a barcode?</strong> Ensure good lighting and hold the camera steady. Try adjusting the distance from the barcode.</li>
+      <li><strong>No product information?</strong> The barcode may not be in our database. Try scanning a different product.</li>
+      <li><strong>History not saving?</strong> Check that history saving is enabled in Settings.</li>
+    </ul>
+
+    <p style="margin-top: 2rem; font-size: 0.9rem; color: #666;">
+      <strong>Need more help?</strong> Check the <a href="./faq.html">FAQ</a> or <a href="./contact.html">contact us</a> for additional support.
+    </p>
+  </section>
+</div>
+
+<footer class="navigation">
+  <ul id = "Navigation Footer List" class = "navigationList"> 
+    <li class="navigationListItem" id="1"><a href="./about.html">About </a></li>
+    <li class="navigationListItem" id="2"><a href="./faq.html">FAQ </a></li>
+    <li class="navigationListItem" id="3"><a href="./contact.html">Contact </a></li>
+  </ul>
+</footer>
+
+</html>
