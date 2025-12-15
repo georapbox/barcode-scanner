@@ -12,10 +12,11 @@ export function toastify(message, options = {}) {
   const defaults = {
     duration: 5 * 1000,
     variant: 'neutral',
+    countdown: false,
     icon: ''
   };
 
-  options = { ...defaults, ...options };
+  const opts = { ...defaults, ...options };
 
   const icons = {
     info: `
@@ -44,13 +45,14 @@ export function toastify(message, options = {}) {
     `
   };
 
-  const icon = icons[options.icon || options.variant] || '';
+  const icon = icons[opts.icon || opts.variant] || '';
 
   const alert = Object.assign(document.createElement('alert-element'), {
     closable: true,
-    duration: options.duration,
-    variant: options.variant,
-    innerHTML: `${icon ? `<span slot="icon">${icon}</span>` : ''}${options.trustDangerousInnerHTML ? message : escapeHtml(message)}`
+    duration: opts.duration,
+    variant: opts.variant,
+    countdown: opts.countdown,
+    innerHTML: `${icon ? `<span slot="icon">${icon}</span>` : ''}${opts.trustDangerousInnerHTML ? message : escapeHtml(message)}`
   });
 
   return alert.toast();
