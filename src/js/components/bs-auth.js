@@ -316,10 +316,10 @@ class BSAuth extends HTMLElement {
     this.#authStatusEl = this.shadowRoot.getElementById('authStatus');
     this.#authFormsEl = this.shadowRoot.getElementById('authForms');
 
-    // Show Firebase not configured message if needed
-    if (!isFirebaseConfigured()) {
-      this.shadowRoot.getElementById('firebaseNotConfigured')?.removeAttribute('hidden');
-    }
+    // // Show Firebase not configured message if needed
+    // if (!isFirebaseConfigured()) {
+    //   this.shadowRoot.getElementById('firebaseNotConfigured')?.removeAttribute('hidden');
+    // }
 
     // Set up event listeners
     this.#setupEventListeners();
