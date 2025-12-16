@@ -17,7 +17,9 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 8787;
 const UPC_API_BASE = 'https://api.upcdatabase.org';
+const SPOONACULAR_API_BASE = 'https://api.spoonacular.com';
 const API_KEY = process.env.UPC_API_KEY || '';
+const API_KEY2 = process.env.UPC_API_KEY2 || '';
 const INGREDIENTS_FILE = process.env.INGREDIENTS_FILE || path.join(__dirname, 'ingredients.json');
 
 // Optional: Firestore per-user storage (Option A)
@@ -75,10 +77,30 @@ function maskKey(k) {
   return `${k.slice(0, 4)}...${k.slice(-4)}`;
 }
 
+function maskUrlApiKey(url) {
+  try {
+    return url.replace(/([?&]apiKey=)[^&]+/i, '$1****');
+  } catch {
+    return url;
+  }
+}
+
 // Log which key will be used (masked) so developers can confirm behavior.
 console.log(`UPC proxy: using API key: ${maskKey(API_KEY)}`);
+console.log(`RecipeDB proxy: using API key: ${maskKey(API_KEY2)}`);
 
 app.use(express.json());
+
+// Serve static files from the dist directory
+app.use(express.static(path.join(__dirname, '../dist')));
+
+// Rewrite /upc prefix to root for API routes
+app.use((req, res, next) => {
+  if (req.url.startsWith('/upc')) {
+    req.url = req.url.replace(/^\/upc/, '') || '/';
+  }
+  next();
+});
 
 // CORS middleware
 app.use((req, res, next) => {
@@ -258,6 +280,172 @@ async function saveTitleToIngredients(title, authHeader) {
   }
 }
 
+async function removeTitleFromIngredients(title, authHeader) {
+  try {
+    if (!firestore && (process.env.FIREBASE_SERVICE_ACCOUNT_JSON || process.env.GOOGLE_APPLICATION_CREDENTIALS)) {
+      initFirebaseAdmin();
+    }
+
+    let uid = null;
+    if (admin && typeof authHeader === 'string') {
+      try {
+        const token = String(authHeader).replace(/^Bearer\s+/i, '').trim();
+        if (token) {
+          const decoded = await admin.auth().verifyIdToken(token);
+          uid = decoded && decoded.uid ? decoded.uid : null;
+        }
+      } catch (e) {
+        console.warn('Failed to verify Firebase ID token:', String(e));
+        uid = null;
+      }
+    }
+
+    if (uid && firestore) {
+      try {
+        const ref = firestore.collection('userIngredients').doc(uid).collection('items');
+        const snapshot = await ref.where('title', '==', title).get();
+        const batch = firestore.batch();
+        snapshot.docs.forEach(doc => {
+          batch.delete(doc.ref);
+        });
+        await batch.commit();
+        console.log(`Removed title from Firestore for uid=${uid}: ${title}`);
+        return;
+      } catch (e) {
+        console.warn('Failed to remove title from Firestore, will fallback to file:', String(e));
+      }
+    }
+
+    // Fallback: file-based storage
+    let current = { ingredients: [] };
+    try {
+      const data = await fs.readFile(INGREDIENTS_FILE, 'utf8');
+      const parsed = JSON.parse(data);
+      if (Array.isArray(parsed)) {
+        current.ingredients = parsed;
+      } else if (parsed && Array.isArray(parsed.ingredients)) {
+        current.ingredients = parsed.ingredients;
+      }
+    } catch {
+      return;
+    }
+
+    if (uid) {
+      const initialLength = current.ingredients.length;
+      current.ingredients = current.ingredients.filter(it => {
+        if (typeof it === 'string') return true;
+        if (it && typeof it === 'object') {
+          return !(it.title === title && it.userId === uid);
+        }
+        return true;
+      });
+      if (current.ingredients.length !== initialLength) {
+        await fs.writeFile(INGREDIENTS_FILE, JSON.stringify(current, null, 2), 'utf8');
+        console.log(`Removed title from ingredients.json (user=${uid}): ${title}`);
+      }
+    } else {
+      const initialLength = current.ingredients.length;
+      current.ingredients = current.ingredients.filter(it => {
+        if (typeof it === 'string') return it !== title;
+        if (it && typeof it === 'object') {
+           return !(!it.userId && it.title === title);
+        }
+        return true;
+      });
+       if (current.ingredients.length !== initialLength) {
+        await fs.writeFile(INGREDIENTS_FILE, JSON.stringify(current, null, 2), 'utf8');
+        console.log(`Removed title from ingredients.json (anon): ${title}`);
+      }
+    }
+
+  } catch (err) {
+    console.warn('Error removing title from ingredients file/firestore', err);
+  }
+}
+
+async function removeAllIngredients(authHeader) {
+  try {
+    if (!firestore && (process.env.FIREBASE_SERVICE_ACCOUNT_JSON || process.env.GOOGLE_APPLICATION_CREDENTIALS)) {
+      initFirebaseAdmin();
+    }
+
+    let uid = null;
+    if (admin && typeof authHeader === 'string') {
+      try {
+        const token = String(authHeader).replace(/^Bearer\s+/i, '').trim();
+        if (token) {
+          const decoded = await admin.auth().verifyIdToken(token);
+          uid = decoded && decoded.uid ? decoded.uid : null;
+        }
+      } catch (e) {
+        console.warn('Failed to verify Firebase ID token:', String(e));
+        uid = null;
+      }
+    }
+
+    if (uid && firestore) {
+      try {
+        const ref = firestore.collection('userIngredients').doc(uid).collection('items');
+        const snapshot = await ref.get();
+        const batch = firestore.batch();
+        snapshot.docs.forEach(doc => {
+          batch.delete(doc.ref);
+        });
+        await batch.commit();
+        console.log(`Removed all ingredients from Firestore for uid=${uid}`);
+        return;
+      } catch (e) {
+        console.warn('Failed to remove all ingredients from Firestore, will fallback to file:', String(e));
+      }
+    }
+
+    // Fallback: file-based storage
+    let current = { ingredients: [] };
+    try {
+      const data = await fs.readFile(INGREDIENTS_FILE, 'utf8');
+      const parsed = JSON.parse(data);
+      if (Array.isArray(parsed)) {
+        current.ingredients = parsed;
+      } else if (parsed && Array.isArray(parsed.ingredients)) {
+        current.ingredients = parsed.ingredients;
+      }
+    } catch {
+      return;
+    }
+
+    if (uid) {
+      const initialLength = current.ingredients.length;
+      current.ingredients = current.ingredients.filter(it => {
+        if (typeof it === 'string') return true;
+        if (it && typeof it === 'object') {
+          return it.userId !== uid;
+        }
+        return true;
+      });
+      if (current.ingredients.length !== initialLength) {
+        await fs.writeFile(INGREDIENTS_FILE, JSON.stringify(current, null, 2), 'utf8');
+        console.log(`Removed all ingredients from ingredients.json (user=${uid})`);
+      }
+    } else {
+      const initialLength = current.ingredients.length;
+      current.ingredients = current.ingredients.filter(it => {
+        if (typeof it === 'string') return false;
+        if (it && typeof it === 'object') {
+           return !!it.userId;
+        }
+        return false;
+      });
+       if (current.ingredients.length !== initialLength) {
+        await fs.writeFile(INGREDIENTS_FILE, JSON.stringify(current, null, 2), 'utf8');
+        console.log(`Removed all ingredients from ingredients.json (anon)`);
+      }
+    }
+
+  } catch (err) {
+    console.warn('Error removing all ingredients from ingredients file/firestore', err);
+  }
+}
+
 // GET /product/:id
 app.get('/product/:id', (req, res) => {
   const id = req.params.id;
@@ -355,6 +543,178 @@ app.get('/user/ingredients', async (req, res) => {
   } catch (e) {
     // File doesn't exist or is invalid
     return res.status(501).json({ error: 'firestore_not_configured_no_data' });
+  }
+});
+
+// DELETE /user/ingredients
+app.delete('/user/ingredients', async (req, res) => {
+  const { title } = req.body;
+  if (!title) return res.status(400).json({ error: 'missing_title' });
+  
+  const authHeader = req.headers.authorization;
+  await removeTitleFromIngredients(title, authHeader);
+  res.json({ success: true });
+});
+
+// DELETE /user/ingredients/all
+app.delete('/user/ingredients/all', async (req, res) => {
+  const authHeader = req.headers.authorization;
+  await removeAllIngredients(authHeader);
+  res.json({ success: true });
+});
+
+// GET /recipes/from-file
+// Reads ingredients from a JSON file and calls Spoonacular's
+// GET /recipes/findByIngredients endpoint. Query params can override
+// defaults: number, ranking, ignorePantry.
+app.get('/recipes/from-file', async (req, res) => {
+  try {
+    // Prefer user-specific ingredients when client provides an Authorization
+    // Firebase ID token (Bearer) or a dev X-Local-Uid header. Otherwise fall
+    // back to reading the configured ingredients file.
+    const authHeader = req.headers && (req.headers.authorization || req.headers['authorization']);
+    const localUid = req.headers && (req.headers['x-local-uid'] || req.headers['X-Local-Uid']);
+
+    let ingredientsList = null;
+
+    // Attempt Firestore per-user read if credentials available
+    if ((process.env.FIREBASE_SERVICE_ACCOUNT_JSON || process.env.GOOGLE_APPLICATION_CREDENTIALS)) {
+      initFirebaseAdmin();
+    }
+
+    if (admin && firestore && authHeader) {
+      try {
+        const token = String(authHeader).replace(/^Bearer\s+/i, '').trim();
+        if (token) {
+          const decoded = await admin.auth().verifyIdToken(token);
+          const uid = decoded && decoded.uid;
+          if (uid) {
+            const ref = firestore.collection('userIngredients').doc(uid).collection('items');
+            const snapshot = await ref.orderBy('addedAt', 'desc').get();
+            const items = snapshot.docs.map(d => {
+              const data = d.data() || {};
+              return (data.title || null);
+            }).filter(Boolean);
+            if (items.length > 0) ingredientsList = items;
+          }
+        }
+      } catch (e) {
+        console.warn('Failed to fetch per-user ingredients from Firestore:', String(e));
+        // fallthrough to file-based handling below
+      }
+    }
+
+    // If no Firestore list yet, but user provided X-Local-Uid (dev mode), read and filter file
+    if (!ingredientsList && localUid) {
+      try {
+        const content = await fs.readFile(INGREDIENTS_FILE, 'utf8');
+        const parsed = JSON.parse(content);
+        let all = [];
+        if (Array.isArray(parsed)) {
+          all = parsed;
+        } else if (parsed && Array.isArray(parsed.ingredients)) {
+          all = parsed.ingredients;
+        }
+        // parsed items may be strings or objects
+        const filtered = all
+          .map(it => (typeof it === 'string' ? { title: it } : it || {}))
+          .filter(it => it && it.userId === localUid)
+          .map(it => it.title)
+          .filter(Boolean);
+        if (filtered.length > 0) ingredientsList = filtered;
+      } catch (e) {
+        // file missing or invalid, will be handled below
+      }
+    }
+
+    // Final fallback: read the ingredients file (existing behavior)
+    if (!ingredientsList) {
+      // Read ingredients file (supports array or object with `ingredients` key)
+      const content = await fs.readFile(INGREDIENTS_FILE, 'utf8');
+      let parsed;
+      try {
+        parsed = JSON.parse(content);
+      } catch {
+        return res.status(400).json({ error: 'invalid ingredients JSON' });
+      }
+
+      ingredientsList = [];
+      if (Array.isArray(parsed)) {
+        ingredientsList = parsed;
+      } else if (parsed && parsed.ingredients) {
+        if (Array.isArray(parsed.ingredients)) {
+          ingredientsList = parsed.ingredients;
+        } else if (typeof parsed.ingredients === 'string') {
+          ingredientsList = parsed.ingredients
+            .split(',')
+            .map(s => s.trim())
+            .filter(Boolean);
+        }
+      } else {
+        return res
+          .status(400)
+          .json({ error: 'ingredients JSON must be an array or have an `ingredients` property' });
+      }
+
+      if (ingredientsList.length === 0) {
+        return res.status(400).json({ error: 'no ingredients found in file' });
+      }
+    }
+
+    const ingredientsParam = encodeURIComponent(ingredientsList.join(','));
+    const number = Number(req.query.number) || 10;
+    const ranking = Number(req.query.ranking) || 1;
+    const ignorePantry =
+      req.query.ignorePantry == null
+        ? true
+        : req.query.ignorePantry === 'true' || req.query.ignorePantry === true;
+
+    let targetUrl = `${SPOONACULAR_API_BASE}/recipes/findByIngredients?ingredients=${ingredientsParam}&number=${number}&ranking=${ranking}&ignorePantry=${ignorePantry}`;
+    if (API_KEY2) {
+      // Spoonacular expects `apiKey` query param
+      targetUrl += `&apiKey=${encodeURIComponent(API_KEY2)}`;
+    }
+
+    // Prepare headers
+    const headers = { Accept: 'application/json' };
+
+    // Log masked target URL
+    console.log('RecipeDB Proxy -> upstream:', maskUrlApiKey(targetUrl));
+
+    const upstreamRes = await fetch(targetUrl, { method: 'GET', headers });
+    const text = await upstreamRes.text();
+
+    // Log upstream JSON response pretty-printed when possible
+    try {
+      const contentType = upstreamRes.headers.get('content-type') || '';
+      if (contentType.toLowerCase().includes('application/json')) {
+        const parsedBody = JSON.parse(text);
+        console.log(
+          'RecipeDB Proxy <- upstream response (JSON):\n' + JSON.stringify(parsedBody, null, 2)
+        );
+      } else {
+        try {
+          const parsedBody = JSON.parse(text);
+          console.log(
+            'RecipeDB Proxy <- upstream response (parsed):\n' + JSON.stringify(parsedBody, null, 2)
+          );
+        } catch {
+          console.log('RecipeDB Proxy <- upstream response (text):', text);
+        }
+      }
+    } catch {
+      console.log('RecipeDB Proxy <- upstream response (raw):', text);
+    }
+
+    // Forward response
+    const contentType = upstreamRes.headers.get('content-type');
+    if (contentType) {
+      res.set('Content-Type', contentType);
+    }
+    return res.status(upstreamRes.status).send(text);
+  } catch (err) {
+    console.error('RecipeDB error', err);
+    return res.status(500).json({ error: 'recipe_proxy_error', details: String(err) });
   }
 });
 

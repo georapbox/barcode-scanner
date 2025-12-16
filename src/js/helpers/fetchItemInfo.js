@@ -21,17 +21,10 @@ export async function fetchItemInfo(barcode) {
   }
   // Determine whether to use a proxy. Preference order:
   // 1) `ITEM_INFO_PROXY_URL` (build-time/env)
-  // 2) If running in browser on localhost, default to `http://localhost:8787` (dev proxy)
+  // 2) Use configured proxy URL (defaults to /upc)
   // 3) Otherwise call the public API directly
   const isBrowser = typeof window !== 'undefined' && window?.location;
   let finalProxyUrl = ITEM_INFO_PROXY_URL || '';
-
-  if (!finalProxyUrl && isBrowser) {
-    const host = window.location.hostname;
-    if (host === 'localhost' || host === '127.0.0.1') {
-      finalProxyUrl = 'http://localhost:8787';
-    }
-  }
 
   const useProxy = finalProxyUrl && finalProxyUrl.length > 0;
   const base = trimSlash(useProxy ? finalProxyUrl : ITEM_INFO_API_URL);
@@ -97,12 +90,7 @@ export async function searchItem(query) {
   const isBrowser = typeof window !== 'undefined' && window?.location;
   let finalProxyUrl = ITEM_INFO_PROXY_URL || '';
 
-  if (!finalProxyUrl && isBrowser) {
-    const host = window.location.hostname;
-    if (host === 'localhost' || host === '127.0.0.1') {
-      finalProxyUrl = 'http://localhost:8787';
-    }
-  }
+  // Removed explicit localhost check; ITEM_INFO_PROXY_URL defaults to /upc
 
   const useProxy = finalProxyUrl && finalProxyUrl.length > 0;
   const base = trimSlash(useProxy ? finalProxyUrl : ITEM_INFO_API_URL);
@@ -124,5 +112,80 @@ export async function searchItem(query) {
   } catch (err) {
     log.error('Search request error', err);
     return null;
+  }
+}
+
+/**
+ * Removes an ingredient from the user's list via the proxy.
+ *
+ * @param {string} title
+ * @returns {Promise<void>}
+ */
+export async function removeIngredient(title) {
+  if (!title) return;
+
+  let finalProxyUrl = ITEM_INFO_PROXY_URL || '';
+  const useProxy = finalProxyUrl && finalProxyUrl.length > 0;
+  
+  // If no proxy configured, we can't remove from the server-side list
+  if (!useProxy) return;
+
+  const url = `${trimSlash(finalProxyUrl)}/user/ingredients`;
+  
+  const headers = { 
+    'Content-Type': 'application/json',
+    'Accept': 'application/json'
+  };
+
+  // Add Authorization header if available (Firebase token)
+  // Note: The key might be different depending on where it's stored.
+  // Based on recipes.html, it seems to be 'barcode-scanner/idToken'.
+  const token = localStorage.getItem('barcode-scanner/idToken');
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  try {
+    await fetch(url, {
+      method: 'DELETE',
+      headers,
+      body: JSON.stringify({ title })
+    });
+  } catch (err) {
+    log.error('Error removing ingredient', err);
+  }
+}
+
+/**
+ * Removes all ingredients from the user's list via the proxy.
+ *
+ * @returns {Promise<void>}
+ */
+export async function removeAllIngredients() {
+  let finalProxyUrl = ITEM_INFO_PROXY_URL || '';
+  const useProxy = finalProxyUrl && finalProxyUrl.length > 0;
+  
+  // If no proxy configured, we can't remove from the server-side list
+  if (!useProxy) return;
+
+  const url = `${trimSlash(finalProxyUrl)}/user/ingredients/all`;
+  
+  const headers = { 
+    'Content-Type': 'application/json',
+    'Accept': 'application/json'
+  };
+
+  const token = localStorage.getItem('barcode-scanner/idToken');
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  try {
+    await fetch(url, {
+      method: 'DELETE',
+      headers
+    });
+  } catch (err) {
+    log.error('Error removing all ingredients', err);
   }
 }

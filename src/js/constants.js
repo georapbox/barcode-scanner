@@ -30,16 +30,11 @@ export const ITEM_INFO_API_KEY =
 // which avoids CORS and keeps your API key secret server-side.
 // Prefer a server-side proxy. During build the `ITEM_INFO_PROXY_URL` can be
 // injected via the `ITEM_INFO_PROXY_URL` env var. At runtime in the browser
-// (for local development) default to `http://localhost:8787` so the app will
-// use the local Express proxy without needing a rebuild.
-let _itemInfoProxyUrl = '';
+// (for local development) default to `/upc` so the app will
+// use the local Express proxy (via Cloudflare or local rewrite) without needing a rebuild.
+let _itemInfoProxyUrl = '/upc';
 if (typeof process !== 'undefined' && process?.env?.ITEM_INFO_PROXY_URL) {
   _itemInfoProxyUrl = process.env.ITEM_INFO_PROXY_URL;
-} else if (typeof window !== 'undefined') {
-  const host = window.location.hostname;
-  if (host === 'localhost' || host === '127.0.0.1') {
-    _itemInfoProxyUrl = 'http://localhost:8787';
-  }
 }
 
 export const ITEM_INFO_PROXY_URL = _itemInfoProxyUrl;
