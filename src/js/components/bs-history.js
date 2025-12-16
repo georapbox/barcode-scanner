@@ -4,6 +4,7 @@ import { isFirebaseConfigured } from '../services/firebase-config.js';
 import { isAuthenticated } from '../services/firebase-auth.js';
 import { log } from '../utils/log.js';
 import { toastify } from '../helpers/toastify.js';
+import { removeIngredient, removeAllIngredients } from '../helpers/fetchItemInfo.js';
 
 const styles = /* css */ `
   :host {
@@ -541,6 +542,12 @@ class BSHistory extends HTMLElement {
 
     const historyItem = this.#historyListEl?.querySelector(`li[data-value="${item}"]`);
 
+    // Attempt to remove from server ingredients list if title is present
+    const title = historyItem?.getAttribute('data-title');
+    if (title) {
+      removeIngredient(title).catch(err => log.warn('Failed to remove ingredient from server', err));
+    }
+
     historyItem?.remove();
 
     this.#emitEvent('bs-history-success', {
@@ -592,6 +599,9 @@ class BSHistory extends HTMLElement {
       this.#emitEvent('bs-history-error', errPayload);
       return setHistoryError;
     }
+
+    // Remove all ingredients from server
+    removeAllIngredients().catch(err => log.warn('Failed to remove all ingredients from server', err));
 
     this.#historyListEl?.replaceChildren();
 

@@ -68,11 +68,9 @@
     }
 
     try {
-      // If we're running the static pages locally, the RecipeDB server runs
-      // on port 8788 (see server/RecipeDB.js). Use absolute URL on localhost
-      // so the request reaches the correct server instead of the static host.
-      const isLocal = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
-      const endpoint = isLocal ? 'http://localhost:8788/recipes/from-file' : '/recipes/from-file';
+      // Use relative path. In production, Cloudflare routes /recipes to the recipe service.
+      // Locally, ensure your proxy forwards /recipes or you access the recipe server directly if needed.
+      const endpoint = '/recipes/from-file';
 
       const res = await fetch(endpoint, { method: 'GET', headers });
       if (!res.ok) {
