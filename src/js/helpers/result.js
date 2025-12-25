@@ -9,11 +9,14 @@ export async function createResult(containerEl, value) {
     return;
   }
 
-  // const prevResultEl = containerEl.querySelector('bs-result[value="' + value + '"]');
-  const prevResultEl = containerEl.querySelector(`bs-result[value="${value}"]`);
+  // Avoid using querySelector with attribute selectors here because `value` may
+  // contain newlines or other characters that make the selector invalid.
+  // Instead, query all results and match the attribute value in JS.
+  const existingResultEls = Array.from(containerEl.querySelectorAll('bs-result'));
+  const matchingResultEl = existingResultEls.find(el => el.getAttribute('value') === value);
 
-  if (prevResultEl) {
-    prevResultEl.remove();
+  if (matchingResultEl) {
+    matchingResultEl.remove();
   }
 
   const newResultEl = document.createElement('bs-result');
