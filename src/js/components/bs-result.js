@@ -34,6 +34,7 @@ const styles = /* css */ `
   .result__item {
     word-wrap: break-word;
     word-break: break-word;
+    white-space: pre-line;
   }
 
   a.result__item {
