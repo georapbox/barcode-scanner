@@ -4,8 +4,6 @@ import { dateTimeFormatter } from '../utils/datetime-formatter.js';
 
 const styles = /* css */ `
   :host {
-    --color-flash: #ffff99;
-
     box-sizing: border-box;
   }
 
@@ -83,19 +81,6 @@ const styles = /* css */ `
   .result custom-clipboard-copy::part(button--error) {
     color: var(--danger-color);
   }
-
-  .flash {
-    animation: flash 0.4s ease-out;
-  }
-
-  @keyframes flash {
-    0% {
-      background-color: #ffff99;
-    }
-    100% {
-      background-color: transparent;
-    }
-  }
 `;
 
 const template = document.createElement('template');
@@ -152,15 +137,7 @@ class BSResult extends HTMLElement {
 
   connectedCallback() {
     this.#upgradeProperty('value');
-
-    if (window.matchMedia('(prefers-reduced-motion: no-preference)').matches) {
-      const baseEl = this.shadowRoot.querySelector('.result');
-
-      baseEl?.animate(
-        [{ backgroundColor: 'var(--color-flash)' }, { backgroundColor: 'transparent' }],
-        { duration: 400, easing: 'ease-out' }
-      );
-    }
+    this.#highlight();
 
     if (!isWebShareSupported()) {
       const webShareEl = this.shadowRoot.querySelector('web-share');
@@ -226,6 +203,19 @@ class BSResult extends HTMLElement {
       shareEl.hidden = false;
       shareBtn?.setAttribute('aria-label', `Share ${value}`);
     }
+  }
+
+  #highlight() {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      return;
+    }
+
+    const baseEl = this.shadowRoot.querySelector('.result');
+    const from = { backgroundColor: 'var(--highlight)' };
+    const to = { backgroundColor: 'transparent' };
+    const opts = { duration: 400, easing: 'ease-out' };
+
+    baseEl?.animate([from, to], opts);
   }
 
   /**

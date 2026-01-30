@@ -29,6 +29,7 @@
   --camera-actions-background: #ffffff;
   --alert-background: #ffffff;
   --alert-foreground: var(--text-main);
+  --highlight: #ffff99;
 
   /* Other variables */
   --body-max-width: 64rem;
@@ -69,6 +70,7 @@
     --dropzone-background-hover: #161718;
     --camera-actions-background: var(--background);
     --alert-background: var(--background-alt);
+    --highlight: #fff3b0;
 
     /* Other variables */
     --select-arrow: var(--select-arrow-dark);
