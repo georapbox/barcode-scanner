@@ -33,8 +33,10 @@ Below are the instructions for setting up the development environment.
 
 ### Prerequisites
 
-- Node.js (v20.x.x)
-- npm (v10.x.x)
+- **[nvm](https://github.com/nvm-sh/nvm)** (Node Version Manager)
+
+The required Node.js version is managed via **nvm** and defined in the `.nvmrc` file.  
+Once the correct Node version is active, the bundled npm version will be used automatically.
 
 ### Installation
 
