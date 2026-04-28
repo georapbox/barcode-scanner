@@ -235,7 +235,7 @@ import './components/bs-history.js';
 
           toastify(
             '<strong>No barcode detected</strong><br><small>Please try again with a different image.</small>',
-            { variant: 'danger', trustDangerousInnerHTML: true }
+            { variant: 'danger', announce: 'alert', trustDangerousInnerHTML: true }
           );
 
           triggerScanEffects({ success: false });
@@ -546,7 +546,7 @@ import './components/bs-history.js';
       historyDialog?.hide();
     }
 
-    toastify(message, { variant: 'danger' });
+    toastify(message, { variant: 'danger', announce: 'alert' });
   }
 
   scanBtn.addEventListener('click', handleScanButtonClick);

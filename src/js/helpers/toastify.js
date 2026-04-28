@@ -13,6 +13,7 @@ export function toastify(message, options = {}) {
     duration: 5 * 1000,
     variant: 'neutral',
     countdown: false,
+    announce: 'status',
     icon: ''
   };
 
@@ -52,6 +53,7 @@ export function toastify(message, options = {}) {
     duration: opts.duration,
     variant: opts.variant,
     countdown: opts.countdown,
+    announce: opts.announce,
     innerHTML: `${icon ? `<span slot="icon">${icon}</span>` : ''}${opts.trustDangerousInnerHTML ? message : escapeHtml(message)}`
   });
 
