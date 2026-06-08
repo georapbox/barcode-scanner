@@ -14,7 +14,6 @@ const template = document.createElement('template');
 
 template.innerHTML = /* html */ `
   <style>${styles}</style>
-  <video part="video" playsinline></video>
   <div part="actions-container"><slot name="actions"></slot></div>
   <slot></slot>
 `;
@@ -78,22 +77,15 @@ class VideoCapture extends HTMLElement {
     this.#upgradeProperty('zoom');
     this.#upgradeProperty('torch');
 
-    this.#videoElement = this.shadowRoot?.querySelector('video') || null;
+    this.#initializeVideoElement();
 
     this.#videoElement?.addEventListener('loadedmetadata', this.#onVideoLoadedMetaData);
 
     if (!VideoCapture.isSupported()) {
-      return this.dispatchEvent(
-        new CustomEvent(`${COMPONENT_NAME}:error`, {
-          bubbles: true,
-          composed: true,
-          detail: {
-            error: {
-              name: 'NotSupportedError',
-              message: 'Not supported'
-            }
-          }
-        })
+      return this.#dispatchError(
+        'initialization',
+        'not-supported',
+        new Error('MediaDevices.getUserMedia() is not supported in this browser')
       );
     }
 
@@ -150,6 +142,30 @@ class VideoCapture extends HTMLElement {
 
   get loading() {
     return this.hasAttribute('loading');
+  }
+
+  /**
+   * Creates the video element after the custom element is connected.
+   *
+   * This ensures the media element is initialized while connected to the
+   * document, avoiding browser-specific playback issues caused by creating it
+   * earlier. The element is created only once and reused if the component
+   * reconnects.
+   */
+  #initializeVideoElement() {
+    if (this.#videoElement) {
+      return;
+    }
+
+    const video = document.createElement('video');
+
+    video.setAttribute('part', 'video');
+    video.setAttribute('playsinline', '');
+    video.setAttribute('muted', '');
+    video.setAttribute('disablepictureinpicture', '');
+
+    this.shadowRoot?.prepend(video);
+    this.#videoElement = video;
   }
 
   /**
