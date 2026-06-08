@@ -610,9 +610,8 @@ alert-element {
   background-color: var(--background-alt);
   border-radius: var(--border-radius);
   border: 1px solid var(--border);
-  overflow-x: hidden;
   max-height: 20.125rem;
-  overscroll-behavior: contain;
+  overflow-y: auto;
 }
 
 @media (prefers-reduced-motion: no-preference) {
