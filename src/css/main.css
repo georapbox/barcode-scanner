@@ -374,6 +374,7 @@ video-capture::part(video) {
 }
 
 video-capture[loading]::part(video) {
+  aspect-ratio: 16/9;
   background-image: url(../assets/icons/spinner-light.svg);
   background-size: 3.75rem;
   background-position: center center;
