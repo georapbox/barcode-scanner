@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang=en><meta charset=UTF-8><meta http-equiv=X-UA-Compatible content="IE=edge"><meta name=viewport content="width=device-width, initial-scale=1.0"><title>Barcode/QR code Scanner</title><meta name=description content="A Progressive Web Application (PWA) that scans barcodes of various formats, using the Barcode Detection API."><link rel="icon shortcut" href=favicon.a05bdb0a.ico><link rel=apple-touch-icon href=apple-touch-icon.f40613a5.png><link rel=manifest href=manifest.webmanifest><meta name=theme-color content=#212529><meta name=color-scheme content="light dark"><link rel=stylesheet href=barcode-scanner.77fe0e86.css><body>
+<!DOCTYPE html><html lang=en><meta charset=UTF-8><meta http-equiv=X-UA-Compatible content="IE=edge"><meta name=viewport content="width=device-width, initial-scale=1.0"><title>Barcode/QR code Scanner</title><meta name=description content="A Progressive Web Application (PWA) that scans barcodes of various formats, using the Barcode Detection API."><link rel="icon shortcut" href=favicon.a05bdb0a.ico><link rel=apple-touch-icon href=apple-touch-icon.f40613a5.png><link rel=manifest href=manifest.webmanifest><meta name=theme-color content=#212529><meta name=color-scheme content="light dark"><link rel=stylesheet href=barcode-scanner.634c5849.css><body>
   <noscript>
     <div class="noscript">
       JavaScript is required to properly view this site.
@@ -24,13 +24,6 @@
   </header>
 
   <div class=container>
-    <alert-element variant=danger id=barcodeReaderError>
-      <span slot=icon>
-        <svg xmlns:xmlns=http://www.w3.org/2000/svg width=1.25em height=1.25em fill=currentColor viewBox="0 0 16 16" aria-hidden=true><path d="M4.54.146A.5.5 0 0 1 4.893 0h6.214a.5.5 0 0 1 .353.146l4.394 4.394a.5.5 0 0 1 .146.353v6.214a.5.5 0 0 1-.146.353l-4.394 4.394a.5.5 0 0 1-.353.146H4.893a.5.5 0 0 1-.353-.146L.146 11.46A.5.5 0 0 1 0 11.107V4.893a.5.5 0 0 1 .146-.353zM5.1 1 1 5.1v5.8L5.1 15h5.8l4.1-4.1V5.1L10.9 1z"/><path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/></svg>
-      </span>
-      An error occurred while initializing BarcodeReader.
-    </alert-element>
-
     <a-tab-group no-scroll-controls no-tab-cycling>
       <a-tab role=heading id=cameraTab>
         <svg xmlns:xmlns=http://www.w3.org/2000/svg width=1.625em height=1.625em fill=currentColor viewBox="0 0 16 16" aria-hidden=true><path d="M0 6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H9.269c.144.162.33.324.531.475a6.785 6.785 0 0 0 .907.57l.014.006.003.002A.5.5 0 0 1 10.5 13h-5a.5.5 0 0 1-.224-.947l.003-.002.014-.007a4.473 4.473 0 0 0 .268-.148 6.75 6.75 0 0 0 .639-.421c.2-.15.387-.313.531-.475H2a2 2 0 0 1-2-2V6Zm2-1a1 1 0 0 0-1 1v3a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1H2Z"/><path d="M8 6.5a1 1 0 1 0 0 2 1 1 0 0 0 0-2Zm-2 1a2 2 0 1 1 4 0 2 2 0 0 1-4 0Zm7 0a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0Z"/></svg>
@@ -39,8 +32,12 @@
 
       <a-tab-panel id=cameraPanel>
         <div class=scan-frame-container>
+          <button id=playVideoButton aria-label="Start camera preview" hidden>
+            <svg xmlns:xmlns=http://www.w3.org/2000/svg width=1em height=1em fill=currentColor viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/><path d="M6.271 5.055a.5.5 0 0 1 .52.038l3.5 2.5a.5.5 0 0 1 0 .814l-3.5 2.5A.5.5 0 0 1 6 10.5v-5a.5.5 0 0 1 .271-.445"/></svg>
+          </button>
+
           <resize-observer>
-            <video-capture auto-play>
+            <video-capture auto-play id=video-capture>
               <button type=button id=scanBtn class=scan-button hidden>
                 <svg xmlns:xmlns=http://www.w3.org/2000/svg width=2.75em height=2.75em fill=currentColor viewBox="0 0 16 16" aria-hidden=true><path d="M1.5 1a.5.5 0 0 0-.5.5v3a.5.5 0 0 1-1 0v-3A1.5 1.5 0 0 1 1.5 0h3a.5.5 0 0 1 0 1h-3zM11 .5a.5.5 0 0 1 .5-.5h3A1.5 1.5 0 0 1 16 1.5v3a.5.5 0 0 1-1 0v-3a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 1-.5-.5zM.5 11a.5.5 0 0 1 .5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 1 0 1h-3A1.5 1.5 0 0 1 0 14.5v-3a.5.5 0 0 1 .5-.5zm15 0a.5.5 0 0 1 .5.5v3a1.5 1.5 0 0 1-1.5 1.5h-3a.5.5 0 0 1 0-1h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 1 .5-.5zM3 4.5a.5.5 0 0 1 1 0v7a.5.5 0 0 1-1 0v-7zm2 0a.5.5 0 0 1 1 0v7a.5.5 0 0 1-1 0v-7zm2 0a.5.5 0 0 1 1 0v7a.5.5 0 0 1-1 0v-7zm2 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-7zm3 0a.5.5 0 0 1 1 0v7a.5.5 0 0 1-1 0v-7z"/></svg>
                 <span>Click to scan another barcode or press the <kbd>Esc</kbd> key.</span>
@@ -156,6 +153,6 @@
   </modal-element>
 
   <script src=barcode-scanner.88a9873a.js type=module></script>
-  <script src=barcode-scanner.f673e5e8.js type=module></script>
+  <script src=barcode-scanner.40726811.js type=module></script>
 
 
