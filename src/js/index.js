@@ -43,6 +43,7 @@ import './components/bs-history.js';
   const settingsDialog = document.getElementById('settingsDialog');
   const settingsForm = document.getElementById('settingsForm');
   const cameraSelect = document.getElementById('cameraSelect');
+  const playVideoButton = document.getElementById('playVideoButton');
   const SCAN_RATE_LIMIT = 1000;
   let scanTimeoutId = null;
   let shouldScan = true;
@@ -59,14 +60,25 @@ import './components/bs-history.js';
   const { barcodeReaderError } = await BarcodeReader.setup();
 
   if (barcodeReaderError) {
-    const alertEl = document.getElementById('barcodeReaderError');
-
-    shouldScan = false;
+    stopScanning();
     globalActionsEl?.setAttribute('hidden', '');
     tabGroupEl?.setAttribute('hidden', '');
-    alertEl?.setAttribute('open', '');
 
-    return; // Stop the script execution as BarcodeDetector API is not supported.
+    const errorMessage = /* html */ `
+      <strong>Barcode Detector API not supported</strong>
+      <br>
+      Your browser does not support the Barcode Detector API, which is required for this application to work.
+    `;
+
+    toastify(errorMessage, {
+      variant: 'danger',
+      announce: 'alert',
+      trustDangerousInnerHTML: true,
+      duration: Infinity
+    });
+
+    // Stop the script execution as BarcodeDetector API is not supported.
+    return;
   }
 
   const supportedBarcodeFormats = await BarcodeReader.getSupportedFormats();
@@ -126,10 +138,7 @@ import './components/bs-history.js';
       triggerScanEffects();
 
       if (!settings?.continueScanning) {
-        if (scanTimeoutId) {
-          clearTimeout(scanTimeoutId);
-          scanTimeoutId = null;
-        }
+        stopScanning();
         scanBtn?.removeAttribute('hidden');
         scanFrameEl?.setAttribute('hidden', '');
         videoCaptureActionsEl?.setAttribute('hidden', '');
@@ -141,7 +150,38 @@ import './components/bs-history.js';
     }
 
     if (shouldScan) {
-      scanTimeoutId = setTimeout(() => scan(), SCAN_RATE_LIMIT);
+      scanTimeoutId = setTimeout(() => {
+        scanTimeoutId = null;
+        scan();
+      }, SCAN_RATE_LIMIT);
+    }
+  }
+
+  /**
+   * Starts the scanning process by setting the shouldScan flag to true and calling
+   * the scan function if it's not already scanning. This function is used to
+   * resume scanning after it has been stopped.
+   */
+  function startScanning() {
+    shouldScan = true;
+
+    if (scanTimeoutId === null) {
+      void scan();
+    }
+  }
+
+  /**
+   * Stops the scanning process by setting the shouldScan flag to false and clearing
+   * any pending scan timeouts. This function is used to pause scanning when the
+   * user navigates away from the camera tab or when a barcode is detected and
+   * the user has chosen not to continue scanning.
+   */
+  function stopScanning() {
+    shouldScan = false;
+
+    if (scanTimeoutId !== null) {
+      clearTimeout(scanTimeoutId);
+      scanTimeoutId = null;
     }
   }
 
@@ -153,8 +193,7 @@ import './components/bs-history.js';
     scanBtn?.setAttribute('hidden', '');
     scanFrameEl?.removeAttribute('hidden');
     videoCaptureActionsEl?.removeAttribute('hidden');
-    // hideResult(cameraPanel);
-    scan();
+    startScanning();
   }
 
   /**
@@ -168,8 +207,6 @@ import './components/bs-history.js';
     const videoCaptureEl = document.querySelector('video-capture'); // Get the latest instance of video-capture element to ensure we don't use the cached one.
 
     if (tabId === 'cameraTab') {
-      shouldScan = true;
-
       if (!videoCaptureEl) {
         return;
       }
@@ -177,20 +214,19 @@ import './components/bs-history.js';
       if (!videoCaptureEl.loading && scanBtn.hasAttribute('hidden')) {
         scanFrameEl?.removeAttribute('hidden');
         videoCaptureActionsEl?.removeAttribute('hidden');
-        scan();
+        startScanning();
       }
 
-      if (typeof videoCaptureEl.startVideoStream === 'function') {
-        const videoDeviceId = cameraSelect?.value || undefined;
-        videoCaptureEl.startVideoStream(videoDeviceId);
-      }
+      const videoDeviceId = cameraSelect?.value || undefined;
+      videoCaptureEl.startVideoStream?.(videoDeviceId);
     } else if (tabId === 'fileTab') {
-      shouldScan = false;
+      stopScanning();
 
-      if (videoCaptureEl != null && typeof videoCaptureEl.stopVideoStream === 'function') {
-        videoCaptureEl.stopVideoStream();
+      if (!videoCaptureEl) {
+        return;
       }
 
+      videoCaptureEl.stopVideoStream?.();
       scanFrameEl?.setAttribute('hidden', '');
       videoCaptureActionsEl?.setAttribute('hidden', '');
     }
@@ -292,9 +328,10 @@ import './components/bs-history.js';
    * @param {CustomEvent} evt - The event object.
    */
   async function handleVideoCapturePlay(evt) {
+    playVideoButton?.setAttribute('hidden', '');
     scanFrameEl?.removeAttribute('hidden');
     resizeScanFrame(evt.detail.video, scanFrameEl);
-    scan();
+    startScanning();
 
     const trackSettings = evt.target.getTrackSettings();
     const trackCapabilities = evt.target.getTrackCapabilities();
@@ -361,29 +398,29 @@ import './components/bs-history.js';
    * @param {CustomEvent} evt - The event object.
    */
   function handleVideoCaptureError(evt) {
-    const error = evt.detail.error;
+    const { source, reason, error } = evt.detail;
 
-    if (error.name === 'NotFoundError') {
-      // If the browser cannot find all media tracks with the specified types that meet the constraints given.
+    if (source === 'playback' && reason === 'user-gesture-required') {
+      playVideoButton?.removeAttribute('hidden');
       return;
     }
 
-    const errorMessage =
-      error.name === 'NotAllowedError'
-        ? `<strong>Error accessing camera</strong><br>Permission to use webcam was denied or video Autoplay is disabled. Reload the page to give appropriate permissions to webcam.`
-        : error.message;
+    let errorMessage =
+      '<strong>Unable to start camera</strong><br>An unexpected error occurred while starting the video stream.';
 
-    cameraPanel.innerHTML = /* html */ `
-      <alert-element variant="danger" open>
-        <span slot="icon">
-          <svg xmlns="http://www.w3.org/2000/svg" width="1.25em" height="1.25em" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
-            <path d="M4.54.146A.5.5 0 0 1 4.893 0h6.214a.5.5 0 0 1 .353.146l4.394 4.394a.5.5 0 0 1 .146.353v6.214a.5.5 0 0 1-.146.353l-4.394 4.394a.5.5 0 0 1-.353.146H4.893a.5.5 0 0 1-.353-.146L.146 11.46A.5.5 0 0 1 0 11.107V4.893a.5.5 0 0 1 .146-.353zM5.1 1 1 5.1v5.8L5.1 15h5.8l4.1-4.1V5.1L10.9 1z"/>
-            <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
-          </svg>
-        </span>
-        ${errorMessage}
-      </alert-element>
-    `;
+    if (error.name === 'NotFoundError') {
+      errorMessage = '<strong>No camera found</strong><br>No compatible camera is available.';
+    } else if (source === 'camera' && reason === 'camera-access-denied') {
+      errorMessage =
+        '<strong>Error accessing camera</strong><br>Permission to use the camera was denied. Please enable camera access in your browser settings.';
+    }
+
+    toastify(errorMessage, {
+      duration: Infinity,
+      variant: 'danger',
+      announce: 'alert',
+      trustDangerousInnerHTML: true
+    });
   }
 
   /**
@@ -468,29 +505,22 @@ import './components/bs-history.js';
     }
 
     if (document.visibilityState === 'hidden') {
-      shouldScan = false;
-
-      if (videoCaptureEl != null && typeof videoCaptureEl.stopVideoStream === 'function') {
-        videoCaptureEl.stopVideoStream();
-      }
+      stopScanning();
+      videoCaptureEl?.stopVideoStream?.();
     } else {
-      shouldScan = true;
-
       // Get the latest instance of video-capture element to ensure we don't use the cached one.
-      const videoCaptureEl = document.querySelector('video-capture');
+      const currentVideoCaptureEl = document.querySelector('video-capture');
 
-      if (!videoCaptureEl) {
+      if (!currentVideoCaptureEl) {
         return;
       }
 
-      if (!videoCaptureEl.loading && scanBtn.hasAttribute('hidden')) {
-        scan();
+      if (!currentVideoCaptureEl.loading && scanBtn.hasAttribute('hidden')) {
+        startScanning();
       }
 
-      if (typeof videoCaptureEl.startVideoStream === 'function') {
-        const videoDeviceId = cameraSelect?.value || undefined;
-        videoCaptureEl.startVideoStream(videoDeviceId);
-      }
+      const videoDeviceId = cameraSelect?.value || undefined;
+      currentVideoCaptureEl.startVideoStream?.(videoDeviceId);
     }
   }
 
@@ -549,13 +579,26 @@ import './components/bs-history.js';
     toastify(message, { variant: 'danger', announce: 'alert' });
   }
 
+  /**
+   * Handles video play button click event.
+   */
+  function handlePlayVideo() {
+    if (videoCaptureEl.loading) {
+      return;
+    }
+
+    videoCaptureEl?.playVideo?.({ emit: true });
+    playVideoButton?.setAttribute('hidden', '');
+  }
+
   scanBtn.addEventListener('click', handleScanButtonClick);
-  tabGroupEl.addEventListener('a-tab-show', debounce(handleTabShow, 250));
+  tabGroupEl.addEventListener('a-tab-show', handleTabShow);
   dropzoneEl.addEventListener('files-dropzone-drop', handleFileDrop);
   resizeObserverEl.addEventListener('resize-observer:resize', handleVideoCaptureResize);
   settingsBtn.addEventListener('click', handleSettingsButtonClick);
   settingsForm.addEventListener('change', debounce(handleSettingsFormChange, 500));
   historyBtn.addEventListener('click', handleHistoryButtonClick);
+  playVideoButton.addEventListener('click', handlePlayVideo);
   document.addEventListener('visibilitychange', handleDocumentVisibilityChange);
   document.addEventListener('keydown', handleDocumentKeyDown);
   document.addEventListener('bs-history-success', handleHistorySuccess);

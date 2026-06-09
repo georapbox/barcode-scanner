@@ -14,7 +14,6 @@ const template = document.createElement('template');
 
 template.innerHTML = /* html */ `
   <style>${styles}</style>
-  <video part="video" playsinline></video>
   <div part="actions-container"><slot name="actions"></slot></div>
   <slot></slot>
 `;
@@ -78,22 +77,15 @@ class VideoCapture extends HTMLElement {
     this.#upgradeProperty('zoom');
     this.#upgradeProperty('torch');
 
-    this.#videoElement = this.shadowRoot?.querySelector('video') || null;
+    this.#initializeVideoElement();
 
     this.#videoElement?.addEventListener('loadedmetadata', this.#onVideoLoadedMetaData);
 
     if (!VideoCapture.isSupported()) {
-      return this.dispatchEvent(
-        new CustomEvent(`${COMPONENT_NAME}:error`, {
-          bubbles: true,
-          composed: true,
-          detail: {
-            error: {
-              name: 'NotSupportedError',
-              message: 'Not supported'
-            }
-          }
-        })
+      return this.#dispatchError(
+        'initialization',
+        'not-supported',
+        new Error('MediaDevices.getUserMedia() is not supported in this browser')
       );
     }
 
@@ -153,36 +145,74 @@ class VideoCapture extends HTMLElement {
   }
 
   /**
+   * Creates the video element after the custom element is connected.
+   *
+   * This ensures the media element is initialized while connected to the
+   * document, avoiding browser-specific playback issues caused by creating it
+   * earlier. The element is created only once and reused if the component
+   * reconnects.
+   */
+  #initializeVideoElement() {
+    if (this.#videoElement) {
+      return;
+    }
+
+    const video = document.createElement('video');
+
+    video.setAttribute('part', 'video');
+    video.setAttribute('playsinline', '');
+    video.setAttribute('muted', '');
+    video.setAttribute('disablepictureinpicture', '');
+
+    this.shadowRoot?.prepend(video);
+    this.#videoElement = video;
+  }
+
+  /**
+   * Dispatches an error event.
+   *
+   * @param {string} source - The source of the error.
+   * @param {string} reason - The reason for the error.
+   * @param {Error} error - The error object.
+   */
+  #dispatchError(source, reason, error) {
+    this.dispatchEvent(
+      new CustomEvent(`${COMPONENT_NAME}:error`, {
+        bubbles: true,
+        composed: true,
+        detail: { source, reason, error }
+      })
+    );
+  }
+
+  /**
    * Handles the loadedmetadata event of the video element.
    *
    * @param {Event} evt - The event object.
    */
-  #onVideoLoadedMetaData = evt => {
+  #onVideoLoadedMetaData = async evt => {
     const video = evt.target;
 
-    video
-      .play()
-      .then(() => {
-        this.dispatchEvent(
-          new CustomEvent(`${COMPONENT_NAME}:video-play`, {
-            bubbles: true,
-            composed: true,
-            detail: { video }
-          })
-        );
-      })
-      .catch(error => {
-        this.dispatchEvent(
-          new CustomEvent(`${COMPONENT_NAME}:error`, {
-            bubbles: true,
-            composed: true,
-            detail: { error }
-          })
-        );
-      })
-      .finally(() => {
-        this.removeAttribute('loading');
-      });
+    try {
+      await video.play();
+
+      this.dispatchEvent(
+        new CustomEvent(`${COMPONENT_NAME}:video-play`, {
+          bubbles: true,
+          composed: true,
+          detail: { video }
+        })
+      );
+    } catch (error) {
+      const reason =
+        error instanceof DOMException && error.name === 'NotAllowedError'
+          ? 'user-gesture-required'
+          : 'playback-failed';
+
+      this.#dispatchError('playback', reason, error);
+    } finally {
+      this.removeAttribute('loading');
+    }
   };
 
   /**
@@ -287,14 +317,13 @@ class VideoCapture extends HTMLElement {
       this.#applyConstraint('tilt', this.tilt);
       this.#applyConstraint('zoom', this.zoom);
     } catch (error) {
-      this.dispatchEvent(
-        new CustomEvent(`${COMPONENT_NAME}:error`, {
-          bubbles: true,
-          composed: true,
-          detail: { error }
-        })
-      );
-    } finally {
+      const reason =
+        error instanceof DOMException && error.name === 'NotAllowedError'
+          ? 'camera-access-denied'
+          : 'camera-failed';
+
+      this.#dispatchError('camera', reason, error);
+
       this.removeAttribute('loading');
     }
   }
@@ -325,6 +354,58 @@ class VideoCapture extends HTMLElement {
     track?.stop();
     this.#videoElement.srcObject = null;
     this.#stream = null;
+  }
+
+  /**
+   * Starts playback of the current video stream.
+   *
+   * This may need to be called directly from a user interaction when
+   * autoplay is blocked by the browser.
+   *
+   * @param {options} [options] - The options for playing the video.
+   * @param {boolean} [options.emit=false] - Whether to emit a custom event after playing the video.
+   * @returns {Promise<void>}
+   */
+  async playVideo(options = {}) {
+    const { emit = false } = options;
+
+    if (!this.#videoElement || !this.#stream) {
+      return;
+    }
+
+    try {
+      await this.#videoElement.play();
+
+      if (emit) {
+        this.dispatchEvent(
+          new CustomEvent(`${COMPONENT_NAME}:video-play`, {
+            bubbles: true,
+            composed: true,
+            detail: {
+              video: this.#videoElement
+            }
+          })
+        );
+      }
+    } catch (error) {
+      const reason =
+        error instanceof DOMException && error.name === 'NotAllowedError'
+          ? 'user-gesture-required'
+          : 'playback-failed';
+
+      this.#dispatchError('playback', reason, error);
+    }
+  }
+
+  /**
+   * Pauses the current video stream.
+   */
+  stopVideo() {
+    if (!this.#videoElement || !this.#stream) {
+      return;
+    }
+
+    this.#videoElement.pause();
   }
 
   /**
