@@ -4,7 +4,7 @@ const COMPONENT_NAME = 'video-capture';
 
 const styles = /* css */ `
   :host { display: block; box-sizing: border-box; }
-  :host *, :host *::before, :host *::after { box-sizing: inherit;}
+  :host *, :host *::before, :host *::after { box-sizing: border-box; }
   :host([hidden]), [hidden], ::slotted([hidden]) { display: none; }
   video { display: block; }
   #output:empty { display: none; }
@@ -38,13 +38,6 @@ class VideoCapture extends HTMLElement {
     return ['no-image', 'pan', 'tilt', 'zoom', 'torch'];
   }
 
-  /**
-   * Lifecycle method that is called when attributes are changed, added, removed, or replaced.
-   *
-   * @param {string} name - The name of the attribute.
-   * @param {string} oldValue - The old value of the attribute.
-   * @param {string} newValue - The new value of the attribute.
-   */
   attributeChangedCallback(name, oldValue, newValue) {
     if (!this.isConnected) {
       return;
@@ -68,9 +61,6 @@ class VideoCapture extends HTMLElement {
     }
   }
 
-  /**
-   * Lifecycle method that is called when the element is added to the DOM.
-   */
   async connectedCallback() {
     this.#upgradeProperty('autoPlay');
     this.#upgradeProperty('facingMode');
@@ -94,9 +84,6 @@ class VideoCapture extends HTMLElement {
     }
   }
 
-  /**
-   * Lifecycle method that is called when the element is removed from the DOM.
-   */
   disconnectedCallback() {
     this.stopVideoStream();
     this.#videoElement?.removeEventListener('loadedmetadata', this.#onVideoLoadedMetaData);
@@ -494,7 +481,7 @@ class VideoCapture extends HTMLElement {
    *
    * @param {string} [elementName='video-capture'] - The name of the custom element.
    */
-  static defineCustomElement(elementName = COMPONENT_NAME) {
+  static define(elementName = COMPONENT_NAME) {
     if (typeof window !== 'undefined' && !window.customElements.get(elementName)) {
       window.customElements.define(elementName, VideoCapture);
     }

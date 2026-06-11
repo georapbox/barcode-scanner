@@ -219,16 +219,21 @@ class BSResult extends HTMLElement {
   }
 
   /**
-   * This is to safe guard against cases where, for instance, a framework may have added the element to the page and
-   * set a value on one of its properties, but lazy loaded its definition. Without this guard, the upgraded element would
-   * miss that property and the instance property would prevent the class property setter from ever being called.
+   * Re-applies a property value that may have been set on the element
+   * instance before the custom element was defined.
    *
-   * https://developers.google.com/web/fundamentals/web-components/best-practices#lazy-properties
+   * This handles cases where a framework sets a property on the element
+   * before its definition is loaded. Without this step, the own property
+   * on the instance would shadow the class setter and prevent it from
+   * running after upgrade.
    *
-   * @param {string} prop - The property to upgrade.
+   * @see https://web.dev/articles/custom-elements-best-practices#make_properties_lazy
+   *
+   * @param {string} prop - The property name to upgrade.
    */
   #upgradeProperty(prop) {
     const instance = this;
+
     if (Object.prototype.hasOwnProperty.call(instance, prop)) {
       const value = instance[prop];
       delete instance[prop];
@@ -236,11 +241,18 @@ class BSResult extends HTMLElement {
     }
   }
 
-  static defineCustomElement(elementName = 'bs-result') {
-    if (typeof window !== 'undefined' && !window.customElements.get(elementName)) {
-      window.customElements.define(elementName, BSResult);
+  /**
+   * Defines the custom element by registering it with the browser's
+   * CustomElementRegistry if it hasn't been defined already.
+   *
+   * @param {string} [tagName='bs-result'] - The tag name to use for the custom element.
+   */
+  static define(tagName = 'bs-result') {
+    if (typeof window === 'undefined' || window.customElements.get(tagName)) {
+      return;
     }
+    window.customElements.define(tagName, BSResult);
   }
 }
 
-BSResult.defineCustomElement();
+export { BSResult };

@@ -400,13 +400,18 @@ class BSHistory extends HTMLElement {
     this.dispatchEvent(evt);
   }
 
-  static defineCustomElement(elementName = 'bs-history') {
-    if (typeof window !== 'undefined' && !window.customElements.get(elementName)) {
-      window.customElements.define(elementName, BSHistory);
+  /**
+   * Defines the custom element by registering it with the browser's
+   * CustomElementRegistry if it hasn't been defined already.
+   *
+   * @param {string} [tagName='bs-history'] - The tag name to use for the custom element.
+   */
+  static define(tagName = 'bs-history') {
+    if (typeof window === 'undefined' || window.customElements.get(tagName)) {
+      return;
     }
+    window.customElements.define(tagName, BSHistory);
   }
 }
-
-BSHistory.defineCustomElement();
 
 export { BSHistory };
