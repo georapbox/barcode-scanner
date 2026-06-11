@@ -18,11 +18,14 @@ import { ScanResult } from './components/scan-result.js';
 import { ScanSettings } from './components/scan-settings.js';
 import { ScanHistory } from './components/scan-history.js';
 import { CameraScanner } from './components/camera-scanner.js';
+import { FileScanner } from './components/file-scanner.js';
 
 ClipboardCopy.define();
 ScanResult.define();
 ScanSettings.define();
 ScanHistory.define();
+CameraScanner.define();
+FileScanner.define();
 
 (async function () {
   const tabGroupEl = document.querySelector('a-tab-group');
@@ -52,7 +55,6 @@ ScanHistory.define();
   const { barcodeReaderError } = await BarcodeReader.setup();
 
   if (barcodeReaderError) {
-    this.stopScanning();
     globalActionsEl?.setAttribute('hidden', '');
     tabGroupEl?.setAttribute('hidden', '');
 
@@ -72,8 +74,6 @@ ScanHistory.define();
     // Stop the script execution as BarcodeDetector API is not supported.
     return;
   }
-
-  CameraScanner.define();
 
   const cameraScannerEl = document.querySelector('camera-scanner');
 
