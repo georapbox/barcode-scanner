@@ -4,11 +4,9 @@ import '@georapbox/files-dropzone-element/dist/files-dropzone-defined.js';
 import '@georapbox/resize-observer-element/dist/resize-observer-defined.js';
 import '@georapbox/modal-element/dist/modal-element-defined.js';
 import '@georapbox/alert-element/dist/alert-element-defined.js';
-import { ACCEPTED_MIME_TYPES } from './constants.js';
 import { getSettings, setSettings } from './services/storage.js';
 import { debounce } from './utils/debounce.js';
 import { log } from './utils/log.js';
-import { isDialogElementSupported } from './utils/isDialogElementSupported.js';
 import { createResult } from './helpers/result.js';
 import { triggerScanEffects } from './helpers/triggerScanEffects.js';
 import { BarcodeReader } from './helpers/BarcodeReader.js';
@@ -29,13 +27,12 @@ FileScanner.define();
 
 (async function () {
   const tabGroupEl = document.querySelector('a-tab-group');
-  const bsSettingsEl = document.querySelector('scan-settings');
+  const scanSettingsEl = document.querySelector('scan-settings');
   const scanHistoryEl = document.querySelector('scan-history');
   const cameraPanel = document.getElementById('cameraPanel');
   const cameraResultsEl = cameraPanel.querySelector('.results');
   const filePanel = document.getElementById('filePanel');
   const fileResultsEl = filePanel.querySelector('.results');
-  const dropzoneEl = document.getElementById('dropzone');
   const globalActionsEl = document.getElementById('globalActions');
   const historyBtn = document.getElementById('historyBtn');
   const historyDialog = document.getElementById('historyDialog');
@@ -46,7 +43,7 @@ FileScanner.define();
   // By default the dialog elements are hidden for browsers that don't support the dialog element.
   // If the dialog element is supported, we remove the hidden attribute and the dialogs' visibility
   // is controlled by using the `showModal()` and `close()` methods.
-  if (isDialogElementSupported()) {
+  if (typeof HTMLDialogElement === 'function') {
     globalActionsEl?.removeAttribute('hidden');
     historyDialog?.removeAttribute('hidden');
     settingsDialog?.removeAttribute('hidden');
@@ -76,6 +73,7 @@ FileScanner.define();
   }
 
   const cameraScannerEl = document.querySelector('camera-scanner');
+  const fileScannerEl = document.querySelector('file-scanner');
 
   const supportedBarcodeFormats = await BarcodeReader.getSupportedFormats();
   const [, settings] = await getSettings();
@@ -83,9 +81,8 @@ FileScanner.define();
   let barcodeReader = await BarcodeReader.create(intitialFormats);
 
   cameraScannerEl.barcodeReader = barcodeReader;
-
-  dropzoneEl.accept = ACCEPTED_MIME_TYPES.join(',');
-  bsSettingsEl.supportedFormats = supportedBarcodeFormats;
+  fileScannerEl.barcodeReader = barcodeReader;
+  scanSettingsEl.supportedFormats = supportedBarcodeFormats;
 
   /**
    * Handles the tab show event.
@@ -118,86 +115,6 @@ FileScanner.define();
   }
 
   /**
-   * Handles the selection of a file.
-   * It is responsible for displaying the selected file in the dropzone.
-   *
-   * @param {File} file - The selected file.
-   */
-  async function handleFileSelect(file) {
-    if (!file) {
-      return;
-    }
-
-    const [, settings] = await getSettings();
-    const image = new Image();
-    const reader = new FileReader();
-
-    reader.onload = evt => {
-      const data = evt.target.result;
-
-      image.onload = async () => {
-        try {
-          const barcode = await barcodeReader.detect(image);
-          const barcodeValue = barcode?.rawValue ?? '';
-
-          if (!barcodeValue) {
-            throw new Error('No barcode detected');
-          }
-
-          createResult(fileResultsEl, barcodeValue);
-
-          if (settings?.addToHistory) {
-            scanHistoryEl?.add(barcodeValue);
-          }
-
-          triggerScanEffects();
-        } catch (err) {
-          log.error(err);
-
-          toastify(
-            '<strong>No barcode detected</strong><br><small>Please try again with a different image.</small>',
-            { variant: 'danger', announce: 'alert', trustDangerousInnerHTML: true }
-          );
-
-          triggerScanEffects({ success: false });
-        }
-      };
-
-      image.src = data;
-      image.alt = 'Image preview';
-
-      dropzoneEl.replaceChildren();
-
-      const preview = document.createElement('div');
-      preview.className = 'dropzone-preview';
-
-      const imageWrapper = document.createElement('div');
-      imageWrapper.className = 'dropzone-preview__image-wrapper';
-
-      const fileNameWrapper = document.createElement('div');
-      fileNameWrapper.className = 'dropzone-preview__file-name';
-      fileNameWrapper.textContent = file.name;
-
-      imageWrapper.appendChild(image);
-      preview.appendChild(imageWrapper);
-      preview.appendChild(fileNameWrapper);
-      dropzoneEl.prepend(preview);
-    };
-
-    reader.readAsDataURL(file);
-  }
-
-  /**
-   * Handles the drop event on the dropzone.
-   *
-   * @param {CustomEvent} evt - The event object.
-   */
-  function handleFileDrop(evt) {
-    const file = evt.detail.acceptedFiles[0];
-    handleFileSelect(file);
-  }
-
-  /**
    * Handles the settings button click event.
    * It is responsible for displaying the settings dialog.
    */
@@ -226,6 +143,7 @@ FileScanner.define();
     if (evt.target.name === 'formats-settings') {
       barcodeReader = await BarcodeReader.create(formatsSettings);
       cameraScannerEl.barcodeReader = barcodeReader;
+      fileScannerEl.barcodeReader = barcodeReader;
     }
   }
 
@@ -295,14 +213,16 @@ FileScanner.define();
   }
 
   /**
-   * Handles the barcode detected event from the camera scanner component.
+   * Handles the barcode detext success event from camera and file scanner.
    *
-   * @param {CustomEvent<{ barcodeValue: string }>} evt - The event object.
+   * @param {CustomEvent<{ barcodeValue: string, source: string }>} evt - The event object.
+   * @returns {Promise<void>}
    */
-  async function handleCameraBarcodeDetected(evt) {
-    const { barcodeValue } = evt.detail;
+  async function handleBarcodeDetectSuccess(evt) {
+    const { barcodeValue, source } = evt.detail;
+    const resultsEl = source === 'camera-scanner' ? cameraResultsEl : fileResultsEl;
 
-    createResult(cameraResultsEl, barcodeValue);
+    createResult(resultsEl, barcodeValue);
 
     const [, settings] = await getSettings();
     if (settings?.addToHistory) {
@@ -312,9 +232,29 @@ FileScanner.define();
     triggerScanEffects();
   }
 
-  cameraScannerEl.addEventListener('camera-scanner-barcode-detected', handleCameraBarcodeDetected);
+  /**
+   * Handles the barcode detect error event from camera and file scanner.
+   *
+   * @param {CustomEvent<{ error: Error, source: string }>} evt - The event object.
+   * @returns {Promise<void>}
+   */
+  async function handleBarcodeDetectError(evt) {
+    const { error } = evt.detail;
+
+    log.error(error);
+
+    toastify(
+      '<strong>No barcode detected</strong><br><small>Please try again with a different image.</small>',
+      { variant: 'danger', announce: 'alert', trustDangerousInnerHTML: true }
+    );
+
+    triggerScanEffects({ success: false });
+  }
+
+  cameraScannerEl.addEventListener('barcode-detect-success', handleBarcodeDetectSuccess);
+  fileScannerEl.addEventListener('barcode-detect-success', handleBarcodeDetectSuccess);
+  fileScannerEl.addEventListener('barcode-detect-error', handleBarcodeDetectError);
   tabGroupEl.addEventListener('a-tab-show', handleTabShow);
-  dropzoneEl.addEventListener('files-dropzone-drop', handleFileDrop);
   settingsBtn.addEventListener('click', handleSettingsButtonClick);
   settingsForm.addEventListener('change', debounce(handleSettingsFormChange, 500));
   historyBtn.addEventListener('click', handleHistoryButtonClick);

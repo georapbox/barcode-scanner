@@ -1,7 +1,5 @@
 import { clamp } from '../utils/clamp.js';
 
-const COMPONENT_NAME = 'video-capture';
-
 const styles = /* css */ `
   :host { display: block; box-sizing: border-box; }
   :host *, :host *::before, :host *::after { box-sizing: border-box; }
@@ -163,13 +161,7 @@ class VideoCapture extends HTMLElement {
    * @param {Error} error - The error object.
    */
   #dispatchError(source, reason, error) {
-    this.dispatchEvent(
-      new CustomEvent(`${COMPONENT_NAME}:error`, {
-        bubbles: true,
-        composed: true,
-        detail: { source, reason, error }
-      })
-    );
+    this.#emitEvent('video-capture-error', { source, reason, error });
   }
 
   /**
@@ -182,14 +174,7 @@ class VideoCapture extends HTMLElement {
 
     try {
       await video.play();
-
-      this.dispatchEvent(
-        new CustomEvent(`${COMPONENT_NAME}:video-play`, {
-          bubbles: true,
-          composed: true,
-          detail: { video }
-        })
-      );
+      this.#emitEvent('video-capture-play', { video });
     } catch (error) {
       const reason =
         error instanceof DOMException && error.name === 'NotAllowedError'
@@ -235,6 +220,18 @@ class VideoCapture extends HTMLElement {
           // Fail silently...
         });
     }
+  }
+
+  /**
+   * Dispatches a custom event with the given name.
+   *
+   * @param {string} eventName - The name of the event to dispatch.
+   * @param {Nullable<any>} detail - The detail object to include with the event.
+   */
+  #emitEvent(eventName, detail = null) {
+    const options = { bubbles: true, composed: true, detail };
+    const evt = new CustomEvent(eventName, options);
+    this.dispatchEvent(evt);
   }
 
   /**
@@ -364,15 +361,7 @@ class VideoCapture extends HTMLElement {
       await this.#videoElement.play();
 
       if (emit) {
-        this.dispatchEvent(
-          new CustomEvent(`${COMPONENT_NAME}:video-play`, {
-            bubbles: true,
-            composed: true,
-            detail: {
-              video: this.#videoElement
-            }
-          })
-        );
+        this.#emitEvent('video-capture-play', { video: this.#videoElement });
       }
     } catch (error) {
       const reason =
@@ -481,7 +470,7 @@ class VideoCapture extends HTMLElement {
    *
    * @param {string} [elementName='video-capture'] - The name of the custom element.
    */
-  static define(elementName = COMPONENT_NAME) {
+  static define(elementName = 'video-capture') {
     if (typeof window !== 'undefined' && !window.customElements.get(elementName)) {
       window.customElements.define(elementName, VideoCapture);
     }

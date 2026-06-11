@@ -89,7 +89,7 @@ class BarcodeReader {
    *
    * @see https://developer.mozilla.org/docs/Web/API/BarcodeDetector/detect
    * @param {HTMLImageElement|HTMLVideoElement|ImageBitmap} source - Image or video element or ImageBitmap
-   * @returns {Promise<BarcodeDetection>} - Barcode detection result
+   * @returns {Promise<DetectedBarcode>} - Barcode detection result
    */
   async detect(source) {
     if (!this.barcodeReader) {
@@ -105,6 +105,8 @@ class BarcodeReader {
         rawValue: firstResult.rawValue,
         format: firstResult.format
       });
+
+      console.log(firstResult);
 
       return firstResult;
     } else {

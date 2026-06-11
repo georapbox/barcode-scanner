@@ -396,7 +396,6 @@ class ScanHistory extends HTMLElement {
   #emitEvent(eventName, detail = null) {
     const options = { bubbles: true, composed: true, detail };
     const evt = new CustomEvent(eventName, options);
-
     this.dispatchEvent(evt);
   }
 

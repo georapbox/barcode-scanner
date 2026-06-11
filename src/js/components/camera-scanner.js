@@ -1,6 +1,5 @@
 import { VideoCapture } from './video-capture.js';
 import { toastify } from '../helpers/toastify.js';
-import { resizeScanFrame } from '../helpers/resizeScanFrame.js';
 import { toggleTorchButtonStatus } from '../helpers/toggleTorchButtonStatus.js';
 import { log } from '../utils/log.js';
 
@@ -37,6 +36,33 @@ const styles = /* css */ `
 
   button:not(:disabled) {
     cursor: pointer;
+  }
+
+  button,
+  select {
+    outline-color: var(--accent);
+  }
+
+  .camera-select {
+    padding-block: 0.75rem;
+    padding-inline: 0.75rem 2.25rem;
+    border: 1px solid var(--border);
+    border-radius: var(--border-radius);
+    background: var(--background-input) var(--select-arrow) calc(100% - 0.75rem) 50% / 0.75rem no-repeat;
+    color: var(--form-text);
+    font-family: inherit;
+    font-size: inherit;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  :dir(rtl) .camera-select {
+    background-position: calc(0.75rem) 50%;
+  }
+
+  .camera-select:disabled {
+    cursor: not-allowed;
   }
 
   .scanner-container {
@@ -314,14 +340,10 @@ class CameraScanner extends HTMLElement {
       'resize-observer:resize',
       this.#handleVideoCaptureResize
     );
-    this.#videoCaptureEl.addEventListener(
-      'video-capture:video-play',
-      this.#handleVideoCapturePlay,
-      {
-        once: true
-      }
-    );
-    this.#videoCaptureEl.addEventListener('video-capture:error', this.#handleVideoCaptureError, {
+    this.#videoCaptureEl.addEventListener('video-capture-play', this.#handleVideoCapturePlay, {
+      once: true
+    });
+    this.#videoCaptureEl.addEventListener('video-capture-error', this.#handleVideoCaptureError, {
       once: true
     });
   }
@@ -336,14 +358,10 @@ class CameraScanner extends HTMLElement {
       'resize-observer:resize',
       this.#handleVideoCaptureResize
     );
-    this.#videoCaptureEl.removeEventListener(
-      'video-capture:video-play',
-      this.#handleVideoCapturePlay,
-      {
-        once: true
-      }
-    );
-    this.#videoCaptureEl.removeEventListener('video-capture:error', this.#handleVideoCaptureError, {
+    this.#videoCaptureEl.removeEventListener('video-capture-play', this.#handleVideoCapturePlay, {
+      once: true
+    });
+    this.#videoCaptureEl.removeEventListener('video-capture-error', this.#handleVideoCaptureError, {
       once: true
     });
   }
@@ -398,13 +416,7 @@ class CameraScanner extends HTMLElement {
         throw new Error('No barcode detected');
       }
 
-      this.dispatchEvent(
-        new CustomEvent('camera-scanner-barcode-detected', {
-          detail: { barcodeValue },
-          bubbles: true,
-          composed: true
-        })
-      );
+      this.#emitEvent('barcode-detect-success', { barcodeValue, source: 'camera-scanner' });
     } catch {
       // If no barcode is detected, the error is caught here.
       // We can ignore the error and continue scanning.
@@ -593,6 +605,18 @@ class CameraScanner extends HTMLElement {
   };
 
   /**
+   * Dispatches a custom event with the given name.
+   *
+   * @param {string} eventName - The name of the event to dispatch.
+   * @param {any} detail - The detail object to include with the event.
+   */
+  #emitEvent(eventName, detail = null) {
+    const options = { bubbles: true, composed: true, detail };
+    const evt = new CustomEvent(eventName, options);
+    this.dispatchEvent(evt);
+  }
+
+  /**
    * Re-applies a property value that may have been set on the element
    * instance before the custom element was defined.
    *
@@ -630,3 +654,19 @@ class CameraScanner extends HTMLElement {
 }
 
 export { CameraScanner };
+
+/**
+ * Resizes the scan frame to match the video element's dimensions.
+ *
+ * @param {HTMLVideoElement} videoEl - Video element
+ * @param {HTMLElement} scanFrameEl - Scan frame element
+ */
+function resizeScanFrame(videoEl, scanFrameEl) {
+  if (!videoEl || !scanFrameEl) {
+    return;
+  }
+
+  const rect = videoEl.getBoundingClientRect();
+
+  scanFrameEl.style.cssText = `width: ${rect.width}px; height: ${rect.height}px`;
+}
