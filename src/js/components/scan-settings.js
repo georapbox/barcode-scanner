@@ -1,6 +1,6 @@
 import { getSettings } from '../services/storage.js';
 
-class BSSettings extends HTMLElement {
+class ScanSettings extends HTMLElement {
   #formatsWrapperEl = null;
   #formEl = null;
   #supportedFormats = [];
@@ -33,6 +33,14 @@ class BSSettings extends HTMLElement {
     });
   }
 
+  /**
+   * Renders the list of supported formats as checkboxes in the settings form.
+   *
+   * This method clears any existing format checkboxes and creates new ones
+   * based on the `supportedFormats` property. It also checks the boxes based
+   * on the formats stored in the settings, defaulting to checked if no
+   * settings are found.
+   */
   #renderFormats() {
     if (!this.#formatsWrapperEl) {
       return;
@@ -85,14 +93,14 @@ class BSSettings extends HTMLElement {
    * Defines the custom element by registering it with the browser's
    * CustomElementRegistry if it hasn't been defined already.
    *
-   * @param {string} [tagName='bs-settings'] - The tag name to use for the custom element.
+   * @param {string} [tagName='scan-settings'] - The tag name to use for the custom element.
    */
-  static define(tagName = 'bs-settings') {
+  static define(tagName = 'scan-settings') {
     if (typeof window === 'undefined' || window.customElements.get(tagName)) {
       return;
     }
-    window.customElements.define(tagName, BSSettings);
+    window.customElements.define(tagName, ScanSettings);
   }
 }
 
-export { BSSettings };
+export { ScanSettings };

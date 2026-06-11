@@ -1,14 +1,11 @@
-import { ClipboardCopy } from '@georapbox/clipboard-copy-element/dist/clipboard-copy.js';
+import { ClipboardCopy as BaseClipboardCopy } from '@georapbox/clipboard-copy-element/dist/clipboard-copy.js';
 
 /**
- * Extends the `ClipboardCopy` element to override the default `copy` and `success` slots,
+ * Extends the `BaseClipboardCopy` element to override the default `copy` and `success` slots,
  * in order to avoid repetition of the same markup throughout the application.
  * It also adds aditional properties and attributes, specific to the application.
- *
- * @class CustomClipboardCopy
- * @extends ClipboardCopy
  */
-class CustomClipboardCopy extends ClipboardCopy {
+class ClipboardCopy extends BaseClipboardCopy {
   constructor() {
     super();
 
@@ -117,14 +114,14 @@ class CustomClipboardCopy extends ClipboardCopy {
    * Defines the custom element by registering it with the browser's
    * CustomElementRegistry if it hasn't been defined already.
    *
-   * @param {string} [tagName='custom-clipboard-copy'] - The tag name to use for the custom element.
+   * @param {string} [tagName='clipboard-copy'] - The tag name to use for the custom element.
    */
-  static define(tagName = 'custom-clipboard-copy') {
+  static define(tagName = 'clipboard-copy') {
     if (typeof window === 'undefined' || window.customElements.get(tagName)) {
       return;
     }
-    window.customElements.define(tagName, CustomClipboardCopy);
+    window.customElements.define(tagName, ClipboardCopy);
   }
 }
 
-export { CustomClipboardCopy };
+export { ClipboardCopy };

@@ -58,7 +58,7 @@ const styles = /* css */ `
   }
 
   .result web-share button,
-  .result custom-clipboard-copy::part(button) {
+  .result clipboard-copy::part(button) {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -74,11 +74,11 @@ const styles = /* css */ `
     cursor: pointer;
   }
 
-  .result custom-clipboard-copy::part(button--success) {
+  .result clipboard-copy::part(button--success) {
     color: var(--success-color);
   }
 
-  .result custom-clipboard-copy::part(button--error) {
+  .result clipboard-copy::part(button--error) {
     color: var(--danger-color);
   }
 `;
@@ -94,7 +94,7 @@ template.innerHTML = /* html */ `
     </div>
 
     <div class="result__actions">
-      <custom-clipboard-copy only-icon></custom-clipboard-copy>
+      <clipboard-copy only-icon></clipboard-copy>
 
       <web-share>
         <button slot="button" type="button">
@@ -107,7 +107,7 @@ template.innerHTML = /* html */ `
   </div>
 `;
 
-class BSResult extends HTMLElement {
+class ScanResult extends HTMLElement {
   constructor() {
     super();
 
@@ -137,6 +137,7 @@ class BSResult extends HTMLElement {
 
   connectedCallback() {
     this.#upgradeProperty('value');
+
     this.#highlight();
 
     if (!isWebShareSupported()) {
@@ -148,6 +149,13 @@ class BSResult extends HTMLElement {
     }
   }
 
+  /**
+   * Handles changes to the `value` attribute by creating a new result element
+   * with the updated value, updating the datetime, and configuring the copy
+   * and share buttons.
+   *
+   * @param {string} value - The new value to display in the result.
+   */
   async #handleValueChange(value) {
     const baseEl = this.shadowRoot.querySelector('.result');
     const resultContentEl = baseEl?.querySelector('.result__content');
@@ -187,7 +195,7 @@ class BSResult extends HTMLElement {
     resultDatetimeEl.textContent = dateTimeFormatter.format(new Date());
     resultContentEl?.insertBefore(resultEl, resultDatetimeEl);
 
-    const copyEl = baseEl?.querySelector('custom-clipboard-copy');
+    const copyEl = baseEl?.querySelector('clipboard-copy');
     const shareEl = baseEl?.querySelector('web-share');
 
     if (copyEl) {
@@ -205,6 +213,10 @@ class BSResult extends HTMLElement {
     }
   }
 
+  /**
+   * Animates the background color of the result element to highlight it when it
+   * first appears.
+   */
   #highlight() {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       return;
@@ -245,14 +257,14 @@ class BSResult extends HTMLElement {
    * Defines the custom element by registering it with the browser's
    * CustomElementRegistry if it hasn't been defined already.
    *
-   * @param {string} [tagName='bs-result'] - The tag name to use for the custom element.
+   * @param {string} [tagName='scan-result'] - The tag name to use for the custom element.
    */
-  static define(tagName = 'bs-result') {
+  static define(tagName = 'scan-result') {
     if (typeof window === 'undefined' || window.customElements.get(tagName)) {
       return;
     }
-    window.customElements.define(tagName, BSResult);
+    window.customElements.define(tagName, ScanResult);
   }
 }
 
-export { BSResult };
+export { ScanResult };

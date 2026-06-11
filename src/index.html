@@ -149,13 +149,13 @@
 
   <modal-element id="historyDialog" class="popover-dialog history-dialog" placement="top-end" hidden>
     <span slot="header">History</span>
-    <bs-history></bs-history>
+    <scan-history></scan-history>
   </modal-element>
 
   <modal-element id="settingsDialog" class="popover-dialog settings-dialog" placement="top-end" hidden>
     <span slot="header">Settings</span>
 
-    <bs-settings>
+    <scan-settings>
       <form id="settingsForm" autocomplete="off">
         <fieldset>
           <legend>When barcode is detected...</legend>
@@ -183,7 +183,7 @@
           <ul id="formatsList" class="formats-list"></ul>
         </fieldset>
       </form>
-    </bs-settings>
+    </scan-settings>
   </modal-element>
 
   <script src="./js/register-service-worker.js" type="module"></script>

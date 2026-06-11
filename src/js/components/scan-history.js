@@ -74,7 +74,7 @@ const styles = /* css */ `
   }
 
   .actions button,
-  .actions custom-clipboard-copy::part(button) {
+  .actions clipboard-copy::part(button) {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -90,11 +90,11 @@ const styles = /* css */ `
     cursor: pointer;
   }
 
-  .actions custom-clipboard-copy::part(button--success) {
+  .actions clipboard-copy::part(button--success) {
     color: var(--success-color);
   }
 
-  .actions custom-clipboard-copy::part(button--error) {
+  .actions clipboard-copy::part(button--error) {
     color: var(--danger-color);
   }
 
@@ -141,7 +141,7 @@ template.innerHTML = /* html */ `
   </footer>
 `;
 
-class BSHistory extends HTMLElement {
+class ScanHistory extends HTMLElement {
   #historyListEl = null;
   #emptyHistoryBtn = null;
 
@@ -189,7 +189,7 @@ class BSHistory extends HTMLElement {
     const [getHistoryError, history = []] = await getHistory();
 
     if (getHistoryError || !Array.isArray(history)) {
-      this.#emitEvent('bs-history-error', errPayload);
+      this.#emitEvent('scan-history-error', errPayload);
       return getHistoryError;
     }
 
@@ -202,7 +202,7 @@ class BSHistory extends HTMLElement {
 
     if (setHistoryError) {
       log.error('Error setting history', setHistoryError);
-      this.#emitEvent('bs-history-error', errPayload);
+      this.#emitEvent('scan-history-error', errPayload);
       return setHistoryError;
     }
 
@@ -211,7 +211,7 @@ class BSHistory extends HTMLElement {
       this.#historyListEl.firstElementChild
     );
 
-    this.#emitEvent('bs-history-success', {
+    this.#emitEvent('scan-history-success', {
       type: 'add',
       message: 'Barcode added to history'
     });
@@ -238,7 +238,7 @@ class BSHistory extends HTMLElement {
     const [getHistoryError, history = []] = await getHistory();
 
     if (getHistoryError || !Array.isArray(history)) {
-      this.#emitEvent('bs-history-error', errPayload);
+      this.#emitEvent('scan-history-error', errPayload);
       return getHistoryError;
     }
 
@@ -247,7 +247,7 @@ class BSHistory extends HTMLElement {
 
     if (setHistoryError) {
       log.error('Error setting history', setHistoryError);
-      this.#emitEvent('bs-history-error', errPayload);
+      this.#emitEvent('scan-history-error', errPayload);
       return setHistoryError;
     }
 
@@ -255,7 +255,7 @@ class BSHistory extends HTMLElement {
 
     historyItem?.remove();
 
-    this.#emitEvent('bs-history-success', {
+    this.#emitEvent('scan-history-success', {
       type: 'remove',
       message: 'Barcode removed from history'
     });
@@ -278,13 +278,13 @@ class BSHistory extends HTMLElement {
 
     if (setHistoryError) {
       log.error('Error setting history', setHistoryError);
-      this.#emitEvent('bs-history-error', errPayload);
+      this.#emitEvent('scan-history-error', errPayload);
       return setHistoryError;
     }
 
     this.#historyListEl?.replaceChildren();
 
-    this.#emitEvent('bs-history-success', {
+    this.#emitEvent('scan-history-success', {
       type: 'empty',
       message: 'History emptied successfully'
     });
@@ -336,7 +336,7 @@ class BSHistory extends HTMLElement {
     const actionsEl = document.createElement('div');
     actionsEl.className = 'actions';
 
-    const copyEl = document.createElement('custom-clipboard-copy');
+    const copyEl = document.createElement('clipboard-copy');
     const copyBtn = copyEl.shadowRoot?.querySelector('button');
     copyEl.setAttribute('only-icon', '');
     copyEl.setAttribute('value', item);
@@ -404,14 +404,14 @@ class BSHistory extends HTMLElement {
    * Defines the custom element by registering it with the browser's
    * CustomElementRegistry if it hasn't been defined already.
    *
-   * @param {string} [tagName='bs-history'] - The tag name to use for the custom element.
+   * @param {string} [tagName='scan-history'] - The tag name to use for the custom element.
    */
-  static define(tagName = 'bs-history') {
+  static define(tagName = 'scan-history') {
     if (typeof window === 'undefined' || window.customElements.get(tagName)) {
       return;
     }
-    window.customElements.define(tagName, BSHistory);
+    window.customElements.define(tagName, ScanHistory);
   }
 }
 
-export { BSHistory };
+export { ScanHistory };

@@ -13,21 +13,21 @@ import { createResult } from './helpers/result.js';
 import { triggerScanEffects } from './helpers/triggerScanEffects.js';
 import { BarcodeReader } from './helpers/BarcodeReader.js';
 import { toastify } from './helpers/toastify.js';
-import { CustomClipboardCopy } from './components/clipboard-copy.js';
-import { BSResult } from './components/bs-result.js';
-import { BSSettings } from './components/bs-settings.js';
-import { BSHistory } from './components/bs-history.js';
+import { ClipboardCopy } from './components/clipboard-copy.js';
+import { ScanResult } from './components/scan-result.js';
+import { ScanSettings } from './components/scan-settings.js';
+import { ScanHistory } from './components/scan-history.js';
 import { CameraScanner } from './components/camera-scanner.js';
 
-CustomClipboardCopy.define();
-BSResult.define();
-BSSettings.define();
-BSHistory.define();
+ClipboardCopy.define();
+ScanResult.define();
+ScanSettings.define();
+ScanHistory.define();
 
 (async function () {
   const tabGroupEl = document.querySelector('a-tab-group');
-  const bsSettingsEl = document.querySelector('bs-settings');
-  const bsHistoryEl = document.querySelector('bs-history');
+  const bsSettingsEl = document.querySelector('scan-settings');
+  const scanHistoryEl = document.querySelector('scan-history');
   const cameraPanel = document.getElementById('cameraPanel');
   const cameraResultsEl = cameraPanel.querySelector('.results');
   const filePanel = document.getElementById('filePanel');
@@ -75,14 +75,14 @@ BSHistory.define();
 
   CameraScanner.define();
 
-  const cameraScanner = document.querySelector('camera-scanner');
+  const cameraScannerEl = document.querySelector('camera-scanner');
 
   const supportedBarcodeFormats = await BarcodeReader.getSupportedFormats();
   const [, settings] = await getSettings();
   const intitialFormats = settings?.formats || supportedBarcodeFormats;
   let barcodeReader = await BarcodeReader.create(intitialFormats);
 
-  cameraScanner.barcodeReader = barcodeReader;
+  cameraScannerEl.barcodeReader = barcodeReader;
 
   dropzoneEl.accept = ACCEPTED_MIME_TYPES.join(',');
   bsSettingsEl.supportedFormats = supportedBarcodeFormats;
@@ -97,7 +97,7 @@ BSHistory.define();
     const tabId = evt.detail.tabId;
 
     if (tabId === 'cameraTab') {
-      cameraScanner?.dispatchEvent(
+      cameraScannerEl?.dispatchEvent(
         new CustomEvent('camera-scanner-visibility-change', {
           bubbles: true,
           composed: true,
@@ -107,7 +107,7 @@ BSHistory.define();
     }
 
     if (tabId === 'fileTab') {
-      cameraScanner?.dispatchEvent(
+      cameraScannerEl?.dispatchEvent(
         new CustomEvent('camera-scanner-visibility-change', {
           bubbles: true,
           composed: true,
@@ -147,7 +147,7 @@ BSHistory.define();
           createResult(fileResultsEl, barcodeValue);
 
           if (settings?.addToHistory) {
-            bsHistoryEl?.add(barcodeValue);
+            scanHistoryEl?.add(barcodeValue);
           }
 
           triggerScanEffects();
@@ -225,7 +225,7 @@ BSHistory.define();
 
     if (evt.target.name === 'formats-settings') {
       barcodeReader = await BarcodeReader.create(formatsSettings);
-      cameraScanner.barcodeReader = barcodeReader;
+      cameraScannerEl.barcodeReader = barcodeReader;
     }
   }
 
@@ -247,7 +247,7 @@ BSHistory.define();
 
     if (tabId === 'cameraTab') {
       if (document.visibilityState === 'hidden') {
-        cameraScanner?.dispatchEvent(
+        cameraScannerEl?.dispatchEvent(
           new CustomEvent('camera-scanner-visibility-change', {
             bubbles: true,
             composed: true,
@@ -255,7 +255,7 @@ BSHistory.define();
           })
         );
       } else {
-        cameraScanner?.dispatchEvent(
+        cameraScannerEl?.dispatchEvent(
           new CustomEvent('camera-scanner-visibility-change', {
             bubbles: true,
             composed: true,
@@ -306,19 +306,19 @@ BSHistory.define();
 
     const [, settings] = await getSettings();
     if (settings?.addToHistory) {
-      bsHistoryEl?.add(barcodeValue);
+      scanHistoryEl?.add(barcodeValue);
     }
 
     triggerScanEffects();
   }
 
+  cameraScannerEl.addEventListener('camera-scanner-barcode-detected', handleCameraBarcodeDetected);
   tabGroupEl.addEventListener('a-tab-show', handleTabShow);
   dropzoneEl.addEventListener('files-dropzone-drop', handleFileDrop);
   settingsBtn.addEventListener('click', handleSettingsButtonClick);
   settingsForm.addEventListener('change', debounce(handleSettingsFormChange, 500));
   historyBtn.addEventListener('click', handleHistoryButtonClick);
-  cameraScanner.addEventListener('camera-scanner-barcode-detected', handleCameraBarcodeDetected);
   document.addEventListener('visibilitychange', handleDocumentVisibilityChange);
-  document.addEventListener('bs-history-success', handleHistorySuccess);
-  document.addEventListener('bs-history-error', handleHistoryError);
+  document.addEventListener('scan-history-success', handleHistorySuccess);
+  document.addEventListener('scan-history-error', handleHistoryError);
 })();

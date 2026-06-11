@@ -171,7 +171,7 @@ const styles = /* css */ `
     font-size: 0.9rem;
   }
 
-  #playVideoButton {
+  .play-video-button {
     position: absolute;
     inset: var(--capture-border-width);
     z-index: 1;
@@ -185,7 +185,7 @@ const styles = /* css */ `
     color: #ffffff;
   }
 
-  #playVideoButton svg {
+  .play-video-button svg {
     font-size: 3.5rem;
   }
 
@@ -199,9 +199,7 @@ const styles = /* css */ `
 const template = document.createElement('template');
 
 template.innerHTML = /* html */ `
-  <style>
-    ${styles}
-  </style>
+  <style>${styles}</style>
 
   <div class="scanner-container">
     <resize-observer>
@@ -252,7 +250,7 @@ template.innerHTML = /* html */ `
       </svg>
     </div>
 
-    <button id="playVideoButton" aria-label="Start camera preview" hidden>
+    <button id="playVideoButton" class="play-video-button" aria-label="Start camera preview" hidden>
       <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
         <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
         <path d="M6.271 5.055a.5.5 0 0 1 .52.038l3.5 2.5a.5.5 0 0 1 0 .814l-3.5 2.5A.5.5 0 0 1 6 10.5v-5a.5.5 0 0 1 .271-.445"/>
@@ -309,14 +307,21 @@ class CameraScanner extends HTMLElement {
 
     this.addEventListener(
       'camera-scanner-visibility-change',
-      this.handleCameraScannerVisibilityChange
+      this.#handleCameraScannerVisibilityChange
     );
-    this.#playVideoButton.addEventListener('click', this.handlePlayVideo);
-    this.resizeObserverEl.addEventListener('resize-observer:resize', this.handleVideoCaptureResize);
-    this.#videoCaptureEl.addEventListener('video-capture:video-play', this.handleVideoCapturePlay, {
-      once: true
-    });
-    this.#videoCaptureEl.addEventListener('video-capture:error', this.handleVideoCaptureError, {
+    this.#playVideoButton.addEventListener('click', this.#handlePlayVideo);
+    this.resizeObserverEl.addEventListener(
+      'resize-observer:resize',
+      this.#handleVideoCaptureResize
+    );
+    this.#videoCaptureEl.addEventListener(
+      'video-capture:video-play',
+      this.#handleVideoCapturePlay,
+      {
+        once: true
+      }
+    );
+    this.#videoCaptureEl.addEventListener('video-capture:error', this.#handleVideoCaptureError, {
       once: true
     });
   }
@@ -324,21 +329,21 @@ class CameraScanner extends HTMLElement {
   disconnectedCallback() {
     this.removeEventListener(
       'camera-scanner-visibility-change',
-      this.handleCameraScannerVisibilityChange
+      this.#handleCameraScannerVisibilityChange
     );
-    this.#playVideoButton.removeEventListener('click', this.handlePlayVideo);
+    this.#playVideoButton.removeEventListener('click', this.#handlePlayVideo);
     this.resizeObserverEl.removeEventListener(
       'resize-observer:resize',
-      this.handleVideoCaptureResize
+      this.#handleVideoCaptureResize
     );
     this.#videoCaptureEl.removeEventListener(
       'video-capture:video-play',
-      this.handleVideoCapturePlay,
+      this.#handleVideoCapturePlay,
       {
         once: true
       }
     );
-    this.#videoCaptureEl.removeEventListener('video-capture:error', this.handleVideoCaptureError, {
+    this.#videoCaptureEl.removeEventListener('video-capture:error', this.#handleVideoCaptureError, {
       once: true
     });
   }
@@ -348,11 +353,11 @@ class CameraScanner extends HTMLElement {
    * the scan function if it's not already scanning. This function is used to
    * resume scanning after it has been stopped.
    */
-  startScanning() {
+  #startScanning() {
     this.#shouldScan = true;
 
     if (this.#scanTimeoutId === null) {
-      this.scan();
+      this.#scan();
     }
   }
 
@@ -362,7 +367,7 @@ class CameraScanner extends HTMLElement {
    * user navigates away from the camera tab or when a barcode is detected and
    * the user has chosen not to continue scanning.
    */
-  stopScanning() {
+  #stopScanning() {
     this.#shouldScan = false;
 
     if (this.#scanTimeoutId !== null) {
@@ -377,7 +382,7 @@ class CameraScanner extends HTMLElement {
    *
    * @returns {Promise<void>} - A Promise that resolves when the barcode is detected.
    */
-  async scan() {
+  async #scan() {
     if (!this.#shouldScan || this.barcodeReader == null) {
       return;
     }
@@ -408,7 +413,7 @@ class CameraScanner extends HTMLElement {
     if (this.#shouldScan) {
       this.#scanTimeoutId = setTimeout(() => {
         this.#scanTimeoutId = null;
-        this.scan();
+        this.#scan();
       }, SCAN_RATE_LIMIT);
     }
   }
@@ -417,7 +422,7 @@ class CameraScanner extends HTMLElement {
    * Handles the resize event on the video-capture element.
    * It is responsible for resizing the scan frame based on the video element.
    */
-  handleVideoCaptureResize = () => {
+  #handleVideoCaptureResize = () => {
     resizeScanFrame(this.#videoCaptureEl.shadowRoot.querySelector('video'), this.#scanFrameEl);
   };
 
@@ -428,11 +433,11 @@ class CameraScanner extends HTMLElement {
    *
    * @param {CustomEvent} evt - The event object.
    */
-  handleVideoCapturePlay = async evt => {
+  #handleVideoCapturePlay = async evt => {
     this.#playVideoButton.setAttribute('hidden', '');
     this.#scanFrameEl.removeAttribute('hidden');
     resizeScanFrame(evt.detail.video, this.#scanFrameEl);
-    this.startScanning();
+    this.#startScanning();
 
     const trackSettings = evt.target.getTrackSettings();
     const trackCapabilities = evt.target.getTrackCapabilities();
@@ -440,7 +445,7 @@ class CameraScanner extends HTMLElement {
 
     // Torch CTA
     if (trackCapabilities?.torch) {
-      this.#torchButton.addEventListener('click', this.handleTorchButtonClick);
+      this.#torchButton.addEventListener('click', this.#handleTorchButtonClick);
       this.#torchButton.removeAttribute('hidden');
 
       if (this.#videoCaptureEl.hasAttribute('torch')) {
@@ -487,7 +492,7 @@ class CameraScanner extends HTMLElement {
     });
 
     if (videoInputDevices.length > 1) {
-      this.#cameraSelect.addEventListener('change', this.handleCameraSelectChange);
+      this.#cameraSelect.addEventListener('change', this.#handleCameraSelectChange);
       this.#cameraSelect.removeAttribute('hidden');
     }
   };
@@ -498,7 +503,7 @@ class CameraScanner extends HTMLElement {
    *
    * @param {CustomEvent} evt - The event object.
    */
-  handleVideoCaptureError = evt => {
+  #handleVideoCaptureError = evt => {
     const { source, reason, error } = evt.detail;
 
     if (source === 'playback' && reason === 'user-gesture-required') {
@@ -530,7 +535,7 @@ class CameraScanner extends HTMLElement {
    *
    * @param {MouseEvent} evt - The event object.
    */
-  handleTorchButtonClick = evt => {
+  #handleTorchButtonClick = evt => {
     this.#videoCaptureEl.torch = !this.#videoCaptureEl.torch;
 
     toggleTorchButtonStatus({
@@ -545,7 +550,7 @@ class CameraScanner extends HTMLElement {
    *
    * @param {Event} evt - The event object.
    */
-  handleCameraSelectChange = evt => {
+  #handleCameraSelectChange = evt => {
     const videoDeviceId = evt.target.value || undefined;
     this.#videoCaptureEl.restartVideoStream?.(videoDeviceId);
   };
@@ -553,7 +558,7 @@ class CameraScanner extends HTMLElement {
   /**
    * Handles video play button click event.
    */
-  handlePlayVideo = () => {
+  #handlePlayVideo = () => {
     if (!this.#videoCaptureEl) {
       return;
     }
@@ -571,18 +576,18 @@ class CameraScanner extends HTMLElement {
    *
    * @param {CustomEvent} evt - The event object.
    */
-  handleCameraScannerVisibilityChange = evt => {
+  #handleCameraScannerVisibilityChange = evt => {
     const { visibility } = evt.detail;
 
     if (visibility === 'visible') {
       if (!this.#videoCaptureEl.loading) {
-        this.startScanning();
+        this.#startScanning();
       }
 
       const videoDeviceId = this.#cameraSelect.value || undefined;
       this.#videoCaptureEl.startVideoStream?.(videoDeviceId);
     } else {
-      this.stopScanning();
+      this.#stopScanning();
       this.#videoCaptureEl.stopVideoStream?.();
     }
   };

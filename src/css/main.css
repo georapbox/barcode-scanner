@@ -99,7 +99,7 @@ body {
   display: none !important;
 }
 
-:not(:defined):not(bs-settings) {
+:not(:defined):not(scan-settings) {
   display: none !important;
 }
 
@@ -115,7 +115,7 @@ a > strong {
 a,
 button,
 input,
-custom-clipboard-copy::part(button),
+clipboard-copy::part(button),
 alert-element::part(close):focus-visible {
   outline-color: var(--accent);
 }
@@ -468,7 +468,7 @@ alert-element {
   display: none !important;
 }
 
-.results bs-result:not(:last-child)::part(result) {
+.results scan-result:not(:last-child)::part(result) {
   border-block-end: 1px solid var(--border);
 }
 
