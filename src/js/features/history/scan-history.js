@@ -1,5 +1,5 @@
-import { getHistory, setHistory } from '../../shared/storage/storage.js';
 import { log } from '../../shared/utils/log.js';
+import { getHistory, setHistory } from './history-storage.js';
 
 const styles = /* css */ `
   :host {

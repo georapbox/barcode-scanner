@@ -1,4 +1,4 @@
-import { getSettings } from '../../shared/storage/storage.js';
+import { getSettings } from '../settings/settings-storage.js';
 
 class ScanSettings extends HTMLElement {
   #formatsWrapperEl = null;

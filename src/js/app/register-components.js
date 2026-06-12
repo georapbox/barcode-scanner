@@ -8,7 +8,7 @@ import { CameraScanner } from '../features/camera-scanner/camera-scanner.js';
 import { FileScanner } from '../features/file-scanner/file-scanner.js';
 import { ScanResult } from '../features/scan-results/scan-result.js';
 import { ScanSettings } from '../features/settings/scan-settings.js';
-import { ScanHistory } from '../features/scan-history/scan-history.js';
+import { ScanHistory } from '../features/history/scan-history.js';
 import { ClipboardCopy } from '../shared/components/clipboard-copy.js';
 
 export function registerComponents() {

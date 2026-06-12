@@ -1,6 +1,6 @@
 import { isWebShareSupported } from '@georapbox/web-share-element/dist/is-web-share-supported.js';
-import { getSettings } from '../../shared/storage/storage.js';
 import { dateTimeFormatter } from '../../shared/utils/datetime-formatter.js';
+import { getSettings } from '../settings/settings-storage.js';
 
 const styles = /* css */ `
   :host {

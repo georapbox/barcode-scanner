@@ -1,10 +1,10 @@
-import { getSettings, setSettings } from '../shared/storage/storage.js';
 import { BarcodeReader } from '../shared/barcode/barcode-reader.js';
+import { toastify } from '../shared/feedback/toastify.js';
 import { debounce } from '../shared/utils/debounce.js';
 import { log } from '../shared/utils/log.js';
+import { getSettings, setSettings } from '../features/settings/settings-storage.js';
 import { createResult } from '../features/scan-results/create-result.js';
 import { triggerScanEffects } from '../features/scan-results/scan-effects.js';
-import { toastify } from '../shared/feedback/toastify.js';
 
 export async function bootstrap() {
   const tabGroupEl = document.querySelector('a-tab-group');
