@@ -1,7 +1,7 @@
 import { VideoCapture } from './video-capture.js';
-import { toastify } from '../helpers/toastify.js';
-import { toggleTorchButtonStatus } from '../helpers/toggleTorchButtonStatus.js';
-import { log } from '../utils/log.js';
+import { toastify } from '../../shared/feedback/toastify.js';
+import { toggleTorchButtonStatus } from './toggle-torch-button-status.js';
+import { log } from '../../shared/utils/log.js';
 
 VideoCapture.define();
 
@@ -592,13 +592,17 @@ class CameraScanner extends HTMLElement {
     const { visibility } = evt.detail;
 
     if (visibility === 'visible') {
+      // TODO: REVISIT
+      console.log(this.shadowRoot?.getElementById('video-capture').loading);
       if (!this.#videoCaptureEl.loading) {
+        console.log('Start scanning');
         this.#startScanning();
       }
 
       const videoDeviceId = this.#cameraSelect.value || undefined;
       this.#videoCaptureEl.startVideoStream?.(videoDeviceId);
     } else {
+      console.log('Stop scanning');
       this.#stopScanning();
       this.#videoCaptureEl.stopVideoStream?.();
     }

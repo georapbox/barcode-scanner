@@ -1,4 +1,4 @@
-import { clamp } from '../utils/clamp.js';
+import { clamp } from '../../shared/utils/clamp.js';
 
 const styles = /* css */ `
   :host { display: block; box-sizing: border-box; }

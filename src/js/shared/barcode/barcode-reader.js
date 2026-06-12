@@ -106,8 +106,6 @@ class BarcodeReader {
         format: firstResult.format
       });
 
-      console.log(firstResult);
-
       return firstResult;
     } else {
       throw new Error('Could not detect barcode from provided source.');
