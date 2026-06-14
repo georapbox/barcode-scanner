@@ -15,6 +15,7 @@ Some of the key features of the application include:
 
 - Scan barcodes from web camera
 - Scan barcodes from image files
+- Scan barcodes from pasted clipboard images
 - Copy detected barcode to clipboard
 - Share detected barcode via Web Share API (mobile)
 - Offer option to open detected barcode in a new tab if it is a URL
