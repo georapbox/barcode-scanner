@@ -313,6 +313,45 @@ import './components/bs-history.js';
   }
 
   /**
+   * Returns the first accepted image file from the clipboard.
+   *
+   * @param {ClipboardEvent} evt - The event object.
+   * @returns {File | undefined} - The image file from the clipboard.
+   */
+  function getClipboardImageFile(evt) {
+    const files = [
+      ...Array.from(evt.clipboardData?.files || []),
+      ...Array.from(evt.clipboardData?.items || [])
+        .filter(item => item.kind === 'file')
+        .map(item => item.getAsFile())
+    ];
+
+    return files.find(file => file && ACCEPTED_MIME_TYPES.includes(file.type));
+  }
+
+  /**
+   * Handles pasted clipboard images on the image scanner tab.
+   *
+   * @param {ClipboardEvent} evt - The event object.
+   */
+  function handleDocumentPaste(evt) {
+    const fileTabSelected = tabGroupEl.querySelector('#fileTab').hasAttribute('selected');
+
+    if (!fileTabSelected) {
+      return;
+    }
+
+    const file = getClipboardImageFile(evt);
+
+    if (!file) {
+      return;
+    }
+
+    evt.preventDefault();
+    handleFileSelect(file);
+  }
+
+  /**
    * Handles the resize event on the video-capture element.
    * It is responsible for resizing the scan frame based on the video element.
    */
@@ -601,6 +640,7 @@ import './components/bs-history.js';
   playVideoButton.addEventListener('click', handlePlayVideo);
   document.addEventListener('visibilitychange', handleDocumentVisibilityChange);
   document.addEventListener('keydown', handleDocumentKeyDown);
+  document.addEventListener('paste', handleDocumentPaste);
   document.addEventListener('bs-history-success', handleHistorySuccess);
   document.addEventListener('bs-history-error', handleHistoryError);
 })();
