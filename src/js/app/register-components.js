@@ -19,5 +19,3 @@ export function registerComponents() {
   ScanHistory.define();
   ClipboardCopy.define();
 }
-
-registerComponents();

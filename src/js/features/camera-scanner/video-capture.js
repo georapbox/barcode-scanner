@@ -255,11 +255,11 @@ class VideoCapture extends HTMLElement {
    * Starts the video stream.
    *
    * @param {string} [videoInputId] - The video input device ID.
-   * @returns Promise<void>
+   * @returns Promise<boolean> Resolves to true if the video stream started successfully, false otherwise.
    */
   async startVideoStream(videoInputId) {
     if (!VideoCapture.isSupported() || this.#stream) {
-      return;
+      return false;
     }
 
     this.setAttribute('loading', '');
@@ -300,6 +300,8 @@ class VideoCapture extends HTMLElement {
       this.#applyConstraint('pan', this.pan);
       this.#applyConstraint('tilt', this.tilt);
       this.#applyConstraint('zoom', this.zoom);
+
+      return true;
     } catch (error) {
       const reason =
         error instanceof DOMException && error.name === 'NotAllowedError'
@@ -307,8 +309,9 @@ class VideoCapture extends HTMLElement {
           : 'camera-failed';
 
       this.#dispatchError('camera', reason, error);
-
       this.removeAttribute('loading');
+
+      return false;
     }
   }
 
@@ -348,7 +351,7 @@ class VideoCapture extends HTMLElement {
    *
    * @param {options} [options] - The options for playing the video.
    * @param {boolean} [options.emit=false] - Whether to emit a custom event after playing the video.
-   * @returns {Promise<void>}
+   * @returns {Promise<void>} A promise that resolves when the video starts playing, or rejects if there is an error.
    */
   async playVideo(options = {}) {
     const { emit = false } = options;
@@ -389,7 +392,7 @@ class VideoCapture extends HTMLElement {
    * whose member fields each specify one ofthe constrainable properties the user agent understands.
    *
    * @see https://developer.mozilla.org/docs/Web/API/MediaDevices/getSupportedConstraints
-   * @returns {MediaTrackSupportedConstraints | {}}
+   * @returns {MediaTrackSupportedConstraints | {}} The supported constraints or an empty object if the API is not supported.
    */
   getSupportedConstraints() {
     if (!VideoCapture.isSupported()) {
@@ -404,7 +407,7 @@ class VideoCapture extends HTMLElement {
    * which each constrainable property, based upon the platform and user agent.
    *
    * @see https://developer.mozilla.org/docs/Web/API/MediaStreamTrack/getCapabilities
-   * @returns {MediaTrackCapabilities | {}}
+   * @returns {MediaTrackCapabilities | {}} The track capabilities or an empty object if the API is not supported.
    */
   getTrackCapabilities() {
     if (!this.#stream) {
@@ -425,7 +428,7 @@ class VideoCapture extends HTMLElement {
    * the constrainable properties for the current MediaStreamTrack.
    *
    * @see https://developer.mozilla.org/docs/Web/API/MediaStreamTrack/getSettings
-   * @returns {MediaTrackSettings | {}}
+   * @returns {MediaTrackSettings | {}} The track settings or an empty object if the API is not supported.
    */
   getTrackSettings() {
     if (!this.#stream) {
@@ -442,9 +445,9 @@ class VideoCapture extends HTMLElement {
   }
 
   /**
-   * Returns the available video input devices.
+   * Gets the list of available video input devices.
    *
-   * @returns {Promise<MediaDeviceInfo[]>}
+   * @returns {Promise<MediaDeviceInfo[]>} A promise that resolves to an array of video input devices.
    */
   static async getVideoInputDevices() {
     if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
@@ -458,7 +461,7 @@ class VideoCapture extends HTMLElement {
   /**
    * Checks if the `MediaDevices.getUserMedia()` method is supported.
    *
-   * @returns {boolean}
+   * @returns {boolean} True if the method is supported, false otherwise.
    */
   static isSupported() {
     return Boolean(navigator.mediaDevices?.getUserMedia);

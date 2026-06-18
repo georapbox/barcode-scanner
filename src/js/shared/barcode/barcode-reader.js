@@ -40,7 +40,7 @@ class BarcodeReader {
    * Get the supported barcode formats.
    *
    * @see https://developer.mozilla.org/docs/Web/API/BarcodeDetector/getSupportedFormats
-   * @returns {Promise<Array<string>>} - Supported barcode formats
+   * @returns {Promise<Array<string>>} Supported barcode formats
    */
   static async getSupportedFormats() {
     const nativeSupportedFormats = (await window.BarcodeDetector.getSupportedFormats()) || [];
@@ -51,7 +51,7 @@ class BarcodeReader {
    * Create a new BarcodeReader instance.
    *
    * @param {Array<string>} supportedFormats - Supported barcode formats
-   * @returns {Promise<BarcodeReader>} - New BarcodeReader instance
+   * @returns {Promise<BarcodeReader>} New BarcodeReader instance
    */
   static async create(supportedFormats) {
     const isValidFormats = Array.isArray(supportedFormats) && supportedFormats.length > 0;
@@ -62,7 +62,7 @@ class BarcodeReader {
   /**
    * Sets up BarcodeReader by polyfilling the BarcodeDetector API if needed.
    *
-   * @returns {Promise<{ barcodeReaderError: Error }>} - BarcodeReader setup result
+   * @returns {Promise<{ barcodeReaderError: Error }>} BarcodeReader setup result
    */
   static async setup() {
     try {
@@ -89,7 +89,7 @@ class BarcodeReader {
    *
    * @see https://developer.mozilla.org/docs/Web/API/BarcodeDetector/detect
    * @param {HTMLImageElement|HTMLVideoElement|ImageBitmap} source - Image or video element or ImageBitmap
-   * @returns {Promise<DetectedBarcode>} - Barcode detection result
+   * @returns {Promise<DetectedBarcode>} Barcode detection result
    */
   async detect(source) {
     if (!this.barcodeReader) {

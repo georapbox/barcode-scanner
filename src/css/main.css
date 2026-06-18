@@ -380,11 +380,11 @@ alert-element {
 
 /* Results */
 .results {
-  margin-block-start: 1.5rem;
+  margin-block-start: 1rem;
   background-color: var(--background-alt);
   border-radius: var(--border-radius);
   border: 1px solid var(--border);
-  max-height: 20.125rem;
+  max-height: 25rem;
   overflow-y: auto;
 }
 
@@ -400,6 +400,18 @@ alert-element {
 
 .results scan-result:not(:last-child)::part(result) {
   border-block-end: 1px solid var(--border);
+}
+
+/* Camera scanner instructions */
+.camera-scanner-instructions {
+  margin-block-start: 1rem;
+  text-align: center;
+  text-wrap: balance;
+  font-size: 0.95rem;
+}
+
+#cameraPanel:has(.results:not(:empty)) .camera-scanner-instructions {
+  display: none;
 }
 
 /* Utils */

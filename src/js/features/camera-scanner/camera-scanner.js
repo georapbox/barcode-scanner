@@ -588,21 +588,17 @@ class CameraScanner extends HTMLElement {
    *
    * @param {CustomEvent} evt - The event object.
    */
-  #handleCameraScannerVisibilityChange = evt => {
+  #handleCameraScannerVisibilityChange = async evt => {
     const { visibility } = evt.detail;
 
     if (visibility === 'visible') {
-      // TODO: REVISIT
-      console.log(this.shadowRoot?.getElementById('video-capture').loading);
-      if (!this.#videoCaptureEl.loading) {
-        console.log('Start scanning');
+      const videoDeviceId = this.#cameraSelect.value || undefined;
+      const started = await this.#videoCaptureEl.startVideoStream?.(videoDeviceId);
+
+      if (started) {
         this.#startScanning();
       }
-
-      const videoDeviceId = this.#cameraSelect.value || undefined;
-      this.#videoCaptureEl.startVideoStream?.(videoDeviceId);
     } else {
-      console.log('Stop scanning');
       this.#stopScanning();
       this.#videoCaptureEl.stopVideoStream?.();
     }
