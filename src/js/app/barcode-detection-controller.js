@@ -12,7 +12,7 @@ export function createBarcodeDetectionController({ cameraScannerEls, fileScanner
   /**
    * Handles the barcode detext success event from camera and file scanner.
    *
-   * @param {CustomEvent<{ barcodeValue: string, source: string }>} evt - The event object.
+   * @param {CustomEvent<{barcodeValue: string, source: string}>} evt - The event object.
    * @returns {Promise<void>}
    */
   async function handleBarcodeDetectSuccess(evt) {
@@ -32,7 +32,7 @@ export function createBarcodeDetectionController({ cameraScannerEls, fileScanner
   /**
    * Handles the barcode detect error event from camera and file scanner.
    *
-   * @param {CustomEvent<{ error: Error, source: string }>} evt - The event object.
+   * @param {CustomEvent<{error: Error, source: string}>} evt - The event object.
    * @returns {Promise<void>}
    */
   async function handleBarcodeDetectError(evt) {

@@ -62,7 +62,7 @@ class BarcodeReader {
   /**
    * Sets up BarcodeReader by polyfilling the BarcodeDetector API if needed.
    *
-   * @returns {Promise<{ barcodeReaderError: Error }>} BarcodeReader setup result
+   * @returns {Promise<{barcodeReaderError: Error}>} BarcodeReader setup result
    */
   static async setup() {
     try {

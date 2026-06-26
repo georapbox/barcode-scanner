@@ -14,7 +14,7 @@ export function createHistoryController({ historyEls }) {
   /**
    * Handles success events from the history component.
    *
-   * @param {CustomEvent<{ type: string, message: string }>} evt - The event object.
+   * @param {CustomEvent<{type: string, message: string}>} evt - The event object.
    */
   function handleHistorySuccess(evt) {
     const { type, message } = evt.detail;
@@ -27,7 +27,7 @@ export function createHistoryController({ historyEls }) {
   /**
    * Handles error events from the history component.
    *
-   * @param {CustomEvent<{ type: string, message: string }>} evt - The event object.
+   * @param {CustomEvent<{type: string, message: string}>} evt - The event object.
    */
   function handleHistoryError(evt) {
     const { type, message } = evt.detail;
