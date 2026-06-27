@@ -173,8 +173,8 @@ class ScanHistory extends HTMLElement {
    * Adds an item to the history.
    * If the item is already in history, it will not be added.
    *
-   * @param {string} item - Item to add to history
-   * @return {Promise<null|Error>} - Returns null if successful, or an error if there was an issue
+   * @param {string} item - The item to add to history.
+   * @returns {Promise<null|Error>} `null` if successful, or an error if there was an issue.
    */
   async add(item) {
     if (!item) {
@@ -222,8 +222,8 @@ class ScanHistory extends HTMLElement {
   /**
    * Removes an item from the history.
    *
-   * @param {string} item - Item to remove from history
-   * @return {Promise<null|Error>} - Returns null if successful, or an error if there was an issue
+   * @param {string} item - The item to remove from history.
+   * @returns {Promise<null|Error>} `null` if successful, or an error if there was an issue.
    */
   async remove(item) {
     if (!item) {
@@ -266,7 +266,7 @@ class ScanHistory extends HTMLElement {
   /**
    * Removes all items from the history.
    *
-   * @return {Promise<null|Error>} - Returns null if successful, or an error if there was an issue
+   * @returns {Promise<null|Error>} `null` if successful, or an error if there was an issue
    */
   async empty() {
     const errPayload = {
@@ -295,7 +295,7 @@ class ScanHistory extends HTMLElement {
   /**
    * Renders the history list. If there are no items in history, it will show a message.
    *
-   * @param {Array<string>} data - History data as an array of strings
+   * @param {Array<string>} data - History data as an array of strings.
    */
   #renderHistoryList(data) {
     if (!this.#historyListEl) {
@@ -312,8 +312,8 @@ class ScanHistory extends HTMLElement {
    * Creates a history item element.
    * If the item is a URL, it will be an anchor element, otherwise a span element.
    *
-   * @param {string} item - The history item to create an element for
-   * @returns {HTMLLIElement} The history item element
+   * @param {string} item - The history item to create an element for.
+   * @returns {HTMLLIElement} The history item element.
    */
   #createHistoryItemElement(item) {
     const li = document.createElement('li');

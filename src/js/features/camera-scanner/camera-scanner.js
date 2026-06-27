@@ -398,7 +398,7 @@ class CameraScanner extends HTMLElement {
    * Scans for barcodes.
    * If a barcode is detected, it stops scanning and displays the result.
    *
-   * @returns {Promise<void>} - A Promise that resolves when the barcode is detected.
+   * @returns {Promise<void>} A Promise that resolves when the barcode is detected.
    */
   async #scan() {
     if (!this.#shouldScan || this.barcodeReader == null) {
@@ -658,8 +658,8 @@ export { CameraScanner };
 /**
  * Resizes the scan frame to match the video element's dimensions.
  *
- * @param {HTMLVideoElement} videoEl - Video element
- * @param {HTMLElement} scanFrameEl - Scan frame element
+ * @param {HTMLVideoElement} videoEl - The video element.
+ * @param {HTMLElement} scanFrameEl - The scan frame element.
  */
 function resizeScanFrame(videoEl, scanFrameEl) {
   if (!videoEl || !scanFrameEl) {

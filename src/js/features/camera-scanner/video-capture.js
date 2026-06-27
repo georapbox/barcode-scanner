@@ -255,7 +255,7 @@ class VideoCapture extends HTMLElement {
    * Starts the video stream.
    *
    * @param {string} [videoInputId] - The video input device ID.
-   * @returns Promise<boolean> Resolves to true if the video stream started successfully, false otherwise.
+   * @returns Promise<boolean> Resolves to `true` if the video stream started successfully, `false` otherwise.
    */
   async startVideoStream(videoInputId) {
     if (!VideoCapture.isSupported() || this.#stream) {
@@ -461,7 +461,7 @@ class VideoCapture extends HTMLElement {
   /**
    * Checks if the `MediaDevices.getUserMedia()` method is supported.
    *
-   * @returns {boolean} True if the method is supported, false otherwise.
+   * @returns {boolean} `true` if the method is supported, `false` otherwise.
    */
   static isSupported() {
     return Boolean(navigator.mediaDevices?.getUserMedia);
