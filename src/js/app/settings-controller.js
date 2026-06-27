@@ -1,15 +1,18 @@
 import { setSettings } from '../features/settings/settings-storage.js';
 import { debounce } from '../shared/utils/debounce.js';
 
-export function createSettingsController({ settingsEls, onFormatsChange }) {
-  const { dialog: settingsDialog, button: settingsButton, form: settingsForm } = settingsEls;
-
+export function createSettingsController({
+  settingsDialogEl,
+  settingsButtonEl,
+  settingsFormEl,
+  onFormatsChange
+}) {
   /**
    * Handles the settings button click event.
    * It is responsible for displaying the settings dialog.
    */
   function handleSettingsButtonClick() {
-    settingsDialog.open = true;
+    settingsDialogEl.open = true;
   }
 
   /**
@@ -22,7 +25,7 @@ export function createSettingsController({ settingsEls, onFormatsChange }) {
     evt.preventDefault();
 
     const nextSettings = {};
-    const formData = new FormData(settingsForm);
+    const formData = new FormData(settingsFormEl);
     const generalSettings = formData.getAll('general-settings');
     const formatsSettings = formData.getAll('formats-settings');
 
@@ -39,11 +42,11 @@ export function createSettingsController({ settingsEls, onFormatsChange }) {
     }
   }
 
-  settingsButton.addEventListener('click', handleSettingsButtonClick);
-  settingsForm.addEventListener('change', debounce(handleSettingsFormChange, 500));
+  settingsButtonEl.addEventListener('click', handleSettingsButtonClick);
+  settingsFormEl.addEventListener('change', debounce(handleSettingsFormChange, 500));
 
   return function destroySettingsController() {
-    settingsButton.removeEventListener('click', handleSettingsButtonClick);
-    settingsForm.removeEventListener('change', debounce(handleSettingsFormChange, 500));
+    settingsButtonEl.removeEventListener('click', handleSettingsButtonClick);
+    settingsFormEl.removeEventListener('change', debounce(handleSettingsFormChange, 500));
   };
 }

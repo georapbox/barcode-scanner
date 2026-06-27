@@ -9,34 +9,27 @@ function getRequiredElement(selector, root = document) {
 }
 
 export function getAppElements() {
-  const cameraPanel = getRequiredElement('#cameraPanel');
-  const filePanel = getRequiredElement('#filePanel');
+  const cameraPanelEl = getRequiredElement('#cameraPanel');
+  const filePanelEl = getRequiredElement('#filePanel');
 
   return {
-    tabs: {
-      component: getRequiredElement('a-tab-group')
-    },
-    cameraScanner: {
-      component: getRequiredElement('camera-scanner'),
-      panel: cameraPanel,
-      results: getRequiredElement('.results', cameraPanel)
-    },
-    fileScanner: {
-      component: getRequiredElement('file-scanner'),
-      panel: filePanel,
-      results: getRequiredElement('.results', filePanel)
-    },
-    history: {
-      component: getRequiredElement('scan-history'),
-      button: getRequiredElement('#historyBtn'),
-      dialog: getRequiredElement('#historyDialog')
-    },
-    settings: {
-      component: getRequiredElement('scan-settings'),
-      button: getRequiredElement('#settingsBtn'),
-      dialog: getRequiredElement('#settingsDialog'),
-      form: getRequiredElement('#settingsForm')
-    },
-    globalActions: getRequiredElement('#globalActions')
+    tabsEl: getRequiredElement('a-tab-group'),
+
+    cameraScannerEl: getRequiredElement('camera-scanner'),
+    cameraScannerResultsEl: getRequiredElement('.results', cameraPanelEl),
+
+    fileScannerEl: getRequiredElement('file-scanner'),
+    fileScannerResultsEl: getRequiredElement('.results', filePanelEl),
+
+    historyEl: getRequiredElement('scan-history'),
+    historyButtonEl: getRequiredElement('#historyBtn'),
+    historyDialogEl: getRequiredElement('#historyDialog'),
+
+    settingsEl: getRequiredElement('scan-settings'),
+    settingsButtonEl: getRequiredElement('#settingsBtn'),
+    settingsDialogEl: getRequiredElement('#settingsDialog'),
+    settingsFormEl: getRequiredElement('#settingsForm'),
+
+    globalActionsEl: getRequiredElement('#globalActions')
   };
 }

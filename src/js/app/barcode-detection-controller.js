@@ -4,11 +4,13 @@ import { createResult } from '../features/scan-results/create-result.js';
 import { triggerScanEffects } from '../features/scan-results/scan-effects.js';
 import { getSettings } from '../features/settings/settings-storage.js';
 
-export function createBarcodeDetectionController({ cameraScannerEls, fileScannerEls, historyEls }) {
-  const { component: cameraScannerEl, results: cameraResults } = cameraScannerEls;
-  const { component: fileScannerEl, results: fileResults } = fileScannerEls;
-  const { component: historyEl } = historyEls;
-
+export function createBarcodeDetectionController({
+  cameraScannerEl,
+  cameraScannerResultsEl,
+  fileScannerEl,
+  fileScannerResultsEl,
+  historyEl
+}) {
   /**
    * Handles the barcode detext success event from camera and file scanner.
    *
@@ -17,7 +19,7 @@ export function createBarcodeDetectionController({ cameraScannerEls, fileScanner
    */
   async function handleBarcodeDetectSuccess(evt) {
     const { barcodeValue, source } = evt.detail;
-    const resultsEl = source === 'camera-scanner' ? cameraResults : fileResults;
+    const resultsEl = source === 'camera-scanner' ? cameraScannerResultsEl : fileScannerResultsEl;
 
     createResult(resultsEl, barcodeValue);
 

@@ -8,10 +8,7 @@ function dispatchCameraScannerVisibilityChange(cameraScannerEl, detail) {
   );
 }
 
-export function createScannerVisibilityController({ tabsEls, cameraScannerEls }) {
-  const { component: tabsEl } = tabsEls;
-  const { component: cameraScannerEl } = cameraScannerEls;
-
+export function createScannerVisibilityController({ tabsEl, cameraScannerEl }) {
   /**
    * Handles the tab show event.
    * It is responsible for starting or stopping the scan process based on the selected tab.

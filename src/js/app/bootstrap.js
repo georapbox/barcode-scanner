@@ -8,22 +8,36 @@ import { createSettingsController } from './settings-controller.js';
 import { createHistoryController } from './history-controller.js';
 
 export async function bootstrap() {
-  const elements = getAppElements();
+  const {
+    tabsEl,
+    cameraScannerEl,
+    cameraScannerResultsEl,
+    fileScannerEl,
+    fileScannerResultsEl,
+    historyEl,
+    historyButtonEl,
+    historyDialogEl,
+    settingsEl,
+    settingsButtonEl,
+    settingsDialogEl,
+    settingsFormEl,
+    globalActionsEl
+  } = getAppElements();
 
   // By default the dialog elements are hidden for browsers that don't support the dialog element.
   // If the dialog element is supported, we remove the hidden attribute and the dialogs' visibility
   // is controlled by using the `showModal()` and `close()` methods.
   if (typeof HTMLDialogElement === 'function') {
-    elements.globalActions.removeAttribute('hidden');
-    elements.history.dialog.removeAttribute('hidden');
-    elements.settings.dialog.removeAttribute('hidden');
+    globalActionsEl.removeAttribute('hidden');
+    historyDialogEl.removeAttribute('hidden');
+    settingsDialogEl.removeAttribute('hidden');
   }
 
   const { barcodeReaderError } = await BarcodeReader.setup();
 
   if (barcodeReaderError) {
-    elements.globalActions.setAttribute('hidden', '');
-    elements.tabs.component.setAttribute('hidden', '');
+    globalActionsEl.setAttribute('hidden', '');
+    tabsEl.setAttribute('hidden', '');
 
     const errorMessage = /* html */ `
       <strong>Barcode Detector API not supported</strong>
@@ -47,31 +61,36 @@ export async function bootstrap() {
   const initialFormats = settings?.formats || supportedBarcodeFormats;
   let barcodeReader = await BarcodeReader.create(initialFormats);
 
-  elements.cameraScanner.component.barcodeReader = barcodeReader;
-  elements.fileScanner.component.barcodeReader = barcodeReader;
-  elements.settings.component.supportedFormats = supportedBarcodeFormats;
+  cameraScannerEl.barcodeReader = barcodeReader;
+  fileScannerEl.barcodeReader = barcodeReader;
+  settingsEl.supportedFormats = supportedBarcodeFormats;
 
   createScannerVisibilityController({
-    tabsEls: elements.tabs,
-    cameraScannerEls: elements.cameraScanner
+    tabsEl,
+    cameraScannerEl
   });
 
   createBarcodeDetectionController({
-    cameraScannerEls: elements.cameraScanner,
-    fileScannerEls: elements.fileScanner,
-    historyEls: elements.history
+    cameraScannerEl,
+    cameraScannerResultsEl,
+    fileScannerEl,
+    fileScannerResultsEl,
+    historyEl
   });
 
   createHistoryController({
-    historyEls: elements.history
+    historyButtonEl,
+    historyDialogEl
   });
 
   createSettingsController({
-    settingsEls: elements.settings,
+    settingsDialogEl,
+    settingsButtonEl,
+    settingsFormEl,
     onFormatsChange: async formats => {
       barcodeReader = await BarcodeReader.create(formats);
-      elements.cameraScanner.component.barcodeReader = barcodeReader;
-      elements.fileScanner.component.barcodeReader = barcodeReader;
+      cameraScannerEl.barcodeReader = barcodeReader;
+      fileScannerEl.barcodeReader = barcodeReader;
     }
   });
 }
