@@ -1,20 +1,21 @@
-function dispatchCameraScannerVisibilityChange(cameraScannerEl, detail) {
-  cameraScannerEl.dispatchEvent(
-    new CustomEvent('camera-scanner-visibility-change', {
-      bubbles: true,
-      composed: true,
-      detail
-    })
-  );
-}
-
+/**
+ * Creates a controller to manage the visibility of the camera scanner based on
+ * tab selection and document visibility.
+ *
+ * @param {{tabsEl: HTMLElement, cameraScannerEl: HTMLElement}} params - Controller dependencies.
+ * @returns {Function} A function that removes the controller's event listeners.
+ */
 export function createScannerVisibilityController({ tabsEl, cameraScannerEl }) {
-  /**
-   * Handles the tab show event.
-   * It is responsible for starting or stopping the scan process based on the selected tab.
-   *
-   * @param {CustomEvent} evt - The event object.
-   */
+  function dispatchCameraScannerVisibilityChange(cameraScannerEl, detail) {
+    cameraScannerEl.dispatchEvent(
+      new CustomEvent('camera-scanner-visibility-change', {
+        bubbles: true,
+        composed: true,
+        detail
+      })
+    );
+  }
+
   function handleTabShow(evt) {
     const tabId = evt.detail.tabId;
 
@@ -33,10 +34,6 @@ export function createScannerVisibilityController({ tabsEl, cameraScannerEl }) {
     }
   }
 
-  /**
-   * Handles the visibility change event on the document.
-   * It is responsible for stopping the scan process when the document is not visible.
-   */
   function handleDocumentVisibilityChange() {
     const selectedTab = tabsEl.querySelector('[selected]');
     const tabId = selectedTab.getAttribute('id');

@@ -199,17 +199,17 @@ class ScanResult extends HTMLElement {
     const shareEl = baseEl?.querySelector('web-share');
 
     if (copyEl) {
-      const copyBtn = copyEl.shadowRoot?.querySelector('button');
+      const copyButtonEl = copyEl.shadowRoot?.querySelector('button');
       copyEl.setAttribute('value', value);
-      copyBtn?.setAttribute('aria-label', `Copy to clipboard ${value}`);
+      copyButtonEl?.setAttribute('aria-label', `Copy to clipboard ${value}`);
       copyEl.hidden = false;
     }
 
     if (shareEl && isWebShareSupported()) {
-      const shareBtn = shareEl.querySelector('button');
+      const shareButtonEl = shareEl.querySelector('button');
       shareEl.setAttribute('share-text', value);
       shareEl.hidden = false;
-      shareBtn?.setAttribute('aria-label', `Share ${value}`);
+      shareButtonEl?.setAttribute('aria-label', `Share ${value}`);
     }
   }
 

@@ -293,10 +293,10 @@ template.innerHTML = /* html */ `
 
 class CameraScanner extends HTMLElement {
   #videoCaptureEl = null;
-  #playVideoButton = null;
-  #torchButton = null;
+  #playVideoButtonEl = null;
+  #torchButtonEl = null;
   #scanFrameEl = null;
-  #cameraSelect = null;
+  #cameraSelectEl = null;
   #videoCaptureVideoEl = null;
 
   #barcodeReader = null;
@@ -324,18 +324,18 @@ class CameraScanner extends HTMLElement {
     this.#upgradeProperty('barcodeReader');
 
     this.#videoCaptureEl = this.shadowRoot?.getElementById('video-capture');
-    this.#playVideoButton = this.shadowRoot?.getElementById('playVideoButton');
-    this.#torchButton = this.shadowRoot?.getElementById('torchButton');
+    this.#playVideoButtonEl = this.shadowRoot?.getElementById('playVideoButton');
+    this.#torchButtonEl = this.shadowRoot?.getElementById('torchButton');
     this.resizeObserverEl = this.shadowRoot?.querySelector('resize-observer');
     this.#scanFrameEl = this.shadowRoot?.getElementById('scanFrame');
-    this.#cameraSelect = this.shadowRoot?.getElementById('cameraSelect');
+    this.#cameraSelectEl = this.shadowRoot?.getElementById('cameraSelect');
     this.#videoCaptureVideoEl = this.#videoCaptureEl.shadowRoot?.querySelector('video');
 
     this.addEventListener(
       'camera-scanner-visibility-change',
       this.#handleCameraScannerVisibilityChange
     );
-    this.#playVideoButton.addEventListener('click', this.#handlePlayVideo);
+    this.#playVideoButtonEl.addEventListener('click', this.#handlePlayVideo);
     this.resizeObserverEl.addEventListener(
       'resize-observer:resize',
       this.#handleVideoCaptureResize
@@ -353,7 +353,7 @@ class CameraScanner extends HTMLElement {
       'camera-scanner-visibility-change',
       this.#handleCameraScannerVisibilityChange
     );
-    this.#playVideoButton.removeEventListener('click', this.#handlePlayVideo);
+    this.#playVideoButtonEl.removeEventListener('click', this.#handlePlayVideo);
     this.resizeObserverEl.removeEventListener(
       'resize-observer:resize',
       this.#handleVideoCaptureResize
@@ -446,7 +446,7 @@ class CameraScanner extends HTMLElement {
    * @param {CustomEvent} evt - The event object.
    */
   #handleVideoCapturePlay = async evt => {
-    this.#playVideoButton.setAttribute('hidden', '');
+    this.#playVideoButtonEl.setAttribute('hidden', '');
     this.#scanFrameEl.removeAttribute('hidden');
     resizeScanFrame(evt.detail.video, this.#scanFrameEl);
     this.#startScanning();
@@ -457,11 +457,11 @@ class CameraScanner extends HTMLElement {
 
     // Torch CTA
     if (trackCapabilities?.torch) {
-      this.#torchButton.addEventListener('click', this.#handleTorchButtonClick);
-      this.#torchButton.removeAttribute('hidden');
+      this.#torchButtonEl.addEventListener('click', this.#handleTorchButtonClick);
+      this.#torchButtonEl.removeAttribute('hidden');
 
       if (this.#videoCaptureEl.hasAttribute('torch')) {
-        toggleTorchButtonStatus({ el: this.#torchButton, isTorchOn: true });
+        toggleTorchButtonStatus({ el: this.#torchButtonEl, isTorchOn: true });
       }
     }
 
@@ -473,14 +473,14 @@ class CameraScanner extends HTMLElement {
       let currentZoom = trackSettings?.zoom || 1;
 
       const handleZoomControlsClick = evt => {
-        const zoomInBtn = evt.target.closest('[data-action="zoom-in"]');
-        const zoomOutBtn = evt.target.closest('[data-action="zoom-out"]');
+        const zoomInButtonEl = evt.target.closest('[data-action="zoom-in"]');
+        const zoomOutButtonEl = evt.target.closest('[data-action="zoom-out"]');
 
-        if (zoomInBtn && currentZoom < maxZoom) {
+        if (zoomInButtonEl && currentZoom < maxZoom) {
           currentZoom += 0.5;
         }
 
-        if (zoomOutBtn && currentZoom > minZoom) {
+        if (zoomOutButtonEl && currentZoom > minZoom) {
           currentZoom -= 0.5;
         }
 
@@ -500,12 +500,12 @@ class CameraScanner extends HTMLElement {
       const option = this.ownerDocument.createElement('option');
       option.value = device.deviceId;
       option.textContent = device.label || `Camera ${index + 1}`;
-      this.#cameraSelect.appendChild(option);
+      this.#cameraSelectEl.appendChild(option);
     });
 
     if (videoInputDevices.length > 1) {
-      this.#cameraSelect.addEventListener('change', this.#handleCameraSelectChange);
-      this.#cameraSelect.removeAttribute('hidden');
+      this.#cameraSelectEl.addEventListener('change', this.#handleCameraSelectChange);
+      this.#cameraSelectEl.removeAttribute('hidden');
     }
   };
 
@@ -519,7 +519,7 @@ class CameraScanner extends HTMLElement {
     const { source, reason, error } = evt.detail;
 
     if (source === 'playback' && reason === 'user-gesture-required') {
-      this.#playVideoButton.removeAttribute('hidden');
+      this.#playVideoButtonEl.removeAttribute('hidden');
       return;
     }
 
@@ -580,7 +580,7 @@ class CameraScanner extends HTMLElement {
     }
 
     this.#videoCaptureEl.playVideo?.({ emit: true });
-    this.#playVideoButton.setAttribute('hidden', '');
+    this.#playVideoButtonEl.setAttribute('hidden', '');
   };
 
   /**
@@ -592,7 +592,7 @@ class CameraScanner extends HTMLElement {
     const { visibility } = evt.detail;
 
     if (visibility === 'visible') {
-      const videoDeviceId = this.#cameraSelect.value || undefined;
+      const videoDeviceId = this.#cameraSelectEl.value || undefined;
       const started = await this.#videoCaptureEl.startVideoStream?.(videoDeviceId);
 
       if (started) {

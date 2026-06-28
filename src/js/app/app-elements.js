@@ -22,11 +22,11 @@ export function getAppElements() {
     fileScannerResultsEl: getRequiredElement('.results', filePanelEl),
 
     historyEl: getRequiredElement('scan-history'),
-    historyButtonEl: getRequiredElement('#historyBtn'),
+    historyButtonEl: getRequiredElement('#historyButton'),
     historyDialogEl: getRequiredElement('#historyDialog'),
 
     settingsEl: getRequiredElement('scan-settings'),
-    settingsButtonEl: getRequiredElement('#settingsBtn'),
+    settingsButtonEl: getRequiredElement('#settingsButton'),
     settingsDialogEl: getRequiredElement('#settingsDialog'),
     settingsFormEl: getRequiredElement('#settingsForm'),
 

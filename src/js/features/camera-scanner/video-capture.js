@@ -19,7 +19,7 @@ template.innerHTML = /* html */ `
 class VideoCapture extends HTMLElement {
   #supportedConstraints = {};
   #stream = null;
-  #videoElement = null;
+  #videoEl = null;
 
   constructor() {
     super();
@@ -67,7 +67,7 @@ class VideoCapture extends HTMLElement {
 
     this.#initializeVideoElement();
 
-    this.#videoElement?.addEventListener('loadedmetadata', this.#onVideoLoadedMetaData);
+    this.#videoEl?.addEventListener('loadedmetadata', this.#onVideoLoadedMetaData);
 
     if (!VideoCapture.isSupported()) {
       return this.#dispatchError(
@@ -84,7 +84,7 @@ class VideoCapture extends HTMLElement {
 
   disconnectedCallback() {
     this.stopVideoStream();
-    this.#videoElement?.removeEventListener('loadedmetadata', this.#onVideoLoadedMetaData);
+    this.#videoEl?.removeEventListener('loadedmetadata', this.#onVideoLoadedMetaData);
   }
 
   get autoPlay() {
@@ -138,7 +138,7 @@ class VideoCapture extends HTMLElement {
    * reconnects.
    */
   #initializeVideoElement() {
-    if (this.#videoElement) {
+    if (this.#videoEl) {
       return;
     }
 
@@ -150,7 +150,7 @@ class VideoCapture extends HTMLElement {
     video.setAttribute('disablepictureinpicture', '');
 
     this.shadowRoot?.prepend(video);
-    this.#videoElement = video;
+    this.#videoEl = video;
   }
 
   /**
@@ -293,8 +293,8 @@ class VideoCapture extends HTMLElement {
     try {
       this.#stream = await navigator.mediaDevices.getUserMedia(constraints);
 
-      if (this.#videoElement) {
-        this.#videoElement.srcObject = this.#stream;
+      if (this.#videoEl) {
+        this.#videoEl.srcObject = this.#stream;
       }
 
       this.#applyConstraint('pan', this.pan);
@@ -321,7 +321,7 @@ class VideoCapture extends HTMLElement {
    * @param {string} [videoInputId] - The video input device ID.
    */
   restartVideoStream(videoInputId) {
-    if (this.#stream && this.#videoElement) {
+    if (this.#stream && this.#videoEl) {
       this.stopVideoStream();
     }
 
@@ -332,14 +332,14 @@ class VideoCapture extends HTMLElement {
    * Stops the video stream.
    */
   stopVideoStream() {
-    if (!this.#videoElement || !this.#stream) {
+    if (!this.#videoEl || !this.#stream) {
       return;
     }
 
     const [track] = this.#stream.getVideoTracks();
 
     track?.stop();
-    this.#videoElement.srcObject = null;
+    this.#videoEl.srcObject = null;
     this.#stream = null;
   }
 
@@ -356,15 +356,15 @@ class VideoCapture extends HTMLElement {
   async playVideo(options = {}) {
     const { emit = false } = options;
 
-    if (!this.#videoElement || !this.#stream) {
+    if (!this.#videoEl || !this.#stream) {
       return;
     }
 
     try {
-      await this.#videoElement.play();
+      await this.#videoEl.play();
 
       if (emit) {
-        this.#emitEvent('video-capture-play', { video: this.#videoElement });
+        this.#emitEvent('video-capture-play', { video: this.#videoEl });
       }
     } catch (error) {
       const reason =
@@ -380,11 +380,11 @@ class VideoCapture extends HTMLElement {
    * Pauses the current video stream.
    */
   stopVideo() {
-    if (!this.#videoElement || !this.#stream) {
+    if (!this.#videoEl || !this.#stream) {
       return;
     }
 
-    this.#videoElement.pause();
+    this.#videoEl.pause();
   }
 
   /**

@@ -137,13 +137,13 @@ template.innerHTML = /* html */ `
   <ul id="historyList"></ul>
   <footer>
     <div>There are no saved items in history.</div>
-    <button type="button" id="emptyHistoryBtn">Empty history</button>
+    <button type="button" id="emptyHistoryButton">Empty history</button>
   </footer>
 `;
 
 class ScanHistory extends HTMLElement {
   #historyListEl = null;
-  #emptyHistoryBtn = null;
+  #emptyHistoryButtonEl = null;
 
   constructor() {
     super();
@@ -156,17 +156,17 @@ class ScanHistory extends HTMLElement {
 
   async connectedCallback() {
     this.#historyListEl = this.shadowRoot?.getElementById('historyList');
-    this.#emptyHistoryBtn = this.shadowRoot?.getElementById('emptyHistoryBtn');
+    this.#emptyHistoryButtonEl = this.shadowRoot?.getElementById('emptyHistoryButton');
 
     this.#renderHistoryList((await getHistory())[1] || []);
 
     this.#historyListEl?.addEventListener('click', this.#handleHistoryListClick);
-    this.#emptyHistoryBtn?.addEventListener('click', this.#handleEmptyHistoryClick);
+    this.#emptyHistoryButtonEl?.addEventListener('click', this.#handleEmptyHistoryClick);
   }
 
   disconnectedCallback() {
     this.#historyListEl?.removeEventListener('click', this.#handleHistoryListClick);
-    this.#emptyHistoryBtn?.removeEventListener('click', this.#handleEmptyHistoryClick);
+    this.#emptyHistoryButtonEl?.removeEventListener('click', this.#handleEmptyHistoryClick);
   }
 
   /**
@@ -335,23 +335,23 @@ class ScanHistory extends HTMLElement {
     actionsEl.className = 'actions';
 
     const copyEl = document.createElement('clipboard-copy');
-    const copyBtn = copyEl.shadowRoot?.querySelector('button');
+    const copyButtonEl = copyEl.shadowRoot?.querySelector('button');
     copyEl.setAttribute('only-icon', '');
     copyEl.setAttribute('value', item);
-    copyBtn?.setAttribute('aria-label', `Copy to clipboard ${item}`);
+    copyButtonEl?.setAttribute('aria-label', `Copy to clipboard ${item}`);
     actionsEl.appendChild(copyEl);
 
-    const removeBtn = document.createElement('button');
-    removeBtn.type = 'button';
-    removeBtn.className = 'delete-action';
-    removeBtn.setAttribute('data-action', 'delete');
-    removeBtn.setAttribute('aria-label', `Remove from history ${item}`);
-    removeBtn.innerHTML = /* html */ `
+    const removeButtonEl = document.createElement('button');
+    removeButtonEl.type = 'button';
+    removeButtonEl.className = 'delete-action';
+    removeButtonEl.setAttribute('data-action', 'delete');
+    removeButtonEl.setAttribute('aria-label', `Remove from history ${item}`);
+    removeButtonEl.innerHTML = /* html */ `
       <svg xmlns="http://www.w3.org/2000/svg" width="1.125em" height="1.125em" fill="currentColor" viewBox="0 0 16 16">
         <path d="M11 1.5v1h3.5a.5.5 0 0 1 0 1h-.538l-.853 10.66A2 2 0 0 1 11.115 16h-6.23a2 2 0 0 1-1.994-1.84L2.038 3.5H1.5a.5.5 0 0 1 0-1H5v-1A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5Zm-5 0v1h4v-1a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5ZM4.5 5.029l.5 8.5a.5.5 0 1 0 .998-.06l-.5-8.5a.5.5 0 1 0-.998.06Zm6.53-.528a.5.5 0 0 0-.528.47l-.5 8.5a.5.5 0 0 0 .998.058l.5-8.5a.5.5 0 0 0-.47-.528ZM8 4.5a.5.5 0 0 0-.5.5v8.5a.5.5 0 0 0 1 0V5a.5.5 0 0 0-.5-.5Z"/>
       </svg>
     `;
-    actionsEl.appendChild(removeBtn);
+    actionsEl.appendChild(removeButtonEl);
 
     li.appendChild(historyItem);
     li.appendChild(actionsEl);

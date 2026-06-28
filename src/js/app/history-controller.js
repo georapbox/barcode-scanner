@@ -1,19 +1,16 @@
 import { toastify } from '../shared/feedback/toastify.js';
 
+/**
+ * Creates a controller for handling history dialog interactions and history events.
+ *
+ * @param {{historyButtonEl: HTMLElement, historyDialogEl: HTMLElement}} params - Controller dependencies.
+ * @returns {Function} A function that removes the controller's event listeners.
+ */
 export function createHistoryController({ historyButtonEl, historyDialogEl }) {
-  /**
-   * Handles the click event on the history button.
-   * It is responsible for displaying the history dialog.
-   */
   function handleHistoryButtonClick() {
     historyDialogEl.open = true;
   }
 
-  /**
-   * Handles error events from the history component.
-   *
-   * @param {CustomEvent<{type: string, message: string}>} evt - The event object.
-   */
   function handleHistoryError(evt) {
     const { type, message } = evt.detail;
 

@@ -4,6 +4,19 @@ import { createResult } from '../features/scan-results/create-result.js';
 import { triggerScanEffects } from '../features/scan-results/scan-effects.js';
 import { getSettings } from '../features/settings/settings-storage.js';
 
+/**
+ * Creates a controller for handling barcode detection events from the camera
+ * and file scanners.
+ *
+ * @param {{
+ *   cameraScannerEl: HTMLElement,
+ *   cameraScannerResultsEl: HTMLElement,
+ *   fileScannerEl: HTMLElement,
+ *   fileScannerResultsEl: HTMLElement,
+ *   historyEl: HTMLElement
+ * }} params - Controller dependencies.
+ * @returns {Function} A function that removes the controller's event listeners.
+ */
 export function createBarcodeDetectionController({
   cameraScannerEl,
   cameraScannerResultsEl,
@@ -11,12 +24,6 @@ export function createBarcodeDetectionController({
   fileScannerResultsEl,
   historyEl
 }) {
-  /**
-   * Handles the barcode detext success event from camera and file scanner.
-   *
-   * @param {CustomEvent<{barcodeValue: string, source: string}>} evt - The event object.
-   * @returns {Promise<void>}
-   */
   async function handleBarcodeDetectSuccess(evt) {
     const { barcodeValue, source } = evt.detail;
     const resultsEl = source === 'camera-scanner' ? cameraScannerResultsEl : fileScannerResultsEl;
@@ -31,12 +38,6 @@ export function createBarcodeDetectionController({
     triggerScanEffects();
   }
 
-  /**
-   * Handles the barcode detect error event from camera and file scanner.
-   *
-   * @param {CustomEvent<{error: Error, source: string}>} evt - The event object.
-   * @returns {Promise<void>}
-   */
   async function handleBarcodeDetectError(evt) {
     const { error } = evt.detail;
 
