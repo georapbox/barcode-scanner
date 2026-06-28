@@ -238,6 +238,7 @@ class ScanHistory extends HTMLElement {
     const [getHistoryError, history = []] = await getHistory();
 
     if (getHistoryError || !Array.isArray(history)) {
+      log.error('Error getting history before removal', getHistoryError);
       this.#emitEvent('scan-history-error', errPayload);
       return getHistoryError;
     }
@@ -246,13 +247,12 @@ class ScanHistory extends HTMLElement {
     const [setHistoryError] = await setHistory(data);
 
     if (setHistoryError) {
-      log.error('Error setting history', setHistoryError);
+      log.error('Error setting history after removal', setHistoryError);
       this.#emitEvent('scan-history-error', errPayload);
       return setHistoryError;
     }
 
     const historyItem = this.#historyListEl?.querySelector(`li[data-value="${item}"]`);
-
     historyItem?.remove();
 
     this.#emitEvent('scan-history-success', {
@@ -269,16 +269,14 @@ class ScanHistory extends HTMLElement {
    * @returns {Promise<null|Error>} `null` if successful, or an error if there was an issue
    */
   async empty() {
-    const errPayload = {
-      type: 'empty',
-      message: 'Error emptying history'
-    };
-
     const [setHistoryError] = await setHistory([]);
 
     if (setHistoryError) {
       log.error('Error setting history', setHistoryError);
-      this.#emitEvent('scan-history-error', errPayload);
+      this.#emitEvent('scan-history-error', {
+        type: 'empty',
+        message: 'Error emptying history'
+      });
       return setHistoryError;
     }
 

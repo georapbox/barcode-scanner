@@ -10,19 +10,6 @@ export function createHistoryController({ historyButtonEl, historyDialogEl }) {
   }
 
   /**
-   * Handles success events from the history component.
-   *
-   * @param {CustomEvent<{type: string, message: string}>} evt - The event object.
-   */
-  function handleHistorySuccess(evt) {
-    const { type, message } = evt.detail;
-
-    if (type === 'add') {
-      toastify(message, { variant: 'success' });
-    }
-  }
-
-  /**
    * Handles error events from the history component.
    *
    * @param {CustomEvent<{type: string, message: string}>} evt - The event object.
@@ -38,12 +25,10 @@ export function createHistoryController({ historyButtonEl, historyDialogEl }) {
   }
 
   historyButtonEl.addEventListener('click', handleHistoryButtonClick);
-  document.addEventListener('scan-history-success', handleHistorySuccess);
   document.addEventListener('scan-history-error', handleHistoryError);
 
   return function destroyHistoryController() {
     historyButtonEl.removeEventListener('click', handleHistoryButtonClick);
-    document.removeEventListener('scan-history-success', handleHistorySuccess);
     document.removeEventListener('scan-history-error', handleHistoryError);
   };
 }
