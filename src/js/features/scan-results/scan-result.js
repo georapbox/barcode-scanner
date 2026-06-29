@@ -201,7 +201,7 @@ class ScanResult extends HTMLElement {
     if (copyEl) {
       const copyButtonEl = copyEl.shadowRoot?.querySelector('button');
       copyEl.setAttribute('value', value);
-      copyButtonEl?.setAttribute('aria-label', `Copy to clipboard ${value}`);
+      copyButtonEl?.setAttribute('aria-label', 'Copy scan result to clipboard');
       copyEl.hidden = false;
     }
 
@@ -209,7 +209,7 @@ class ScanResult extends HTMLElement {
       const shareButtonEl = shareEl.querySelector('button');
       shareEl.setAttribute('share-text', value);
       shareEl.hidden = false;
-      shareButtonEl?.setAttribute('aria-label', `Share ${value}`);
+      shareButtonEl?.setAttribute('aria-label', 'Share scan result');
     }
   }
 

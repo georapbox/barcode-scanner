@@ -22,8 +22,6 @@ export async function createResult(containerEl, value) {
   const newResultEl = document.createElement('scan-result');
   newResultEl.setAttribute('value', value);
   newResultEl.setAttribute('role', 'alert');
-  newResultEl.setAttribute('aria-live', 'assertive');
-  newResultEl.setAttribute('aria-atomic', 'true');
   containerEl.insertBefore(newResultEl, containerEl.firstElementChild);
   containerEl.scrollTop = 0;
 }
