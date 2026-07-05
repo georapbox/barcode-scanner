@@ -9,6 +9,7 @@ const SCAN_RATE_LIMIT = 1000;
 
 const styles = /* css */ `
   :host {
+    --scan-frame-color: rgba(255 255 255 / 0.75);
     box-sizing: border-box;
   }
 
@@ -83,16 +84,31 @@ const styles = /* css */ `
     position: absolute;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%) scale(0.9);
+    transform: translate(-50%, -50%) scale(0.95);
     pointer-events: none;
   }
 
-  .scan-frame svg {
+  .scan-frame__svg {
     position: absolute;
-    top: 0;
-    left: 0;
+    inset: 0;
     width: 100%;
     height: 100%;
+  }
+
+  .scan-frame__line {
+    animation: animated-scan-frame-line 2s linear infinite alternate;
+  }
+
+  @keyframes animated-scan-frame-line {
+    from { transform: translateY(0); }
+    to   { transform: translateY(200px); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .scan-frame__line {
+      animation: none;
+      display: none;
+    }
   }
 
   .loading-spinner {
@@ -284,8 +300,25 @@ template.innerHTML = /* html */ `
     </button>
 
     <div id="scanFrame" class="scan-frame" hidden>
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-        <path d="M336 448h56a56 56 0 0056-56v-56M448 176v-56a56 56 0 00-56-56h-56M176 448h-56a56 56 0 01-56-56v-56M64 176v-56a56 56 0 0156-56h56" fill="none" stroke="var(--scan-frame-color)" stroke-linecap="round" stroke-linejoin="round" stroke-width="10"/>
+      <svg class="scan-frame__svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" aria-hidden="true">
+        <path
+          d="M368 448h40a40 40 0 0 0 40-40v-40 M448 144v-40a40 40 0 0 0-40-40h-40 M144 448h-40a40 40 0 0 1-40-40v-40 M64 144v-40a40 40 0 0 1 40-40h40"
+          fill="none"
+          stroke="var(--scan-frame-color)"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="8"
+        />
+        <line
+          class="scan-frame__line"
+          x1="120"
+          y1="156"
+          x2="392"
+          y2="156"
+          stroke="var(--scan-frame-color)"
+          stroke-linecap="round"
+          stroke-width="6"
+        />
       </svg>
     </div>
   </div>
