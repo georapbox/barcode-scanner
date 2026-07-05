@@ -2,6 +2,7 @@ import { getSettings } from '../settings/settings-storage.js';
 
 class ScanSettings extends HTMLElement {
   #formatsWrapperEl = null;
+  #formatItemTemplateEl = null;
   #formEl = null;
   #supportedFormats = [];
   #settings;
@@ -23,6 +24,7 @@ class ScanSettings extends HTMLElement {
     this.#upgradeProperty('supportedFormats');
 
     this.#formatsWrapperEl = this.querySelector('#formatsList');
+    this.#formatItemTemplateEl = this.querySelector('#formatItemTemplate');
     this.#formEl = this.querySelector('form');
 
     const [, settings] = await getSettings();
@@ -42,28 +44,27 @@ class ScanSettings extends HTMLElement {
    * settings are found.
    */
   #renderFormats() {
-    if (!this.#formatsWrapperEl) {
+    if (!this.#formatsWrapperEl || !this.#formatItemTemplateEl) {
       return;
     }
 
     const formatsFromStorage = this.#settings?.formats;
-
-    this.#formatsWrapperEl.replaceChildren();
+    const fragment = this.ownerDocument.createDocumentFragment();
 
     this.supportedFormats.forEach(format => {
-      const li = document.createElement('li');
-      const label = document.createElement('label');
-      const input = document.createElement('input');
+      const itemEl = this.#formatItemTemplateEl.content.firstElementChild.cloneNode(true);
 
-      input.type = 'checkbox';
-      input.name = 'formats-settings';
-      input.value = format;
-      input.checked = formatsFromStorage != null ? formatsFromStorage.includes(format) : true;
-      label.appendChild(input);
-      label.appendChild(document.createTextNode(format));
-      li.appendChild(label);
-      this.#formatsWrapperEl.appendChild(li);
+      const inputEl = itemEl.querySelector('input');
+      inputEl.value = format;
+      inputEl.checked = formatsFromStorage != null ? formatsFromStorage.includes(format) : true;
+
+      const labelTextEl = itemEl.querySelector('[data-format-label]');
+      labelTextEl.textContent = format;
+
+      fragment.appendChild(itemEl);
     });
+
+    this.#formatsWrapperEl.replaceChildren(fragment);
   }
 
   /**

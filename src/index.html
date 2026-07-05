@@ -135,31 +135,63 @@
     <span slot="header">Settings</span>
 
     <scan-settings>
-      <form id="settingsForm" autocomplete="off">
-        <fieldset>
-          <legend>When barcode is detected...</legend>
-          <ul>
-            <li><label><input type="checkbox" name="general-settings" value="openWebPage">Open web pages automatically</label></li>
-            <li><label><input type="checkbox" name="general-settings" value="openWebPageSameTab">Open web pages in the same tab</label></li>
-            <li><label><input type="checkbox" name="general-settings" value="addToHistory">Add to history</label></li>
+      <form id="settingsForm" class="settings-form" autocomplete="off">
+        <fieldset class="settings-form__group">
+          <legend class="settings-form__legend">When barcode is detected...</legend>
+          <ul class="settings-form__list">
+            <li class="settings-form__item">
+              <label class="settings-form__option">
+                <input type="checkbox" name="general-settings" value="openWebPage" class="settings-form__checkbox">
+                Open web pages automatically
+              </label>
+            </li>
+            <li class="settings-form__item">
+              <label class="settings-form__option">
+                <input type="checkbox" name="general-settings" value="openWebPageSameTab" class="settings-form__checkbox">
+                Open web pages in the same tab
+              </label>
+            </li>
+            <li class="settings-form__item">
+              <label class="settings-form__option">
+                <input type="checkbox" name="general-settings" value="addToHistory" class="settings-form__checkbox">
+                Add to history
+              </label>
+            </li>
           </ul>
         </fieldset>
 
-        <fieldset>
-          <legend>Effects</legend>
-          <ul>
-            <li><label><input type="checkbox" name="general-settings" value="beep">Beep</label></li>
-            <li><label><input type="checkbox" name="general-settings" value="vibrate">Vibrate (Android)</label></li>
+        <fieldset class="settings-form__group">
+          <legend class="settings-form__legend">Effects</legend>
+          <p class="settings-form__description">Some effects may not be supported by all devices.</p>
+          <ul class="settings-form__list">
+            <li class="settings-form__item">
+              <label class="settings-form__option">
+                <input type="checkbox" name="general-settings" value="beep" class="settings-form__checkbox">
+                Beep
+              </label>
+            </li>
+            <li class="settings-form__item">
+              <label class="settings-form__option">
+                <input type="checkbox" name="general-settings" value="vibrate" class="settings-form__checkbox">
+                Vibrate
+              </label>
+            </li>
           </ul>
         </fieldset>
 
-        <fieldset name="bs-formats">
-          <legend>
-            Supported formats
-            <br>
-            <small class="text-muted fw-normal">If none is checked, all formats will be supported.</small>
-          </legend>
-          <ul id="formatsList" class="formats-list"></ul>
+        <fieldset class="settings-form__group" name="bs-formats">
+          <legend class="settings-form__legend">Supported formats</legend>
+          <p class="settings-form__description">If none is checked, all formats will be supported.</p>
+          <ul id="formatsList" class="settings-form__list settings-form__list--formats"></ul>
+
+          <template id="formatItemTemplate">
+            <li class="settings-form__item">
+              <label class="settings-form__option">
+                <input class="settings-form__checkbox" type="checkbox" name="formats-settings">
+                <span data-format-label></span>
+              </label>
+            </li>
+          </template>
         </fieldset>
       </form>
     </scan-settings>
