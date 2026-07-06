@@ -98,7 +98,7 @@ body {
   display: none !important;
 }
 
-:not(:defined):not(scan-settings) {
+:not(:defined) {
   display: none !important;
 }
 

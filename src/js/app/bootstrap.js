@@ -17,7 +17,7 @@ export async function bootstrap() {
     historyEl,
     historyButtonEl,
     historyDialogEl,
-    settingsEl,
+    formatSettingsEl,
     settingsButtonEl,
     settingsDialogEl,
     settingsFormEl,
@@ -63,7 +63,7 @@ export async function bootstrap() {
 
   cameraScannerEl.barcodeReader = barcodeReader;
   fileScannerEl.barcodeReader = barcodeReader;
-  settingsEl.supportedFormats = supportedBarcodeFormats;
+  formatSettingsEl.supportedFormats = supportedBarcodeFormats;
 
   createScannerVisibilityController({
     tabsEl,

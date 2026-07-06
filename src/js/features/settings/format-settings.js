@@ -1,6 +1,6 @@
 import { getSettings } from '../settings/settings-storage.js';
 
-class ScanSettings extends HTMLElement {
+class FormatSettings extends HTMLElement {
   #formatsWrapperEl = null;
   #formatItemTemplateEl = null;
   #formEl = null;
@@ -94,14 +94,14 @@ class ScanSettings extends HTMLElement {
    * Defines the custom element by registering it with the browser's
    * CustomElementRegistry if it hasn't been defined already.
    *
-   * @param {string} [tagName='scan-settings'] - The tag name to use for the custom element.
+   * @param {string} [tagName='format-settings'] - The tag name to use for the custom element.
    */
-  static define(tagName = 'scan-settings') {
+  static define(tagName = 'format-settings') {
     if (typeof window === 'undefined' || window.customElements.get(tagName)) {
       return;
     }
-    window.customElements.define(tagName, ScanSettings);
+    window.customElements.define(tagName, FormatSettings);
   }
 }
 
-export { ScanSettings };
+export { FormatSettings };
