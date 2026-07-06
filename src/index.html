@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Barcode/QR code Scanner</title>
+  <title>Barcode & QR code Scanner</title>
   <meta name="description" content="A Progressive Web Application (PWA) that scans barcodes of various formats, using the Barcode Detection API.">
   <link rel="shortcut icon" href="assets/app-icons/favicon.ico">
   <link rel="apple-touch-icon" href="assets/app-icons/apple-touch-icon.png">
@@ -20,25 +20,27 @@
     </div>
   </noscript>
 
-  <div class="global-actions" id="globalActions" hidden>
-    <button id="historyButton" aria-label="History">
+  <div class="app-actions" id="appActions" hidden>
+    <button class="app-actions__button" id="historyButton" aria-label="History">
       <svg xmlns="http://www.w3.org/2000/svg" width="1.125em" height="1.125em" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
         <path d="M8.515 1.019A7 7 0 0 0 8 1V0a8 8 0 0 1 .589.022zm2.004.45a7 7 0 0 0-.985-.299l.219-.976q.576.129 1.126.342zm1.37.71a7 7 0 0 0-.439-.27l.493-.87a8 8 0 0 1 .979.654l-.615.789a7 7 0 0 0-.418-.302zm1.834 1.79a7 7 0 0 0-.653-.796l.724-.69q.406.429.747.91zm.744 1.352a7 7 0 0 0-.214-.468l.893-.45a8 8 0 0 1 .45 1.088l-.95.313a7 7 0 0 0-.179-.483m.53 2.507a7 7 0 0 0-.1-1.025l.985-.17q.1.58.116 1.17zm-.131 1.538q.05-.254.081-.51l.993.123a8 8 0 0 1-.23 1.155l-.964-.267q.069-.247.12-.501m-.952 2.379q.276-.436.486-.908l.914.405q-.24.54-.555 1.038zm-.964 1.205q.183-.183.35-.378l.758.653a8 8 0 0 1-.401.432z"/>
         <path d="M8 1a7 7 0 1 0 4.95 11.95l.707.707A8.001 8.001 0 1 1 8 0z"/>
         <path d="M7.5 3a.5.5 0 0 1 .5.5v5.21l3.248 1.856a.5.5 0 0 1-.496.868l-3.5-2A.5.5 0 0 1 7 9V3.5a.5.5 0 0 1 .5-.5"/>
       </svg>
-      <span>History</span>
+      <span class="app-actions__button-label">History</span>
     </button>
 
-    <button id="settingsButton" aria-label="Settings">
+    <span class="app-actions__divider"></span>
+
+    <button class="app-actions__button" id="settingsButton" aria-label="Settings">
       <svg xmlns="http://www.w3.org/2000/svg" width="1.125em" height="1.125em" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
         <path fill-rule="evenodd" d="M11.5 2a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3M9.05 3a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0V3zM4.5 7a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3M2.05 8a2.5 2.5 0 0 1 4.9 0H16v1H6.95a2.5 2.5 0 0 1-4.9 0H0V8zm9.45 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3m-2.45 1a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0v-1z"/>
       </svg>
-      <span>Settings</span>
+      <span class="app-actions__button-label">Settings</span>
     </button>
   </div>
 
-  <header class="site-header">
+  <header class="app-header">
     <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 512 512" width="5em" height="5em" xml:space="preserve" class="logo" aria-hidden="true">
       <path fill="var(--accent)" d="M93.867,51.2H8.533C3.814,51.2,0,55.014,0,59.733v85.333c0,4.719,3.814,8.533,8.533,8.533s8.533-3.814,8.533-8.533v-76.8 h76.8c4.719,0,8.533-3.814,8.533-8.533S98.586,51.2,93.867,51.2z" />
       <path fill="var(--accent)" d="M503.467,51.2h-85.333c-4.719,0-8.533,3.814-8.533,8.533s3.814,8.533,8.533,8.533h76.8v76.8c0,4.719,3.814,8.533,8.533,8.533c4.719,0,8.533-3.814,8.533-8.533V59.733C512,55.014,508.186,51.2,503.467,51.2z" />
@@ -65,7 +67,8 @@
       <path fill="currentColor" d="M392.533,281.6c-4.71,0-8.533,3.823-8.533,8.533v110.933c0,4.71,3.823,8.533,8.533,8.533c4.71,0,8.533-3.823,8.533-8.533V290.133C401.067,285.423,397.244,281.6,392.533,281.6z" />
     </svg>
 
-    <h1>Barcode/QR code Scanner</h1>
+    <h1 class="app-header__title">Barcode & QR code Scanner</h1>
+    <p class="app-header__description">Scan with your camera or an image</p>
   </header>
 
   <div class="container">
@@ -81,7 +84,7 @@
       <a-tab-panel id="cameraPanel">
         <camera-scanner></camera-scanner>
         <div class="camera-scanner-instructions">Align barcode in the center of the frame.</div>
-        <div class="results"></div>
+        <div class="results" id="cameraScannerResults"></div>
       </a-tab-panel>
 
       <a-tab role="heading" id="fileTab">
@@ -105,21 +108,18 @@
 
       <a-tab-panel id="filePanel">
         <file-scanner></file-scanner>
-        <div class="results"></div>
+        <div class="results" id="fileScannerResults"></div>
       </a-tab-panel>
     </a-tab-group>
   </div>
 
-  <footer>
-    <div class="source-code">
+  <footer class="app-footer">
+    <p>
       <svg xmlns="http://www.w3.org/2000/svg" width="1.25em" height="1.25em" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
         <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
       </svg>
-
-      <span>
-        Source code on <a href="https://github.com/georapbox/barcode-scanner" class="text-underline" target="_blank" rel="noreferrer noopener">GitHub</a>
-      </span>
-    </div>
+      Source code on <a href="https://github.com/georapbox/barcode-scanner" class="text-underline" target="_blank" rel="noreferrer noopener">GitHub</a>
+    </p>
 
     <p>
       Licensed under <a href="https://github.com/georapbox/barcode-scanner/blob/main/LICENSE" target="_blank" rel="noopener">The MIT License (MIT)</a>

@@ -9,17 +9,14 @@ function getRequiredElement(selector, root = document) {
 }
 
 export function getAppElements() {
-  const cameraPanelEl = getRequiredElement('#cameraPanel');
-  const filePanelEl = getRequiredElement('#filePanel');
-
   return {
     tabsEl: getRequiredElement('a-tab-group'),
 
     cameraScannerEl: getRequiredElement('camera-scanner'),
-    cameraScannerResultsEl: getRequiredElement('.results', cameraPanelEl),
+    cameraScannerResultsEl: getRequiredElement('#cameraScannerResults'),
 
     fileScannerEl: getRequiredElement('file-scanner'),
-    fileScannerResultsEl: getRequiredElement('.results', filePanelEl),
+    fileScannerResultsEl: getRequiredElement('#fileScannerResults'),
 
     historyEl: getRequiredElement('scan-history'),
     historyButtonEl: getRequiredElement('#historyButton'),
@@ -30,6 +27,6 @@ export function getAppElements() {
     settingsDialogEl: getRequiredElement('#settingsDialog'),
     settingsFormEl: getRequiredElement('#settingsForm'),
 
-    globalActionsEl: getRequiredElement('#globalActions')
+    appActionsEl: getRequiredElement('#appActions')
   };
 }

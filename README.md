@@ -1,4 +1,4 @@
-# Barcode/QR code Scanner
+# Barcode & QR code Scanner
 
 A Progressive Web Application (PWA) that scans barcodes of various formats, using the [Barcode Detection API](https://developer.mozilla.org/docs/Web/API/Barcode_Detection_API).
 
@@ -7,7 +7,7 @@ A Progressive Web Application (PWA) that scans barcodes of various formats, usin
 
 ## Live demo
 
-👉 [Barcode/QR code Scanner](https://georapbox.github.io/barcode-scanner/)
+👉 [Barcode & QR code Scanner](https://georapbox.github.io/barcode-scanner/)
 
 ## Features
 

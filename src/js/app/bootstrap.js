@@ -21,14 +21,14 @@ export async function bootstrap() {
     settingsButtonEl,
     settingsDialogEl,
     settingsFormEl,
-    globalActionsEl
+    appActionsEl
   } = getAppElements();
 
   // By default the dialog elements are hidden for browsers that don't support the dialog element.
   // If the dialog element is supported, we remove the hidden attribute and the dialogs' visibility
   // is controlled by using the `showModal()` and `close()` methods.
   if (typeof HTMLDialogElement === 'function') {
-    globalActionsEl.removeAttribute('hidden');
+    appActionsEl.removeAttribute('hidden');
     historyDialogEl.removeAttribute('hidden');
     settingsDialogEl.removeAttribute('hidden');
   }
@@ -36,7 +36,7 @@ export async function bootstrap() {
   const { barcodeReaderError } = await BarcodeReader.setup();
 
   if (barcodeReaderError) {
-    globalActionsEl.setAttribute('hidden', '');
+    appActionsEl.setAttribute('hidden', '');
     tabsEl.setAttribute('hidden', '');
 
     const errorMessage = /* html */ `
