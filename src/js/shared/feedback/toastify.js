@@ -2,11 +2,11 @@
  * Displays a toast notification.
  *
  * @param {string} message - The message to display in the toast.
- * @param {Object} [options] - Options for the toast.
+ * @param {Object} [options] - The options for the toast notification.
  * @param {number} [options.duration=5000] - Duration in milliseconds before the toast disappears.
  * @param {string} [options.variant='neutral'] - The variant of the toast (e.g., 'success', 'danger', 'info').
  * @param {boolean} [options.trustDangerousInnerHTML=false] - Whether to trust dangerous HTML in the message.
- * @returns {Promise<AlertElement>} - A promise that resolves to the alert element.
+ * @returns {Promise<AlertElement>} A promise that resolves to the alert element.
  */
 export function toastify(message, options = {}) {
   const defaults = {

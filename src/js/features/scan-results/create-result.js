@@ -12,18 +12,16 @@ export async function createResult(containerEl, value) {
   // Avoid using querySelector with attribute selectors here because `value` may
   // contain newlines or other characters that make the selector invalid.
   // Instead, query all results and match the attribute value in JS.
-  const existingResultEls = Array.from(containerEl.querySelectorAll('bs-result'));
+  const existingResultEls = Array.from(containerEl.querySelectorAll('scan-result'));
   const matchingResultEl = existingResultEls.find(el => el.getAttribute('value') === value);
 
   if (matchingResultEl) {
     matchingResultEl.remove();
   }
 
-  const newResultEl = document.createElement('bs-result');
+  const newResultEl = document.createElement('scan-result');
   newResultEl.setAttribute('value', value);
   newResultEl.setAttribute('role', 'alert');
-  newResultEl.setAttribute('aria-live', 'assertive');
-  newResultEl.setAttribute('aria-atomic', 'true');
   containerEl.insertBefore(newResultEl, containerEl.firstElementChild);
   containerEl.scrollTop = 0;
 }

@@ -1,6 +1,6 @@
 import { isWebShareSupported } from '@georapbox/web-share-element/dist/is-web-share-supported.js';
-import { getSettings } from '../services/storage.js';
-import { dateTimeFormatter } from '../utils/datetime-formatter.js';
+import { dateTimeFormatter } from '../../shared/utils/datetime-formatter.js';
+import { getSettings } from '../settings/settings-storage.js';
 
 const styles = /* css */ `
   :host {
@@ -58,7 +58,7 @@ const styles = /* css */ `
   }
 
   .result web-share button,
-  .result custom-clipboard-copy::part(button) {
+  .result clipboard-copy::part(button) {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -74,11 +74,11 @@ const styles = /* css */ `
     cursor: pointer;
   }
 
-  .result custom-clipboard-copy::part(button--success) {
+  .result clipboard-copy::part(button--success) {
     color: var(--success-color);
   }
 
-  .result custom-clipboard-copy::part(button--error) {
+  .result clipboard-copy::part(button--error) {
     color: var(--danger-color);
   }
 `;
@@ -94,7 +94,7 @@ template.innerHTML = /* html */ `
     </div>
 
     <div class="result__actions">
-      <custom-clipboard-copy only-icon></custom-clipboard-copy>
+      <clipboard-copy only-icon></clipboard-copy>
 
       <web-share>
         <button slot="button" type="button">
@@ -107,7 +107,7 @@ template.innerHTML = /* html */ `
   </div>
 `;
 
-class BSResult extends HTMLElement {
+class ScanResult extends HTMLElement {
   constructor() {
     super();
 
@@ -137,6 +137,7 @@ class BSResult extends HTMLElement {
 
   connectedCallback() {
     this.#upgradeProperty('value');
+
     this.#highlight();
 
     if (!isWebShareSupported()) {
@@ -148,6 +149,13 @@ class BSResult extends HTMLElement {
     }
   }
 
+  /**
+   * Handles changes to the `value` attribute by creating a new result element
+   * with the updated value, updating the datetime, and configuring the copy
+   * and share buttons.
+   *
+   * @param {string} value - The new value to display in the result.
+   */
   async #handleValueChange(value) {
     const baseEl = this.shadowRoot.querySelector('.result');
     const resultContentEl = baseEl?.querySelector('.result__content');
@@ -187,24 +195,28 @@ class BSResult extends HTMLElement {
     resultDatetimeEl.textContent = dateTimeFormatter.format(new Date());
     resultContentEl?.insertBefore(resultEl, resultDatetimeEl);
 
-    const copyEl = baseEl?.querySelector('custom-clipboard-copy');
+    const copyEl = baseEl?.querySelector('clipboard-copy');
     const shareEl = baseEl?.querySelector('web-share');
 
     if (copyEl) {
-      const copyBtn = copyEl.shadowRoot?.querySelector('button');
+      const copyButtonEl = copyEl.shadowRoot?.querySelector('button');
       copyEl.setAttribute('value', value);
-      copyBtn?.setAttribute('aria-label', `Copy to clipboard ${value}`);
+      copyButtonEl?.setAttribute('aria-label', 'Copy scan result to clipboard');
       copyEl.hidden = false;
     }
 
     if (shareEl && isWebShareSupported()) {
-      const shareBtn = shareEl.querySelector('button');
+      const shareButtonEl = shareEl.querySelector('button');
       shareEl.setAttribute('share-text', value);
       shareEl.hidden = false;
-      shareBtn?.setAttribute('aria-label', `Share ${value}`);
+      shareButtonEl?.setAttribute('aria-label', 'Share scan result');
     }
   }
 
+  /**
+   * Animates the background color of the result element to highlight it when it
+   * first appears.
+   */
   #highlight() {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       return;
@@ -219,16 +231,21 @@ class BSResult extends HTMLElement {
   }
 
   /**
-   * This is to safe guard against cases where, for instance, a framework may have added the element to the page and
-   * set a value on one of its properties, but lazy loaded its definition. Without this guard, the upgraded element would
-   * miss that property and the instance property would prevent the class property setter from ever being called.
+   * Re-applies a property value that may have been set on the element
+   * instance before the custom element was defined.
    *
-   * https://developers.google.com/web/fundamentals/web-components/best-practices#lazy-properties
+   * This handles cases where a framework sets a property on the element
+   * before its definition is loaded. Without this step, the own property
+   * on the instance would shadow the class setter and prevent it from
+   * running after upgrade.
    *
-   * @param {string} prop - The property to upgrade.
+   * @see https://web.dev/articles/custom-elements-best-practices#make_properties_lazy
+   *
+   * @param {string} prop - The property name to upgrade.
    */
   #upgradeProperty(prop) {
     const instance = this;
+
     if (Object.prototype.hasOwnProperty.call(instance, prop)) {
       const value = instance[prop];
       delete instance[prop];
@@ -236,11 +253,18 @@ class BSResult extends HTMLElement {
     }
   }
 
-  static defineCustomElement(elementName = 'bs-result') {
-    if (typeof window !== 'undefined' && !window.customElements.get(elementName)) {
-      window.customElements.define(elementName, BSResult);
+  /**
+   * Defines the custom element by registering it with the browser's
+   * CustomElementRegistry if it hasn't been defined already.
+   *
+   * @param {string} [tagName='scan-result'] - The tag name to use for the custom element.
+   */
+  static define(tagName = 'scan-result') {
+    if (typeof window === 'undefined' || window.customElements.get(tagName)) {
+      return;
     }
+    window.customElements.define(tagName, ScanResult);
   }
 }
 
-BSResult.defineCustomElement();
+export { ScanResult };

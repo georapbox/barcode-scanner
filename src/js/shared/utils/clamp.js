@@ -7,7 +7,7 @@
  * @param {number} lower - The lower bound.
  * @param {number} upper - The upper bound.
  * @throws {TypeError} - If one or more of the arguments passed is not a number.
- * @returns {number} - The clamped number.
+ * @returns {number} The clamped number.
  * @example
  *
  * clamp(10, -5, 5);

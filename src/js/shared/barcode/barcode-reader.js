@@ -40,7 +40,7 @@ class BarcodeReader {
    * Get the supported barcode formats.
    *
    * @see https://developer.mozilla.org/docs/Web/API/BarcodeDetector/getSupportedFormats
-   * @returns {Promise<Array<string>>} - Supported barcode formats
+   * @returns {Promise<Array<string>>} A promise that resolves to an array of supported barcode formats.
    */
   static async getSupportedFormats() {
     const nativeSupportedFormats = (await window.BarcodeDetector.getSupportedFormats()) || [];
@@ -50,8 +50,8 @@ class BarcodeReader {
   /**
    * Create a new BarcodeReader instance.
    *
-   * @param {Array<string>} supportedFormats - Supported barcode formats
-   * @returns {Promise<BarcodeReader>} - New BarcodeReader instance
+   * @param {Array<string>} supportedFormats - A list of supported barcode formats. If not provided, it will use the default supported formats.
+   * @returns {Promise<BarcodeReader>} A promise that resolves to a new BarcodeReader instance.
    */
   static async create(supportedFormats) {
     const isValidFormats = Array.isArray(supportedFormats) && supportedFormats.length > 0;
@@ -62,7 +62,7 @@ class BarcodeReader {
   /**
    * Sets up BarcodeReader by polyfilling the BarcodeDetector API if needed.
    *
-   * @returns {Promise<{ barcodeReaderError: Error }>} - BarcodeReader setup result
+   * @returns {Promise<{barcodeReaderError: Error}>} A promise that resolves to an object containing any error encountered during setup.
    */
   static async setup() {
     try {
@@ -88,8 +88,8 @@ class BarcodeReader {
    * Detect barcodes from the provided source.
    *
    * @see https://developer.mozilla.org/docs/Web/API/BarcodeDetector/detect
-   * @param {HTMLImageElement|HTMLVideoElement|ImageBitmap} source - Image or video element or ImageBitmap
-   * @returns {Promise<BarcodeDetection>} - Barcode detection result
+   * @param {HTMLImageElement|HTMLVideoElement|ImageBitmap} source - Image or video element or ImageBitmap.
+   * @returns {Promise<DetectedBarcode>} A promise that resolves to the first detected barcode.
    */
   async detect(source) {
     if (!this.barcodeReader) {

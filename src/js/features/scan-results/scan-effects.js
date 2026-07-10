@@ -1,6 +1,6 @@
-import { getSettings } from '../services/storage.js';
-import { beep } from '../utils/beep.js';
-import { vibrate } from '../utils/vibrate.js';
+import { beep } from '../../shared/feedback/beep.js';
+import { vibrate } from '../../shared/feedback/vibrate.js';
+import { getSettings } from '../settings/settings-storage.js';
 
 const RATE_LIMIT = 1000;
 let lastTriggerTime = 0;

@@ -1,5 +1,5 @@
-import { getHistory, setHistory } from '../services/storage.js';
-import { log } from '../utils/log.js';
+import { log } from '../../shared/utils/log.js';
+import { getHistory, setHistory } from './history-storage.js';
 
 const styles = /* css */ `
   :host {
@@ -74,7 +74,7 @@ const styles = /* css */ `
   }
 
   .actions button,
-  .actions custom-clipboard-copy::part(button) {
+  .actions clipboard-copy::part(button) {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -90,11 +90,11 @@ const styles = /* css */ `
     cursor: pointer;
   }
 
-  .actions custom-clipboard-copy::part(button--success) {
+  .actions clipboard-copy::part(button--success) {
     color: var(--success-color);
   }
 
-  .actions custom-clipboard-copy::part(button--error) {
+  .actions clipboard-copy::part(button--error) {
     color: var(--danger-color);
   }
 
@@ -137,13 +137,13 @@ template.innerHTML = /* html */ `
   <ul id="historyList"></ul>
   <footer>
     <div>There are no saved items in history.</div>
-    <button type="button" id="emptyHistoryBtn">Empty history</button>
+    <button type="button" id="emptyHistoryButton">Empty history</button>
   </footer>
 `;
 
-class BSHistory extends HTMLElement {
+class ScanHistory extends HTMLElement {
   #historyListEl = null;
-  #emptyHistoryBtn = null;
+  #emptyHistoryButtonEl = null;
 
   constructor() {
     super();
@@ -156,25 +156,25 @@ class BSHistory extends HTMLElement {
 
   async connectedCallback() {
     this.#historyListEl = this.shadowRoot?.getElementById('historyList');
-    this.#emptyHistoryBtn = this.shadowRoot?.getElementById('emptyHistoryBtn');
+    this.#emptyHistoryButtonEl = this.shadowRoot?.getElementById('emptyHistoryButton');
 
     this.#renderHistoryList((await getHistory())[1] || []);
 
     this.#historyListEl?.addEventListener('click', this.#handleHistoryListClick);
-    this.#emptyHistoryBtn?.addEventListener('click', this.#handleEmptyHistoryClick);
+    this.#emptyHistoryButtonEl?.addEventListener('click', this.#handleEmptyHistoryClick);
   }
 
   disconnectedCallback() {
     this.#historyListEl?.removeEventListener('click', this.#handleHistoryListClick);
-    this.#emptyHistoryBtn?.removeEventListener('click', this.#handleEmptyHistoryClick);
+    this.#emptyHistoryButtonEl?.removeEventListener('click', this.#handleEmptyHistoryClick);
   }
 
   /**
    * Adds an item to the history.
    * If the item is already in history, it will not be added.
    *
-   * @param {string} item - Item to add to history
-   * @return {Promise<null|Error>} - Returns null if successful, or an error if there was an issue
+   * @param {string} item - The item to add to history.
+   * @returns {Promise<null|Error>} `null` if successful, or an error if there was an issue.
    */
   async add(item) {
     if (!item) {
@@ -189,7 +189,7 @@ class BSHistory extends HTMLElement {
     const [getHistoryError, history = []] = await getHistory();
 
     if (getHistoryError || !Array.isArray(history)) {
-      this.#emitEvent('bs-history-error', errPayload);
+      this.#emitEvent('scan-history-error', errPayload);
       return getHistoryError;
     }
 
@@ -202,7 +202,7 @@ class BSHistory extends HTMLElement {
 
     if (setHistoryError) {
       log.error('Error setting history', setHistoryError);
-      this.#emitEvent('bs-history-error', errPayload);
+      this.#emitEvent('scan-history-error', errPayload);
       return setHistoryError;
     }
 
@@ -211,7 +211,7 @@ class BSHistory extends HTMLElement {
       this.#historyListEl.firstElementChild
     );
 
-    this.#emitEvent('bs-history-success', {
+    this.#emitEvent('scan-history-success', {
       type: 'add',
       message: 'Barcode added to history'
     });
@@ -222,8 +222,8 @@ class BSHistory extends HTMLElement {
   /**
    * Removes an item from the history.
    *
-   * @param {string} item - Item to remove from history
-   * @return {Promise<null|Error>} - Returns null if successful, or an error if there was an issue
+   * @param {string} item - The item to remove from history.
+   * @returns {Promise<null|Error>} `null` if successful, or an error if there was an issue.
    */
   async remove(item) {
     if (!item) {
@@ -238,7 +238,8 @@ class BSHistory extends HTMLElement {
     const [getHistoryError, history = []] = await getHistory();
 
     if (getHistoryError || !Array.isArray(history)) {
-      this.#emitEvent('bs-history-error', errPayload);
+      log.error('Error getting history before removal', getHistoryError);
+      this.#emitEvent('scan-history-error', errPayload);
       return getHistoryError;
     }
 
@@ -246,16 +247,15 @@ class BSHistory extends HTMLElement {
     const [setHistoryError] = await setHistory(data);
 
     if (setHistoryError) {
-      log.error('Error setting history', setHistoryError);
-      this.#emitEvent('bs-history-error', errPayload);
+      log.error('Error setting history after removal', setHistoryError);
+      this.#emitEvent('scan-history-error', errPayload);
       return setHistoryError;
     }
 
     const historyItem = this.#historyListEl?.querySelector(`li[data-value="${item}"]`);
-
     historyItem?.remove();
 
-    this.#emitEvent('bs-history-success', {
+    this.#emitEvent('scan-history-success', {
       type: 'remove',
       message: 'Barcode removed from history'
     });
@@ -266,25 +266,23 @@ class BSHistory extends HTMLElement {
   /**
    * Removes all items from the history.
    *
-   * @return {Promise<null|Error>} - Returns null if successful, or an error if there was an issue
+   * @returns {Promise<null|Error>} `null` if successful, or an error if there was an issue
    */
   async empty() {
-    const errPayload = {
-      type: 'empty',
-      message: 'Error emptying history'
-    };
-
     const [setHistoryError] = await setHistory([]);
 
     if (setHistoryError) {
       log.error('Error setting history', setHistoryError);
-      this.#emitEvent('bs-history-error', errPayload);
+      this.#emitEvent('scan-history-error', {
+        type: 'empty',
+        message: 'Error emptying history'
+      });
       return setHistoryError;
     }
 
     this.#historyListEl?.replaceChildren();
 
-    this.#emitEvent('bs-history-success', {
+    this.#emitEvent('scan-history-success', {
       type: 'empty',
       message: 'History emptied successfully'
     });
@@ -295,7 +293,7 @@ class BSHistory extends HTMLElement {
   /**
    * Renders the history list. If there are no items in history, it will show a message.
    *
-   * @param {Array<string>} data - History data as an array of strings
+   * @param {Array<string>} data - History data as an array of strings.
    */
   #renderHistoryList(data) {
     if (!this.#historyListEl) {
@@ -312,8 +310,8 @@ class BSHistory extends HTMLElement {
    * Creates a history item element.
    * If the item is a URL, it will be an anchor element, otherwise a span element.
    *
-   * @param {string} item - The history item to create an element for
-   * @returns {HTMLLIElement} The history item element
+   * @param {string} item - The history item to create an element for.
+   * @returns {HTMLLIElement} The history item element.
    */
   #createHistoryItemElement(item) {
     const li = document.createElement('li');
@@ -336,24 +334,24 @@ class BSHistory extends HTMLElement {
     const actionsEl = document.createElement('div');
     actionsEl.className = 'actions';
 
-    const copyEl = document.createElement('custom-clipboard-copy');
-    const copyBtn = copyEl.shadowRoot?.querySelector('button');
+    const copyEl = document.createElement('clipboard-copy');
+    const copyButtonEl = copyEl.shadowRoot?.querySelector('button');
     copyEl.setAttribute('only-icon', '');
     copyEl.setAttribute('value', item);
-    copyBtn?.setAttribute('aria-label', `Copy to clipboard ${item}`);
+    copyButtonEl?.setAttribute('aria-label', `Copy to clipboard ${item}`);
     actionsEl.appendChild(copyEl);
 
-    const removeBtn = document.createElement('button');
-    removeBtn.type = 'button';
-    removeBtn.className = 'delete-action';
-    removeBtn.setAttribute('data-action', 'delete');
-    removeBtn.setAttribute('aria-label', `Remove from history ${item}`);
-    removeBtn.innerHTML = /* html */ `
+    const removeButtonEl = document.createElement('button');
+    removeButtonEl.type = 'button';
+    removeButtonEl.className = 'delete-action';
+    removeButtonEl.setAttribute('data-action', 'delete');
+    removeButtonEl.setAttribute('aria-label', `Remove from history ${item}`);
+    removeButtonEl.innerHTML = /* html */ `
       <svg xmlns="http://www.w3.org/2000/svg" width="1.125em" height="1.125em" fill="currentColor" viewBox="0 0 16 16">
         <path d="M11 1.5v1h3.5a.5.5 0 0 1 0 1h-.538l-.853 10.66A2 2 0 0 1 11.115 16h-6.23a2 2 0 0 1-1.994-1.84L2.038 3.5H1.5a.5.5 0 0 1 0-1H5v-1A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5Zm-5 0v1h4v-1a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5ZM4.5 5.029l.5 8.5a.5.5 0 1 0 .998-.06l-.5-8.5a.5.5 0 1 0-.998.06Zm6.53-.528a.5.5 0 0 0-.528.47l-.5 8.5a.5.5 0 0 0 .998.058l.5-8.5a.5.5 0 0 0-.47-.528ZM8 4.5a.5.5 0 0 0-.5.5v8.5a.5.5 0 0 0 1 0V5a.5.5 0 0 0-.5-.5Z"/>
       </svg>
     `;
-    actionsEl.appendChild(removeBtn);
+    actionsEl.appendChild(removeButtonEl);
 
     li.appendChild(historyItem);
     li.appendChild(actionsEl);
@@ -396,17 +394,21 @@ class BSHistory extends HTMLElement {
   #emitEvent(eventName, detail = null) {
     const options = { bubbles: true, composed: true, detail };
     const evt = new CustomEvent(eventName, options);
-
     this.dispatchEvent(evt);
   }
 
-  static defineCustomElement(elementName = 'bs-history') {
-    if (typeof window !== 'undefined' && !window.customElements.get(elementName)) {
-      window.customElements.define(elementName, BSHistory);
+  /**
+   * Defines the custom element by registering it with the browser's
+   * CustomElementRegistry if it hasn't been defined already.
+   *
+   * @param {string} [tagName='scan-history'] - The tag name to use for the custom element.
+   */
+  static define(tagName = 'scan-history') {
+    if (typeof window === 'undefined' || window.customElements.get(tagName)) {
+      return;
     }
+    window.customElements.define(tagName, ScanHistory);
   }
 }
 
-BSHistory.defineCustomElement();
-
-export { BSHistory };
+export { ScanHistory };

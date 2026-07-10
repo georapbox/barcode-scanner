@@ -1,10 +1,8 @@
-import { clamp } from '../utils/clamp.js';
-
-const COMPONENT_NAME = 'video-capture';
+import { clamp } from '../../shared/utils/clamp.js';
 
 const styles = /* css */ `
   :host { display: block; box-sizing: border-box; }
-  :host *, :host *::before, :host *::after { box-sizing: inherit;}
+  :host *, :host *::before, :host *::after { box-sizing: border-box; }
   :host([hidden]), [hidden], ::slotted([hidden]) { display: none; }
   video { display: block; }
   #output:empty { display: none; }
@@ -21,7 +19,7 @@ template.innerHTML = /* html */ `
 class VideoCapture extends HTMLElement {
   #supportedConstraints = {};
   #stream = null;
-  #videoElement = null;
+  #videoEl = null;
 
   constructor() {
     super();
@@ -38,13 +36,6 @@ class VideoCapture extends HTMLElement {
     return ['no-image', 'pan', 'tilt', 'zoom', 'torch'];
   }
 
-  /**
-   * Lifecycle method that is called when attributes are changed, added, removed, or replaced.
-   *
-   * @param {string} name - The name of the attribute.
-   * @param {string} oldValue - The old value of the attribute.
-   * @param {string} newValue - The new value of the attribute.
-   */
   attributeChangedCallback(name, oldValue, newValue) {
     if (!this.isConnected) {
       return;
@@ -68,9 +59,6 @@ class VideoCapture extends HTMLElement {
     }
   }
 
-  /**
-   * Lifecycle method that is called when the element is added to the DOM.
-   */
   async connectedCallback() {
     this.#upgradeProperty('autoPlay');
     this.#upgradeProperty('facingMode');
@@ -79,7 +67,7 @@ class VideoCapture extends HTMLElement {
 
     this.#initializeVideoElement();
 
-    this.#videoElement?.addEventListener('loadedmetadata', this.#onVideoLoadedMetaData);
+    this.#videoEl?.addEventListener('loadedmetadata', this.#onVideoLoadedMetaData);
 
     if (!VideoCapture.isSupported()) {
       return this.#dispatchError(
@@ -94,12 +82,9 @@ class VideoCapture extends HTMLElement {
     }
   }
 
-  /**
-   * Lifecycle method that is called when the element is removed from the DOM.
-   */
   disconnectedCallback() {
     this.stopVideoStream();
-    this.#videoElement?.removeEventListener('loadedmetadata', this.#onVideoLoadedMetaData);
+    this.#videoEl?.removeEventListener('loadedmetadata', this.#onVideoLoadedMetaData);
   }
 
   get autoPlay() {
@@ -153,7 +138,7 @@ class VideoCapture extends HTMLElement {
    * reconnects.
    */
   #initializeVideoElement() {
-    if (this.#videoElement) {
+    if (this.#videoEl) {
       return;
     }
 
@@ -165,7 +150,7 @@ class VideoCapture extends HTMLElement {
     video.setAttribute('disablepictureinpicture', '');
 
     this.shadowRoot?.prepend(video);
-    this.#videoElement = video;
+    this.#videoEl = video;
   }
 
   /**
@@ -176,13 +161,7 @@ class VideoCapture extends HTMLElement {
    * @param {Error} error - The error object.
    */
   #dispatchError(source, reason, error) {
-    this.dispatchEvent(
-      new CustomEvent(`${COMPONENT_NAME}:error`, {
-        bubbles: true,
-        composed: true,
-        detail: { source, reason, error }
-      })
-    );
+    this.#emitEvent('video-capture-error', { source, reason, error });
   }
 
   /**
@@ -195,14 +174,7 @@ class VideoCapture extends HTMLElement {
 
     try {
       await video.play();
-
-      this.dispatchEvent(
-        new CustomEvent(`${COMPONENT_NAME}:video-play`, {
-          bubbles: true,
-          composed: true,
-          detail: { video }
-        })
-      );
+      this.#emitEvent('video-capture-play', { video });
     } catch (error) {
       const reason =
         error instanceof DOMException && error.name === 'NotAllowedError'
@@ -251,6 +223,18 @@ class VideoCapture extends HTMLElement {
   }
 
   /**
+   * Dispatches a custom event with the given name.
+   *
+   * @param {string} eventName - The name of the event to dispatch.
+   * @param {Nullable<any>} detail - The detail object to include with the event.
+   */
+  #emitEvent(eventName, detail = null) {
+    const options = { bubbles: true, composed: true, detail };
+    const evt = new CustomEvent(eventName, options);
+    this.dispatchEvent(evt);
+  }
+
+  /**
    * This is to safe guard against cases where, for instance, a framework may have added the element to the page and
    * set a value on one of its properties, but lazy loaded its definition. Without this guard, the upgraded element would
    * miss that property and the instance property would prevent the class property setter from ever being called.
@@ -271,11 +255,11 @@ class VideoCapture extends HTMLElement {
    * Starts the video stream.
    *
    * @param {string} [videoInputId] - The video input device ID.
-   * @returns Promise<void>
+   * @returns Promise<boolean> Resolves to `true` if the video stream started successfully, `false` otherwise.
    */
   async startVideoStream(videoInputId) {
     if (!VideoCapture.isSupported() || this.#stream) {
-      return;
+      return false;
     }
 
     this.setAttribute('loading', '');
@@ -309,13 +293,15 @@ class VideoCapture extends HTMLElement {
     try {
       this.#stream = await navigator.mediaDevices.getUserMedia(constraints);
 
-      if (this.#videoElement) {
-        this.#videoElement.srcObject = this.#stream;
+      if (this.#videoEl) {
+        this.#videoEl.srcObject = this.#stream;
       }
 
       this.#applyConstraint('pan', this.pan);
       this.#applyConstraint('tilt', this.tilt);
       this.#applyConstraint('zoom', this.zoom);
+
+      return true;
     } catch (error) {
       const reason =
         error instanceof DOMException && error.name === 'NotAllowedError'
@@ -323,8 +309,9 @@ class VideoCapture extends HTMLElement {
           : 'camera-failed';
 
       this.#dispatchError('camera', reason, error);
-
       this.removeAttribute('loading');
+
+      return false;
     }
   }
 
@@ -334,7 +321,7 @@ class VideoCapture extends HTMLElement {
    * @param {string} [videoInputId] - The video input device ID.
    */
   restartVideoStream(videoInputId) {
-    if (this.#stream && this.#videoElement) {
+    if (this.#stream && this.#videoEl) {
       this.stopVideoStream();
     }
 
@@ -345,14 +332,14 @@ class VideoCapture extends HTMLElement {
    * Stops the video stream.
    */
   stopVideoStream() {
-    if (!this.#videoElement || !this.#stream) {
+    if (!this.#videoEl || !this.#stream) {
       return;
     }
 
     const [track] = this.#stream.getVideoTracks();
 
     track?.stop();
-    this.#videoElement.srcObject = null;
+    this.#videoEl.srcObject = null;
     this.#stream = null;
   }
 
@@ -364,28 +351,20 @@ class VideoCapture extends HTMLElement {
    *
    * @param {options} [options] - The options for playing the video.
    * @param {boolean} [options.emit=false] - Whether to emit a custom event after playing the video.
-   * @returns {Promise<void>}
+   * @returns {Promise<void>} A promise that resolves when the video starts playing, or rejects if there is an error.
    */
   async playVideo(options = {}) {
     const { emit = false } = options;
 
-    if (!this.#videoElement || !this.#stream) {
+    if (!this.#videoEl || !this.#stream) {
       return;
     }
 
     try {
-      await this.#videoElement.play();
+      await this.#videoEl.play();
 
       if (emit) {
-        this.dispatchEvent(
-          new CustomEvent(`${COMPONENT_NAME}:video-play`, {
-            bubbles: true,
-            composed: true,
-            detail: {
-              video: this.#videoElement
-            }
-          })
-        );
+        this.#emitEvent('video-capture-play', { video: this.#videoEl });
       }
     } catch (error) {
       const reason =
@@ -401,11 +380,11 @@ class VideoCapture extends HTMLElement {
    * Pauses the current video stream.
    */
   stopVideo() {
-    if (!this.#videoElement || !this.#stream) {
+    if (!this.#videoEl || !this.#stream) {
       return;
     }
 
-    this.#videoElement.pause();
+    this.#videoEl.pause();
   }
 
   /**
@@ -413,7 +392,7 @@ class VideoCapture extends HTMLElement {
    * whose member fields each specify one ofthe constrainable properties the user agent understands.
    *
    * @see https://developer.mozilla.org/docs/Web/API/MediaDevices/getSupportedConstraints
-   * @returns {MediaTrackSupportedConstraints | {}}
+   * @returns {MediaTrackSupportedConstraints | {}} The supported constraints or an empty object if the API is not supported.
    */
   getSupportedConstraints() {
     if (!VideoCapture.isSupported()) {
@@ -428,7 +407,7 @@ class VideoCapture extends HTMLElement {
    * which each constrainable property, based upon the platform and user agent.
    *
    * @see https://developer.mozilla.org/docs/Web/API/MediaStreamTrack/getCapabilities
-   * @returns {MediaTrackCapabilities | {}}
+   * @returns {MediaTrackCapabilities | {}} The track capabilities or an empty object if the API is not supported.
    */
   getTrackCapabilities() {
     if (!this.#stream) {
@@ -449,7 +428,7 @@ class VideoCapture extends HTMLElement {
    * the constrainable properties for the current MediaStreamTrack.
    *
    * @see https://developer.mozilla.org/docs/Web/API/MediaStreamTrack/getSettings
-   * @returns {MediaTrackSettings | {}}
+   * @returns {MediaTrackSettings | {}} The track settings or an empty object if the API is not supported.
    */
   getTrackSettings() {
     if (!this.#stream) {
@@ -466,9 +445,9 @@ class VideoCapture extends HTMLElement {
   }
 
   /**
-   * Returns the available video input devices.
+   * Gets the list of available video input devices.
    *
-   * @returns {Promise<MediaDeviceInfo[]>}
+   * @returns {Promise<MediaDeviceInfo[]>} A promise that resolves to an array of video input devices.
    */
   static async getVideoInputDevices() {
     if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
@@ -482,7 +461,7 @@ class VideoCapture extends HTMLElement {
   /**
    * Checks if the `MediaDevices.getUserMedia()` method is supported.
    *
-   * @returns {boolean}
+   * @returns {boolean} `true` if the method is supported, `false` otherwise.
    */
   static isSupported() {
     return Boolean(navigator.mediaDevices?.getUserMedia);
@@ -494,7 +473,7 @@ class VideoCapture extends HTMLElement {
    *
    * @param {string} [elementName='video-capture'] - The name of the custom element.
    */
-  static defineCustomElement(elementName = COMPONENT_NAME) {
+  static define(elementName = 'video-capture') {
     if (typeof window !== 'undefined' && !window.customElements.get(elementName)) {
       window.customElements.define(elementName, VideoCapture);
     }
