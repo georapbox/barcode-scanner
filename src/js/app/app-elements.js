@@ -22,7 +22,7 @@ export function getAppElements() {
     historyButtonEl: getRequiredElement('#historyButton'),
     historyDialogEl: getRequiredElement('#historyDialog'),
 
-    formatSettingsEl: getRequiredElement('format-settings'),
+    scanSettingsEl: getRequiredElement('scan-settings'),
     settingsButtonEl: getRequiredElement('#settingsButton'),
     settingsDialogEl: getRequiredElement('#settingsDialog'),
     settingsFormEl: getRequiredElement('#settingsForm'),

@@ -94,9 +94,9 @@ class FormatSettings extends HTMLElement {
    * Defines the custom element by registering it with the browser's
    * CustomElementRegistry if it hasn't been defined already.
    *
-   * @param {string} [tagName='format-settings'] - The tag name to use for the custom element.
+   * @param {string} [tagName='scan-settings'] - The tag name to use for the custom element.
    */
-  static define(tagName = 'format-settings') {
+  static define(tagName = 'scan-settings') {
     if (typeof window === 'undefined' || window.customElements.get(tagName)) {
       return;
     }

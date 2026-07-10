@@ -29,18 +29,18 @@ export function createSettingsController({
     const nextSettings = {};
     const formData = new FormData(settingsFormEl);
     const generalSettings = formData.getAll('general-settings');
-    const formatSettings = formData.getAll('formats-settings');
+    const scanSettings = formData.getAll('formats-settings');
 
     generalSettings.forEach(value => {
       nextSettings[value] = true;
     });
 
-    nextSettings.formats = formatSettings;
+    nextSettings.formats = scanSettings;
 
     await setSettings(nextSettings);
 
     if (evt.target.name === 'formats-settings') {
-      await onFormatsChange(formatSettings);
+      await onFormatsChange(scanSettings);
     }
   }
 
