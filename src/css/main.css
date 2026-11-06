@@ -41,6 +41,7 @@
   --select-arrow: var(--select-arrow-light);
 
   accent-color: var(--accent);
+  scrollbar-gutter: stable;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -274,14 +275,14 @@ select:disabled {
 
 /* Dialogs */
 .popover-dialog {
-  --me-background-color: var(--dialog-background);
-  --me-border-radius: var(--border-radius);
-  --me-border-style: none;
-  --me-width: fit-content;
-  --me-header-spacing: 0.75rem;
-  --me-body-spacing: 0;
-  --me-footer-spacing: 0.75rem;
-  --me-backdrop-filter: blur(4px);
+  --modal-background-color: var(--dialog-background);
+  --modal-border-radius: var(--border-radius);
+  --modal-border-style: none;
+  --modal-width: fit-content;
+  --modal-header-spacing: 0.75rem;
+  --modal-body-spacing: 0;
+  --modal-footer-spacing: 0.75rem;
+  --modal-backdrop-filter: blur(4px);
 }
 
 .popover-dialog::part(body) {
@@ -289,7 +290,7 @@ select:disabled {
 }
 
 .history-dialog {
-  --me-width: 20rem;
+  --modal-width: 20rem;
 }
 
 /* Settings */

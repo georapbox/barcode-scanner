@@ -1,6 +1,7 @@
 {
   "languages": {
     "JavaScript": {
+      "language_servers": ["vtsls", "eslint"],
       "formatter": "prettier",
       "format_on_save": "on"
     }

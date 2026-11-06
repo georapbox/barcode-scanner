@@ -64,7 +64,7 @@
     "@georapbox/alert-element": "~2.0.0",
     "@georapbox/clipboard-copy-element": "~3.0.2",
     "@georapbox/files-dropzone-element": "~2.2.0",
-    "@georapbox/modal-element": "~1.11.1",
+    "@georapbox/modal-element": "~2.0.0",
     "@georapbox/resize-observer-element": "~2.0.1",
     "@georapbox/web-share-element": "~3.1.1",
     "barcode-detector": "~3.0.8",
