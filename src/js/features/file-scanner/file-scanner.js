@@ -132,11 +132,11 @@ class FileScanner extends HTMLElement {
 
     this.#dropzoneEl.accept = ACCEPTED_MIME_TYPES.join(',');
 
-    this.#dropzoneEl.addEventListener('files-dropzone-drop', this.#handleFileDrop);
+    this.#dropzoneEl.addEventListener('dropzone-drop', this.#handleFileDrop);
   }
 
   disconnectedCallback() {
-    this.#dropzoneEl.removeEventListener('files-dropzone-drop', this.#handleFileDrop);
+    this.#dropzoneEl.removeEventListener('dropzone-drop', this.#handleFileDrop);
   }
 
   /**
